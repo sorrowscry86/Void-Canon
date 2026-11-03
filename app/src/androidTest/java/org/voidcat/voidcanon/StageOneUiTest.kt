@@ -113,7 +113,9 @@ class StageOneUiTest {
         compose.onNodeWithText("Approve chapter").performClick()
         compose.waitUntil(15000) { runBlocking { repo.snapshot().chapters.any { it.approved } } }
         dismissFeedback()
-        compose.onNodeWithText("APPROVED MEMORY").assertExists()
+        // Repository publication can precede the observed UI update on a software emulator.
+        compose.waitUntil(15000) { compose.onAllNodesWithText("APPROVED MEMORY", useUnmergedTree = true).fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("APPROVED MEMORY", useUnmergedTree = true).assertExists()
         capture("08-approved-chapter")
         compose.onNodeWithText("Play", useUnmergedTree = true).performClick()
         compose.onNodeWithText("Context", useUnmergedTree = true).performClick()

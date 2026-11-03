@@ -14,5 +14,6 @@ fun WorldSnapshot.scoped(worldId: String, sceneId: String? = null): WorldSnapsho
         scenes = listOfNotNull(scene), messages = messages.filter { scene != null && it.sceneId == scene.id },
         descriptions = descriptions.filter { it.assetId in assetIds },
         chapters = chapters.filter { scene != null && it.sceneId == scene.id },
-        generations = generations.filter { scene != null && it.sceneId == scene.id })
+        generations = generations.filter { scene != null && it.sceneId == scene.id },
+        continuityEvents = continuityEvents.filter { scene != null && it.sceneId == scene.id })
 }

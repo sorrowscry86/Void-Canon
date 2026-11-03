@@ -72,7 +72,7 @@ fun AiSettingsSheet(vm: CanonViewModel, dismiss: () -> Unit) {
                         Checkbox(config.consent, { config = config.copy(consent = it) })
                         Text("Allow selected story text to be sent to OpenRouter and its model provider.", modifier = Modifier.weight(1f))
                     }
-                    Text("RP sends lore, approved visual descriptions, recent dialogue, and approved chapter memory. Image-description actions send the one selected image. Author-only notes are excluded. Requests are explicit: chat and images allow 1,000 output tokens, summaries up to 4,096 (including model reasoning), and no automatic retries.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                    Text("RP sends lore, approved visual descriptions, recent dialogue, and approved chapter memory. Image-description actions send the one selected image. Author-only notes are excluded. Requests are explicit: images allow 1,000 output tokens, RP with state and summaries up to 4,096 (including model reasoning), and no automatic retries.", color = Muted, style = MaterialTheme.typography.bodySmall)
                 }
                 item {
                     Text("Roleplay & summaries: ${config.rpModel.ifBlank { "not selected" }}", color = Violet)
@@ -141,13 +141,16 @@ fun DescriptionDialog(s: WorldSnapshot, asset: AssetRecord, vm: CanonViewModel, 
 @Composable
 fun SceneDetailsDialog(s: WorldSnapshot, vm: CanonViewModel, dismiss: () -> Unit) {
     val scene = s.scene ?: return
+    var stateOpen by remember { mutableStateOf(false) }
+    if (stateOpen) ContinuitySheet(s, vm) { stateOpen = false }
     var direction by rememberSaveable { mutableStateOf(scene.authorDirection) }
     var role by rememberSaveable { mutableStateOf(scene.userRole) }
     var known by rememberSaveable { mutableStateOf(scene.characterKnowledge) }
     var provisional by rememberSaveable { mutableStateOf(scene.provisionalState) }
     var notes by rememberSaveable { mutableStateOf(scene.authorNotes) }
-    AlertDialog(onDismissRequest = dismiss, title = { Text("Scene & knowledge") }, text = {
+    if (!stateOpen) AlertDialog(onDismissRequest = dismiss, title = { Text("Scene & knowledge") }, text = {
         Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            TextButton(onClick = { stateOpen = true }) { Text("Review scene continuity") }
             OutlinedTextField(role, { role = it.take(5000) }, label = { Text("Your role") })
             OutlinedTextField(direction, { direction = it.take(5000) }, label = { Text("Author direction (sent to RP)") }, minLines = 2)
             OutlinedTextField(known, { known = it.take(5000) }, label = { Text("Facts the character knows") }, minLines = 2)

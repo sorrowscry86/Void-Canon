@@ -1,0 +1,5 @@
+org.voidcat.voidcanon.StageOneUiTest:.
+
+Time: 223.493
+
+OK (1 test)
