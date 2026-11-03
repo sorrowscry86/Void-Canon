@@ -9,4 +9,10 @@ On the disposable API 29 AOSP software emulator (720 × 1280 at 320 dpi):
 
 The [initial obstructed capture](screenshots/99-emulator-systemui-stall.png) records a System UI ANR under software emulation. After dismissing that dialog and disabling animations, the editor rendered cleanly. A chapter-label assertion was stabilized by waiting for its actual observed UI node. These are emulator results, not a physical-device performance claim.
 
-No live OpenRouter requests were made. Structural response checks do not prove a model's semantic extraction quality. This environment's test APK has a different signing certificate from the published 0.4.0 download; it is not an in-place phone update.
+No live OpenRouter requests were made. Structural response checks do not prove a model's semantic extraction quality. The downloadable preview uses the separate `org.voidcat.voidcanon.preview` package and launcher name **Void Canon Test**, allowing both apps to stay installed. Updating the original package still requires its original signing key.
+
+## Downloadable preview
+
+`assemblePreview lintPreview` passed with no lint issues. APK metadata identifies `org.voidcat.voidcanon.preview`, version `0.4.1-preview`, label **Void Canon Test**, minimum API 26. The APK signature was verified.
+
+The [preview installation smoke check](preview-install.txt) passed on the API 29 emulator: installation beside the original app, launcher startup, initial world rendering, and opening the continuity editor. Both packages remained installed and the original app's database fingerprints were unchanged. The emulator produced another System UI stall during startup; it was dismissed before the check continued. The [preview capture](screenshots/16-preview-install.png) was reviewed after the stall cleared.

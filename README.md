@@ -4,15 +4,20 @@ A native Android worldbuilding and roleplay studio. Its illustrated world librar
 
 ## Install / upgrade
 
-The [Downloads](downloads/README.md) folder currently contains the published **0.4.0** APK and source snapshot. This source adds **0.4.1 scene continuity**; the 0.4.0 download does not include it.
+Download the **[0.4.1 preview APK](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.1-preview.apk)** to test scene continuity. It appears as **Void Canon Test** and installs alongside your current Void Canon app with separate local data.
 
-A build from a new environment uses its own debug signing key. An in-place update requires the original signing key; the key is not stored in Git. The current environment’s test APK has a different certificate from the published 0.4.0 APK and is for disposable installations. Do not uninstall your working app to test this build.
+Requires Android 8.0 or newer. In your current app, export a ZIP backup if you want to test your existing worlds. Open **Void Canon Test**, restore that ZIP, then enter your OpenRouter key and choose models again; credentials are excluded from backups. Restore replaces only the test app's library. Select **Live RP** to exercise automatic state tracking; review it under **Play → Scene → Review scene continuity**.
 
-Requires Android 8.0 or newer. The published 0.4.0 APK can install over the earlier matching-signed builds. For new builds, verify signing continuity before upgrading. The Room database migrates without destructive recreation. Export a backup before uninstalling or clearing app data.
+The [Downloads](downloads/README.md) page has the APK checksum, test instructions, and the earlier 0.4.0 downloads. The preview has its own Android package (`org.voidcat.voidcanon.preview`) because the original signing key is not available in this build environment. Updating the original app in place still requires that original key. Keep your existing app installed.
+
+Build the preview with:
 
 ```sh
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+./gradlew assemblePreview lintPreview
+adb install -r app/build/outputs/apk/preview/app-preview.apk
 ```
+
+The ordinary `debug` variant retains the original package and app name for builds made with the original signing identity. The Room database migrates without destructive recreation.
 
 ## Build your own world
 

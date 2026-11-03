@@ -41,9 +41,13 @@ The full contract and explicit limitations are in [Scene continuity](docs/SCENE-
 
 ## Builds and signing
 
-Build output is `app/build/outputs/apk/debug/app-debug.apk`. Published files in `downloads/` remain **0.4.0**; they have not been silently replaced.
+The downloadable test build is **[Void Canon Test 0.4.1-preview](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.1-preview.apk)**, with a SHA-256 file in `downloads/`. Build it with `assemblePreview lintPreview`; output is `app/build/outputs/apk/preview/app-preview.apk`. The `preview` build type inherits debug settings, uses package **`org.voidcat.voidcanon.preview`**, and displays the launcher name **Void Canon Test**. The ordinary debug variant retains the original package and app name.
 
-This environment generated a separate debug signing identity. `apksigner` confirms it differs from the published APK. **This test build cannot be installed as an in-place update to the published 0.4.0 app.** Keep the working installation. Build/sign this source with the original signing key in the original build environment before delivering an upgrade. No signing key is committed or requested through chat. Room migration tests establish data compatibility, not Android package-signature compatibility.
+`assemblePreview lintPreview` passed; preview lint reports no issues. APK metadata and signature were verified. A separate API 29 smoke check installed and launched the preview beside the original package, opened **Play → Scene → Review scene continuity**, and confirmed the original app's database fingerprints were unchanged. See [preview smoke evidence](docs/continuity-evidence/preview-install.txt) and [capture](docs/continuity-evidence/screenshots/16-preview-install.png).
+
+The preview can import portable backups from the existing app; provider keys/settings must be configured again because they are excluded from backups. Both packages have separate local storage. Keep the original app installed and preserve its export: format-4 preview backups cannot be imported into the older 0.4.0 app.
+
+This environment's debug signing identity differs from the published 0.4.0 APK. A direct in-place update of the original package still requires the original signing key. **The posted preview installs separately**, so it does not replace the original app or require uninstalling it. No signing key is committed or requested through chat. Room migration tests establish data compatibility, not Android package-signature compatibility.
 
 ## Limits and next decisions
 

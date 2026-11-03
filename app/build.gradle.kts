@@ -16,6 +16,16 @@ android {
         versionCode = 6
         versionName = "0.4.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        resValue("string", "app_name", "Void Canon")
+    }
+    buildTypes {
+        create("preview") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".preview"
+            versionNameSuffix = "-preview"
+            resValue("string", "app_name", "Void Canon Test")
+            matchingFallbacks += listOf("debug")
+        }
     }
     buildFeatures { compose = true }
     compileOptions {

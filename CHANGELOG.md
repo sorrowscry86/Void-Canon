@@ -8,7 +8,7 @@
 - Add optional author corrections through Play → Scene, plus Room schema 3 and backup format 4 with legacy imports.
 - Increase the model-limited RP output allowance to accommodate story and state in one request.
 
-The published downloads remain 0.4.0. A matching original signing key is required for an in-place update. See the current handback for verification and limits.
+A separately installed **Void Canon Test** preview is available for testing this source. It has its own package and local storage. A matching original signing key is still required for an in-place update to the original app. See the current handback for verification and limits.
 
 ## 0.4.0 — Personal world library
 

@@ -1,4 +1,22 @@
-# Void Canon 0.4.0 downloads
+# Void Canon downloads
+
+## 0.4.1 preview — scene continuity
+
+**[Download Void Canon Test (APK)](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.1-preview.apk)** · [SHA-256](void-canon-0.4.1-preview.apk.sha256) · [Preview notes](PREVIEW-NOTES.md)
+
+Requires Android 8.0 or newer. This is a separate test app named **Void Canon Test** (`org.voidcat.voidcanon.preview`), version **0.4.1-preview**. It installs alongside your current Void Canon app. Its worlds, scenes, settings and keys are stored separately.
+
+1. Download and open the APK on your phone. Android may ask you to allow installs from the browser or Files app.
+2. Launch **Void Canon Test**. Explore the sample or create a world.
+3. To test your existing worlds, export a ZIP backup from your current app, then restore it through World's box icon in **Void Canon Test**. This replaces the test app's library. The original app retains its own data.
+4. In the test app's AI settings, enter your OpenRouter key, select current RP/image models, and enable the disclosure checkbox. Provider keys/settings do not transfer in a backup.
+5. In **Play**, select **Live RP**. After a successful turn, use **Scene → Review scene continuity** to inspect or correct positions, activities, held objects and other state. The scripted Demo does not perform automatic tracking.
+
+The original signing key is unavailable here, so this APK uses a separate package rather than attempting an in-place upgrade. Keep your original app installed. Preview backups use format 4 and cannot be imported into the older 0.4.0 app; keep your original export separately.
+
+New source is in the [feature branch](https://github.com/sorrowscry86/Void-Canon/tree/feature/scene-continuity). No provider keys, signing keys, or user-created device data are included in the APK.
+
+## Earlier 0.4.0 downloads
 
 This is an early Android debug build. Requires Android 8.0 or newer.
 
