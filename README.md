@@ -4,7 +4,7 @@ A native Android worldbuilding and roleplay studio. Version 0.4.0 adds a persona
 
 ## Install / upgrade
 
-Download `void-canon-0.4.0.apk` from [GitHub Releases](https://github.com/sorrowscry86/Void-Canon/releases), then open it on your Android device to install.
+Download the APK from [Downloads](downloads/README.md), then open it on your Android device to install. The download files and SHA-256 checksums are hosted in this repository.
 
 Requires Android 8.0 or newer. Install the 0.4.0 debug APK over your existing Stage 1 or Stage 3 installation to retain your data; the package and signing certificate are unchanged. The Room database migrates without destructive recreation. Export a backup before uninstalling or clearing app data.
 
