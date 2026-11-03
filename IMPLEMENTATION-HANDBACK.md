@@ -39,9 +39,13 @@ The full contract and explicit limitations are in [Scene continuity](docs/SCENE-
 - An initial capture exposed an emulator System UI ANR. Dismissing its dialog and disabling animation produced a clean editor capture. The chapter approval assertion now waits for the observed unmerged UI label, rather than racing asynchronous publication. Evidence/logs are in `docs/continuity-evidence/`; this does not establish physical-phone performance.
 - No live OpenRouter requests or user credentials were used. Model adherence, semantic extraction quality, live quotas, and physical-phone behavior remain unverified.
 
+## Main-branch integration
+
+[PR #2](https://github.com/sorrowscry86/Void-Canon/pull/2) was merged into `main` on November 3, 2026. Integration checks reran `testDebugUnitTest lintDebug assemblePreview` with JDK 17: **52 tests passed, lint found no issues, and the preview build succeeded**. The committed downloadable preview's SHA-256 was verified and its bytes are unchanged. Download links now use `main`. Android/device and live-provider checks were not repeated during this integration; their evidence and limitations above remain distinct.
+
 ## Builds and signing
 
-The downloadable test build is **[Void Canon Test 0.4.1-preview](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.1-preview.apk)**, with a SHA-256 file in `downloads/`. Build it with `assemblePreview lintPreview`; output is `app/build/outputs/apk/preview/app-preview.apk`. The `preview` build type inherits debug settings, uses package **`org.voidcat.voidcanon.preview`**, and displays the launcher name **Void Canon Test**. The ordinary debug variant retains the original package and app name.
+The downloadable test build is **[Void Canon Test 0.4.1-preview](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/main/downloads/void-canon-0.4.1-preview.apk)**, with a SHA-256 file in `downloads/`. Build it with `assemblePreview lintPreview`; output is `app/build/outputs/apk/preview/app-preview.apk`. The `preview` build type inherits debug settings, uses package **`org.voidcat.voidcanon.preview`**, and displays the launcher name **Void Canon Test**. The ordinary debug variant retains the original package and app name.
 
 `assemblePreview lintPreview` passed; preview lint reports no issues. APK metadata and signature were verified. A separate API 29 smoke check installed and launched the preview beside the original package, opened **Play → Scene → Review scene continuity**, and confirmed the original app's database fingerprints were unchanged. See [preview smoke evidence](docs/continuity-evidence/preview-install.txt) and [capture](docs/continuity-evidence/screenshots/16-preview-install.png).
 

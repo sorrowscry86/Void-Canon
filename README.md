@@ -4,7 +4,7 @@ A native Android worldbuilding and roleplay studio. Its illustrated world librar
 
 ## Install / upgrade
 
-Download the **[0.4.1 preview APK](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.1-preview.apk)** to test scene continuity. It appears as **Void Canon Test** and installs alongside your current Void Canon app with separate local data.
+Download the **[0.4.1 preview APK](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/main/downloads/void-canon-0.4.1-preview.apk)** to test scene continuity. It appears as **Void Canon Test** and installs alongside your current Void Canon app with separate local data.
 
 Requires Android 8.0 or newer. In your current app, export a ZIP backup if you want to test your existing worlds. Open **Void Canon Test**, restore that ZIP, then enter your OpenRouter key and choose models again; credentials are excluded from backups. Restore replaces only the test app's library. Select **Live RP** to exercise automatic state tracking; review it under **Play → Scene → Review scene continuity**.
 

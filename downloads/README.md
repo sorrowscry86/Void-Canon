@@ -2,7 +2,7 @@
 
 ## 0.4.1 preview — scene continuity
 
-**[Download Void Canon Test (APK)](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.1-preview.apk)** · [SHA-256](void-canon-0.4.1-preview.apk.sha256) · [Preview notes](PREVIEW-NOTES.md)
+**[Download Void Canon Test (APK)](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/main/downloads/void-canon-0.4.1-preview.apk)** · [SHA-256](void-canon-0.4.1-preview.apk.sha256) · [Preview notes](PREVIEW-NOTES.md)
 
 Requires Android 8.0 or newer. This is a separate test app named **Void Canon Test** (`org.voidcat.voidcanon.preview`), version **0.4.1-preview**. It installs alongside your current Void Canon app. Its worlds, scenes, settings and keys are stored separately.
 
@@ -14,7 +14,7 @@ Requires Android 8.0 or newer. This is a separate test app named **Void Canon Te
 
 The original signing key is unavailable here, so this APK uses a separate package rather than attempting an in-place upgrade. Keep your original app installed. Preview backups use format 4 and cannot be imported into the older 0.4.0 app; keep your original export separately.
 
-New source is in the [feature branch](https://github.com/sorrowscry86/Void-Canon/tree/feature/scene-continuity). No provider keys, signing keys, or user-created device data are included in the APK.
+The 0.4.1 source and this preview are included on [main](https://github.com/sorrowscry86/Void-Canon/tree/main). No provider keys, signing keys, or user-created device data are included in the APK.
 
 ## Earlier 0.4.0 downloads
 
