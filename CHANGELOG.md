@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.1 — Scene continuity (source; test build)
+## 0.4.1 — Scene continuity
 
 - Persist bounded participant/object state, explicit elapsed time, and source-linked before/after revisions separately from transcripts and chapter memory.
 - Reserve a compact current-state snapshot in RP context, with whole-record omissions and no revision history.
@@ -8,7 +8,7 @@
 - Add optional author corrections through Play → Scene, plus Room schema 3 and backup format 4 with legacy imports.
 - Increase the model-limited RP output allowance to accommodate story and state in one request.
 
-A separately installed **Void Canon Test** preview is available for testing this source. It has its own package and local storage. A matching original signing key is still required for an in-place update to the original app. See the current handback for verification and limits.
+The regular **Void Canon 0.4.1** APK includes these features and uses the original package/signing identity to update 0.4.0 in place. The earlier **Void Canon Test** preview remains a separate optional package. See the current handback for verification and limits.
 
 ## 0.4.0 — Personal world library
 

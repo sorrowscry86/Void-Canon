@@ -1,0 +1,6 @@
+
+org.voidcat.voidcanon.ContinuityUiTest:.
+
+Time: 78.045
+
+OK (1 test)

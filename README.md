@@ -4,20 +4,22 @@ A native Android worldbuilding and roleplay studio. Its illustrated world librar
 
 ## Install / upgrade
 
-Download the **[0.4.1 preview APK](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/main/downloads/void-canon-0.4.1-preview.apk)** to test scene continuity. It appears as **Void Canon Test** and installs alongside your current Void Canon app with separate local data.
+Download the **[Void Canon 0.4.1 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/main/downloads/void-canon-0.4.1.apk)**. This regular app build includes scene continuity and updates your existing **Void Canon** installation.
 
-Requires Android 8.0 or newer. In your current app, export a ZIP backup if you want to test your existing worlds. Open **Void Canon Test**, restore that ZIP, then enter your OpenRouter key and choose models again; credentials are excluded from backups. Restore replaces only the test app's library. Select **Live RP** to exercise automatic state tracking; review it under **Play → Scene → Review scene continuity**.
+Requires Android 8.0 or newer. Install over 0.4.0 to retain your worlds, artwork, transcripts, chapters, drafts, and device-local AI settings. Do not uninstall or clear app data. Export a backup before upgrading if you want an additional copy. The package remains `org.voidcat.voidcanon`; the signing certificate matches the published 0.4.0 APK.
 
-The [Downloads](downloads/README.md) page has the APK checksum, test instructions, and the earlier 0.4.0 downloads. The preview has its own Android package (`org.voidcat.voidcanon.preview`) because the original signing key is not available in this build environment. Updating the original app in place still requires that original key. Keep your existing app installed.
+Use **Play → Scene → Review scene continuity** to inspect or correct positions, activities, held objects, learned facts, and elapsed time. Live RP tracks validated state changes alongside the story. Existing transcripts stay intact; old scenes begin with unknown state details instead of an invented reconstruction.
 
-Build the preview with:
+[Downloads](downloads/README.md) includes APK/source checksums, release notes, and older builds. The optional earlier **Void Canon Test** preview remains separate; its data is not automatically moved into the regular app. Both 0.4.1 variants support format-4 portable backups, but provider keys/settings are excluded from backups and restoring replaces the destination library.
+
+Build the regular APK with:
 
 ```sh
-./gradlew assemblePreview lintPreview
-adb install -r app/build/outputs/apk/preview/app-preview.apk
+./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The ordinary `debug` variant retains the original package and app name for builds made with the original signing identity. The Room database migrates without destructive recreation.
+Future in-place updates must reuse the original signing identity, which is kept outside Git. The optional `preview` build type uses a separate package; it is not the primary update download. These remain early debug builds.
 
 ## Build your own world
 
