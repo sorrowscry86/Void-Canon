@@ -13,9 +13,19 @@ android {
         applicationId = "org.voidcat.voidcanon"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.4.0"
+        versionCode = 6
+        versionName = "0.4.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        resValue("string", "app_name", "Void Canon")
+    }
+    buildTypes {
+        create("preview") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".preview"
+            versionNameSuffix = "-preview"
+            resValue("string", "app_name", "Void Canon Test")
+            matchingFallbacks += listOf("debug")
+        }
     }
     buildFeatures { compose = true }
     compileOptions {

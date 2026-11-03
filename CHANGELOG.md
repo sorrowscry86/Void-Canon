@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.1 — Scene continuity (source; test build)
+
+- Persist bounded participant/object state, explicit elapsed time, and source-linked before/after revisions separately from transcripts and chapter memory.
+- Reserve a compact current-state snapshot in RP context, with whole-record omissions and no revision history.
+- Validate structured story/state replies and publish both atomically; retain malformed/stale response diagnostics without changing history or state.
+- Add optional author corrections through Play → Scene, plus Room schema 3 and backup format 4 with legacy imports.
+- Increase the model-limited RP output allowance to accommodate story and state in one request.
+
+A separately installed **Void Canon Test** preview is available for testing this source. It has its own package and local storage. A matching original signing key is still required for an in-place update to the original app. See the current handback for verification and limits.
+
 ## 0.4.0 — Personal world library
 
 - Create and edit independent worlds, characters, and locations; search people and places.

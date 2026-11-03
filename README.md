@@ -1,16 +1,23 @@
 # Void Canon
 
-A native Android worldbuilding and roleplay studio. Version 0.4.0 adds a personal world library to the illustrated prototype: create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
+A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
 
 ## Install / upgrade
 
-Download the APK from [Downloads](downloads/README.md), then open it on your Android device to install. The download files and SHA-256 checksums are hosted in this repository.
+Download the **[0.4.1 preview APK](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.1-preview.apk)** to test scene continuity. It appears as **Void Canon Test** and installs alongside your current Void Canon app with separate local data.
 
-Requires Android 8.0 or newer. Install the 0.4.0 debug APK over your existing Stage 1 or Stage 3 installation to retain your data; the package and signing certificate are unchanged. The Room database migrates without destructive recreation. Export a backup before uninstalling or clearing app data.
+Requires Android 8.0 or newer. In your current app, export a ZIP backup if you want to test your existing worlds. Open **Void Canon Test**, restore that ZIP, then enter your OpenRouter key and choose models again; credentials are excluded from backups. Restore replaces only the test app's library. Select **Live RP** to exercise automatic state tracking; review it under **Play → Scene → Review scene continuity**.
+
+The [Downloads](downloads/README.md) page has the APK checksum, test instructions, and the earlier 0.4.0 downloads. The preview has its own Android package (`org.voidcat.voidcanon.preview`) because the original signing key is not available in this build environment. Updating the original app in place still requires that original key. Keep your existing app installed.
+
+Build the preview with:
 
 ```sh
-adb install -r app/build/outputs/apk/debug/app-debug.apk
+./gradlew assemblePreview lintPreview
+adb install -r app/build/outputs/apk/preview/app-preview.apk
 ```
+
+The ordinary `debug` variant retains the original package and app name for builds made with the original signing identity. The Room database migrates without destructive recreation.
 
 ## Build your own world
 
@@ -32,7 +39,7 @@ The library is an early product milestone, not the complete campaign/branch syst
 
 The picker uses current numeric pricing and capabilities, not a static list or a name suffix alone. Free variants are shown first and the initial filter targets `:free` models and the free router. Other zero-price models can require a funded account, so you can turn the variant filter off to see all zero-price options. Free availability and quotas change; the cached catalog shows its refresh date.
 
-In Free only mode, requests set zero maximum prices for prompt, completion, request, and image pricing. Provider fallback is disabled, no alternate models are supplied, and there are no automatic retries. If free routing is unavailable, the app shows an error instead of changing to a paid model. Disabling Free only explicitly allows your selected model to spend OpenRouter credits. Chat and image descriptions have a 1,000-output-token cap. Chapter summaries allow up to 4,096 output tokens, reduced to respect the catalog's provider output maximum and estimated remaining context. This includes reasoning tokens. Summaries request at most 500 words. Incomplete outputs are rejected; transcripts remain unchanged. The Chapters screen retains failure details and offers an explicit retry. Provider rate/quota errors explain waiting or choosing another current free model.
+In Free only mode, requests set zero maximum prices for prompt, completion, request, and image pricing. Provider fallback is disabled, no alternate models are supplied, and there are no automatic retries. If free routing is unavailable, the app shows an error instead of changing to a paid model. Disabling Free only explicitly allows your selected model to spend OpenRouter credits. Image descriptions have a 1,000-output-token cap. Live RP includes structured state changes and allows up to 4,096 output tokens; chapter summaries also allow up to 4,096 output tokens, reduced to respect the catalog's provider output maximum and estimated remaining context. This includes reasoning tokens. Summaries request at most 500 words. Incomplete outputs are rejected; transcripts remain unchanged. The Chapters screen retains failure details and offers an explicit retry. Provider rate/quota errors explain waiting or choosing another current free model.
 
 ## Images that matter to the story
 
@@ -52,11 +59,19 @@ In Free only mode, requests set zero maximum prices for prompt, completion, requ
 
 **Chapters** lets you write a summary offline or request a draft from OpenRouter. New drafts cover messages after the last approved chapter. Review the read-only source transcript, edit the summary, and **Approve chapter** to include its memory in subsequent RP. Saving or editing a summary never edits the source messages. New RP events and model proposals never rewrite world lore automatically.
 
+## Scene continuity (0.4.1 source)
+
+Live RP keeps compact, scene-local records of participants, positions, activities, relevant conditions, held objects, and explicit elapsed time. The model receives at most 4,000 characters of current state; older revisions stay local. Story and validated changes save together. Invalid model responses preserve your draft, transcript, and state, with details in Context.
+
+Open **Play → Scene → Review scene continuity** to correct details, add existing participants or objects, or use the state before the last update. State is model-visible, provisional scene data; private author notes remain separate. Existing scenes start with unknown details rather than an invented reconstruction of their history. Chapter summaries never update state. Scripted Demo does not extract state.
+
+See [the continuity contract](docs/SCENE-CONTINUITY.md) for bounds, validation, known limitations, and the distinction from future campaigns/play modes.
+
 ## Backup and restore
 
 World's box icon exports/restores the **entire local library** as a ZIP containing all worlds, entities, images, approved/draft descriptions, scene selections, drafts, source transcripts, chapters, private author notes, and generation diagnostics. Treat it as your private world data. API keys and AI settings are excluded. Set up the key/models again on another device.
 
-Current exports are version 3; earlier versions 1 and 2 are accepted and upgraded. Blank worlds and multiple scenes are supported. Restore replaces all local worlds after confirmation; it does not merge archives. Restore validates graph references, image hashes, transparency, versions, and archive paths before staging unique image files and transactionally replacing the database. Existing data stays usable on validation failures. No automatic synchronization is provided.
+Current exports are version 4; earlier versions 1, 2, and 3 are accepted and upgraded. Blank worlds and multiple scenes are supported. Restore replaces all local worlds after confirmation; it does not merge archives. Restore validates graph references, image hashes, transparency, versions, and archive paths before staging unique image files and transactionally replacing the database. Existing data stays usable on validation failures. No automatic synchronization is provided.
 
 ## Build and checks
 

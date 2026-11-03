@@ -6,6 +6,7 @@ Updated November 2, 2026. The user accepts the prototype direction and chose **t
 | --- | --- | --- |
 | Prototype, Stages 1–3 | Illustrated offline app, meaningful visual references, live OpenRouter RP, approved chapter memory, portable backups | Delivered as 0.3.1; user reports the core works. A reported summary-limit issue received budget/error improvements; exact original provider error remains unknown. |
 | 1. Personal world library | Create independent worlds, characters, locations, and their references; choose who and where to play without overwriting another scene | Delivered as 0.4.0; 40 JVM tests, Android UI walkthrough, and in-place upgrade checks passed |
+| Scene continuity foundation | Persistent participant/object state, compact context, validated turn updates, and author corrections | Implemented in 0.4.1 source; see current handback for verification and signing limits |
 | 2. World Workshop | Capture fragments, search and connect broader lore types, organize tags/collections, review revisions and AI proposals | Planned; scope after Milestone 1 review |
 | 3. Portrayal review | Annotate mismatches, inspect relevant context, compare proposed lore changes, replay deliberately | Planned |
 | 4. Campaign depth | Named campaigns/sessions, explicit chapter boundaries, lore baselines, branches and character-specific knowledge; ensemble RP in a separate increment | Planned |

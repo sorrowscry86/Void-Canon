@@ -29,7 +29,7 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
     private val selection = context.getSharedPreferences("library-selection", Context.MODE_PRIVATE)
     private val selectionRevision = MutableStateFlow(0)
 
-    fun observe(): Flow<LibrarySnapshot> = db.invalidationTracker.createFlow("worlds", "entries", "assets", "scenes", "messages", "visual_descriptions", "chapters", "generations")
+    fun observe(): Flow<LibrarySnapshot> = db.invalidationTracker.createFlow("worlds", "entries", "assets", "scenes", "messages", "visual_descriptions", "chapters", "generations", "continuity_events")
         .combine(selectionRevision) { _, _ -> library() }.flowOn(Dispatchers.IO)
 
     suspend fun workspaceSnapshot(): WorldSnapshot = db.withTransaction { dao.snapshot() }
@@ -137,6 +137,22 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
         dao.putScenes(snapshot().scenes.map { it.copy(authorDirection = direction, userRole = userRole.ifBlank { "Traveler" }, characterKnowledge = knowledge, provisionalState = provisional, authorNotes = authorNotes) })
     }
 
+    suspend fun correctContinuity(sceneId: String, expectedRevision: Long, corrected: ContinuityState) = mutate {
+        db.withTransaction {
+            val all = dao.snapshot()
+            val scene = all.scenes.first { it.id == sceneId }
+            val s = all.scoped(scene.worldId, scene.id)
+            val before = Continuity.current(s)
+            require(before.revision == expectedRevision) { "Scene state changed. Reopen it before correcting." }
+            val after = corrected.copy(revision = before.revision + 1)
+            Continuity.validate(after, s)
+            Continuity.project(s, after)
+            dao.putScenes(listOf(scene.copy(continuityJson = Continuity.json.encodeToString(after))))
+            dao.putContinuityEvents(listOf(ContinuityEvent(UUID.randomUUID().toString(), scene.id, null,
+                Continuity.json.encodeToString(before), Continuity.json.encodeToString(after), System.currentTimeMillis())))
+        }
+    }
+
     suspend fun setReferenceKind(assetId: String, kind: String) = mutate {
         require(kind in setOf("canon", "alternate", "exploratory"))
         dao.putAssets(dao.assets().filter { it.id == assetId }.map { it.copy(referenceKind = kind) })
@@ -169,7 +185,7 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
         dao.putGenerations(listOf(record))
     }
     suspend fun finishGeneration(id: String, result: RouterResult) = mutate {
-        var stale = false
+        var rejection: String? = null
         db.withTransaction {
             val all = dao.snapshot()
             val record = all.generations.first { it.id == id }
@@ -179,16 +195,31 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
             if (record.fingerprint != SceneContext.fingerprint(s)) {
                 dao.putGenerations(listOf(record.copy(status = "failed", actualModel = result.model, output = result.text,
                     usageJson = result.usageJson, error = "Scene changed; response was not applied.")))
-                stale = true
+                rejection = "The scene changed during generation. History and state are unchanged; the response is retained in Context."
                 return@withTransaction
             }
             when (record.purpose) {
                 "roleplay" -> {
+                    val tracked = runCatching { Json.decodeFromString<ContextPreview>(record.contextJson).settings["continuityProtocol"] == "1" }.getOrDefault(false)
+                    val resolved = try {
+                        if (tracked) Continuity.resolve(result.text, record.userText, s) else result.text to null
+                    } catch (e: Exception) {
+                        rejection = e.message ?: "Invalid scene state response."
+                        dao.putGenerations(listOf(record.copy(status = "failed", actualModel = result.model, output = result.text,
+                            usageJson = result.usageJson, error = rejection!!)))
+                        return@withTransaction
+                    }
+                    val narrative = resolved.first
+                    resolved.second?.let { after ->
+                        dao.putContinuityEvents(listOf(ContinuityEvent("state-$id", record.sceneId, "reply-$id",
+                            Continuity.json.encodeToString(Continuity.current(s)), Continuity.json.encodeToString(after), System.currentTimeMillis())))
+                    }
                     val sequence = (s.messages.maxOfOrNull { it.sequence } ?: -1) + 1
                     dao.putMessages(listOf(
                         MessageRecord("user-$id", record.sceneId, "user", record.userText, sequence, id, "live"),
-                        MessageRecord("reply-$id", record.sceneId, "character", result.text, sequence + 1, id, "live")))
-                    dao.putScenes(s.scenes.map { it.copy(draft = if (it.draft.trim() == record.userText.trim()) "" else it.draft, savedAt = System.currentTimeMillis()) })
+                        MessageRecord("reply-$id", record.sceneId, "character", narrative, sequence + 1, id, "live")))
+                    dao.putScenes(s.scenes.map { it.copy(draft = if (it.draft.trim() == record.userText.trim()) "" else it.draft, savedAt = System.currentTimeMillis(),
+                        continuityJson = resolved.second?.let { state -> Continuity.json.encodeToString(state) } ?: it.continuityJson) })
                 }
                 "vision" -> {
                     val assetId = requireNotNull(record.sourceAssetId)
@@ -201,7 +232,7 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
             }
             dao.putGenerations(listOf(record.copy(status = "completed", actualModel = result.model, output = result.text, usageJson = result.usageJson)))
         }
-        require(!stale) { "The scene changed during generation. Your history was not changed; the returned response and usage are retained in Context." }
+        require(rejection == null) { rejection!! }
     }
     suspend fun failGeneration(id: String, cancelled: Boolean, error: String) = mutate {
         dao.putGenerations(dao.generations().filter { it.id == id && it.status == "pending" }.map { it.copy(status = if (cancelled) "cancelled" else "failed", error = error.take(1000)) })

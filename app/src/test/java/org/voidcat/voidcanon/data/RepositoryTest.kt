@@ -46,11 +46,146 @@ class RepositoryTest {
     }
 
     private fun openDatabase() {
-        db = Room.databaseBuilder(context, CanonDatabase::class.java, dbName).addMigrations(MIGRATION_1_2).allowMainThreadQueries().build()
+        db = Room.databaseBuilder(context, CanonDatabase::class.java, dbName).addMigrations(MIGRATION_1_2, MIGRATION_2_3).allowMainThreadQueries().build()
         repo = CanonRepository(context, db)
     }
 
     @After fun tearDown() { db.close(); context.deleteDatabase(dbName) }
+
+    private suspend fun trackedRequest(input: String = "I wait."): GenerationRecord {
+        val s = repo.snapshot()
+        return GenerationRecord(UUID.randomUUID().toString(), s.scene!!.id, "roleplay", "fixture/free",
+            Json.encodeToString(SceneContext.build(s, input)), SceneContext.fingerprint(s), input).also { repo.beginGeneration(it) }
+    }
+
+    @Test fun trackedTurnStateAndSourcesCommitOnceAndSurviveReopenAndBackup() = runBlocking {
+        repo.saveDraft("I wait.")
+        val before = repo.snapshot()
+        val request = trackedRequest()
+        val actor = Continuity.current(before).actors.last().copy(position = "by the railing")
+        val payload = ContinuityReply(1, 0, "Mira waits by the railing.", actors = listOf(ActorChange(actor, "by the railing")))
+        val response = RouterResult(Continuity.json.encodeToString(payload), "actual/free", "{\"total_tokens\":42}")
+        repo.finishGeneration(request.id, response)
+        repo.finishGeneration(request.id, response)
+        val after = repo.snapshot()
+        assertEquals(3, after.messages.size)
+        assertEquals("Mira waits by the railing.", after.messages.last().text)
+        assertEquals("", after.scene!!.draft)
+        assertEquals(1L, Continuity.current(after).revision)
+        assertEquals("reply-${request.id}", after.continuityEvents.single().sourceMessageId)
+        assertTrue(after.generations.single().output.contains("baseRevision"))
+        db.close(); openDatabase(); repo.initialize()
+        assertEquals(after.scenes, repo.snapshot().scenes)
+        assertEquals(after.continuityEvents, repo.snapshot().continuityEvents)
+        repo.saveChapter(null, "Waiting", "A memory that cannot move Mira", true)
+        assertEquals(Continuity.current(after), Continuity.current(repo.snapshot()))
+        val bytes = ByteArrayOutputStream().also { repo.export(it) }.toByteArray()
+        repo.correctContinuity(after.scene!!.id, 1, Continuity.current(after).copy(timeAnchor = "midnight"))
+        repo.restore(ByteArrayInputStream(bytes))
+        assertEquals(after.continuityEvents, repo.snapshot().continuityEvents)
+        assertEquals(Continuity.current(after), Continuity.current(repo.snapshot()))
+        repo.editEntry("mira", "Renamed Mira", "", "")
+        assertEquals("mira", Continuity.current(repo.snapshot()).actors.last().actorId)
+        assertTrue(Continuity.project(repo.snapshot()).text.contains("Renamed Mira"))
+    }
+
+    @Test fun malformedStateResponsePreservesDraftAndRecordsDiagnosticsWithoutPublishingStory() = runBlocking {
+        repo.saveDraft("I wait.")
+        val before = repo.snapshot()
+        val request = trackedRequest()
+        assertTrue(runCatching { repo.finishGeneration(request.id, RouterResult("Plain prose without state", "actual/free", "{\"total_tokens\":5}")) }.isFailure)
+        val after = repo.snapshot()
+        assertEquals(before.messages, after.messages)
+        assertEquals(before.scenes, after.scenes)
+        assertTrue(after.continuityEvents.isEmpty())
+        assertEquals("failed", after.generations.single().status)
+        assertEquals("actual/free", after.generations.single().actualModel)
+        assertTrue(after.generations.single().usageJson.contains("5"))
+    }
+
+    @Test fun manualCorrectionInvalidatesPendingResponsesAndDoesNotChangeTranscript() = runBlocking {
+        val request = trackedRequest()
+        val before = repo.snapshot()
+        val corrected = Continuity.current(before).copy(actors = Continuity.current(before).actors.map { it.copy(activity = "waiting") })
+        repo.correctContinuity(before.scene!!.id, 0, corrected)
+        assertTrue(runCatching { repo.correctContinuity(before.scene!!.id, 0, corrected) }.isFailure)
+        assertTrue(runCatching { repo.finishGeneration(request.id, RouterResult(Continuity.json.encodeToString(ContinuityReply(1, 0, "Too late")), "fixture/free", "{}")) }.isFailure)
+        assertEquals(before.messages, repo.snapshot().messages)
+        assertEquals(1L, Continuity.current(repo.snapshot()).revision)
+        assertEquals(1, repo.snapshot().continuityEvents.size)
+    }
+
+    @Test fun trackedCompletionUpdatesItsSourceSceneEvenAfterSelectionChanges() = runBlocking {
+        val request = trackedRequest()
+        val before = repo.snapshot()
+        val world = repo.createWorld("Other world", "")
+        val c = repo.createEntry(world, "character", "Other", "", "", "")
+        val l = repo.createEntry(world, "location", "Elsewhere", "", "", "")
+        repo.useInScene(c, l)
+        repo.finishGeneration(request.id, RouterResult(Continuity.json.encodeToString(ContinuityReply(1, 0, "Mira waits.")), "fixture/free", "{}"))
+        assertEquals(0L, Continuity.current(repo.snapshot()).revision)
+        assertTrue(repo.snapshot().continuityEvents.isEmpty())
+        repo.selectScene(before.scene!!.id)
+        assertEquals(1L, Continuity.current(repo.snapshot()).revision)
+        assertEquals(1, repo.snapshot().continuityEvents.size)
+    }
+
+    @Test fun stateArchiveRejectsBrokenAuditAndForeignOwnershipBeforeReplacingData() = runBlocking {
+        val before = repo.snapshot()
+        repo.correctContinuity(before.scene!!.id, 0, Continuity.current(before))
+        val valid = repo.workspaceSnapshot()
+        val event = valid.continuityEvents.single()
+        val broken = listOf(
+            valid.copy(continuityEvents = listOf(event.copy(sourceMessageId = "missing-message"))),
+            valid.copy(continuityEvents = listOf(event.copy(sceneId = "missing-scene"))),
+            valid.copy(continuityEvents = emptyList()),
+            valid.copy(formatVersion = 3),
+            valid.copy(scenes = valid.scenes.map { it.copy(continuityJson = Continuity.json.encodeToString(Continuity.current(before).copy(revision = 42))) })
+        )
+        broken.forEach { candidate ->
+            assertTrue(runCatching { repo.restore(ByteArrayInputStream(rawArchive(candidate))) }.isFailure)
+            assertEquals(valid, repo.workspaceSnapshot())
+        }
+    }
+
+    @Test fun actualVersionTwoDatabaseMigratesWithAllRowsAndEmptyTracking() = runBlocking {
+        val before = repo.workspaceSnapshot()
+        db.close(); context.deleteDatabase(dbName)
+        val relative = "schemas/org.voidcat.voidcanon.data.CanonDatabase/2.json"
+        val schemaFile = listOf(File(relative), File("app/$relative")).first { it.exists() }
+        val schema = Json.parseToJsonElement(schemaFile.readText()).jsonObject.getValue("database").jsonObject
+        val file = context.getDatabasePath(dbName)
+        val encoded = Continuity.json.encodeToJsonElement(before).jsonObject
+        val tableKeys = mapOf("worlds" to "worlds", "entries" to "entries", "assets" to "assets", "scenes" to "scenes", "messages" to "messages",
+            "visual_descriptions" to "descriptions", "chapters" to "chapters", "generations" to "generations")
+        SQLiteDatabase.openOrCreateDatabase(file, null).use { old ->
+            schema.getValue("entities").jsonArray.forEach { entity ->
+                val table = entity.jsonObject
+                val name = table.getValue("tableName").jsonPrimitive.content
+                old.execSQL(table.getValue("createSql").jsonPrimitive.content.replace("${'$'}{TABLE_NAME}", name))
+                encoded[tableKeys[name]]?.jsonArray.orEmpty().forEach { row ->
+                    val values = android.content.ContentValues()
+                    row.jsonObject.filterKeys { it != "continuityJson" }.forEach { (key, value) ->
+                        val primitive = value.jsonPrimitive
+                        when {
+                            value == JsonNull -> values.putNull(key)
+                            primitive.booleanOrNull != null -> values.put(key, if (primitive.boolean) 1 else 0)
+                            primitive.longOrNull != null && !primitive.isString -> values.put(key, primitive.long)
+                            else -> values.put(key, primitive.content)
+                        }
+                    }
+                    old.insertOrThrow(name, null, values)
+                }
+            }
+            schema.getValue("setupQueries").jsonArray.forEach { old.execSQL(it.jsonPrimitive.content) }
+            old.version = 2
+        }
+        openDatabase(); repo.initialize()
+        val after = repo.workspaceSnapshot()
+        assertEquals(before, after)
+        assertTrue(after.continuityEvents.isEmpty())
+        assertEquals(0L, Continuity.current(repo.snapshot()).revision)
+    }
 
     @Test fun seedIsIdempotentAndRenamePreservesReferencesAcrossDatabaseReopen() = runBlocking {
         val initial = repo.snapshot()
@@ -229,12 +364,12 @@ class RepositoryTest {
     @Test fun authorOnlySecretsNeverReachContextAndTruncationIsInspectable() = runBlocking {
         repo.editEntry("mira", "Mira", "Known face", "L".repeat(30000), "private-origin-998")
         repo.updateScene("Quiet tone", "Traveler", "The ship has arrived", "At the quay", "private-secret-777")
-        val context = SceneContext.build(repo.snapshot(), "Where now?", 3000)
+        val context = SceneContext.build(repo.snapshot(), "Where now?", 6000)
         val encoded = Json.encodeToString(context)
         assertFalse(encoded.contains("private-origin-998"))
         assertFalse(encoded.contains("private-secret-777"))
         assertTrue(context.omissions.any { it.contains("omitted") })
-        assertTrue(context.messages.sumOf { it.content.length } <= 3000)
+        assertTrue(context.messages.sumOf { it.content.length } <= 6000)
     }
 
     @Test fun cancelledFailedAndDuplicateRequestsNeverAppendExtraTurns() = runBlocking {
@@ -251,7 +386,7 @@ class RepositoryTest {
         assertEquals(s.messages, repo.snapshot().messages)
         val completed = record()
         repo.beginGeneration(completed)
-        val response = RouterResult("One response", "actual/text:free", "{\"total_tokens\":12}")
+        val response = RouterResult(Continuity.json.encodeToString(ContinuityReply(1, 0, "One response")), "actual/text:free", "{\"total_tokens\":12}")
         repo.finishGeneration(completed.id, response); repo.finishGeneration(completed.id, response)
         val after = repo.snapshot()
         assertEquals(3, after.messages.size)
@@ -314,7 +449,7 @@ class RepositoryTest {
         val legacy = before.copy(formatVersion = 1, assets = before.assets.map { it.copy(contentHash = "") })
         repo.restore(ByteArrayInputStream(rawArchive(legacy)))
         val after = repo.snapshot()
-        assertEquals(3, after.formatVersion)
+        assertEquals(4, after.formatVersion)
         assertEquals(before.entries, after.entries)
         assertEquals(before.messages, after.messages)
         assertTrue(after.assets.all { it.contentHash.length == 64 && File(repo.images, it.fileName).exists() })
@@ -463,7 +598,7 @@ class RepositoryTest {
         assertEquals(before.messages, after.messages)
         assertEquals(before.chapters, after.chapters)
         assertEquals(before.generations, after.generations)
-        assertEquals(3, after.formatVersion)
+        assertEquals(4, after.formatVersion)
         after.assets.forEach { assertArrayEquals(bytes[it.id], File(repo.images, it.fileName).readBytes()) }
         BackupArchive.validateGraph(after)
     }
@@ -490,7 +625,7 @@ class RepositoryTest {
         repo.restore(ByteArrayInputStream(rawArchive(before.copy(formatVersion = 2))))
         assertEquals(before.worlds, repo.workspaceSnapshot().worlds)
         assertEquals(before.scenes, repo.workspaceSnapshot().scenes)
-        assertEquals(3, repo.workspaceSnapshot().formatVersion)
+        assertEquals(4, repo.workspaceSnapshot().formatVersion)
     }
 
     private suspend fun assertRestoreRejected(bytes: ByteArray) {

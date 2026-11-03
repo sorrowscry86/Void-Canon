@@ -36,7 +36,7 @@ object BackupArchive {
 
     fun write(snapshot: WorldSnapshot, images: File, output: OutputStream) {
         validateGraph(snapshot)
-        val manifest = json.encodeToString(snapshot.copy(formatVersion = 3, exportedAt = Instant.now().toString())).toByteArray()
+        val manifest = json.encodeToString(snapshot.copy(formatVersion = 4, exportedAt = Instant.now().toString())).toByteArray()
         require(manifest.size <= 16 * 1024 * 1024) { "World is too large for a portable backup." }
         var total = manifest.size.toLong()
         snapshot.assets.forEach {
@@ -97,7 +97,7 @@ object BackupArchive {
                 val transparent = ImageFiles.validate(File(directory, asset.fileName))
                 require(transparent == asset.transparent) { "Backup image transparency does not match its metadata." }
             }
-            val normalized = snapshot.copy(formatVersion = 3,
+            val normalized = snapshot.copy(formatVersion = 4,
                 assets = snapshot.assets.map { asset ->
                     val hash = imageHash(File(directory, asset.fileName))
                     require(asset.contentHash.isBlank() || asset.contentHash == hash) { "Backup image does not match its source hash." }
@@ -109,11 +109,12 @@ object BackupArchive {
     }
 
     fun validateGraph(s: WorldSnapshot) {
-        require(s.formatVersion in 1..3) { "Unsupported backup version. This app supports versions 1, 2, and 3." }
+        require(s.formatVersion in 1..4) { "Unsupported backup version. This app supports versions 1, 2, 3, and 4." }
+        if (s.formatVersion < 4) require(s.continuityEvents.isEmpty() && s.scenes.all { it.continuityJson.isBlank() }) { "Legacy backups cannot contain tracked state." }
         require(s.worlds.isNotEmpty()) { "A backup must contain at least one world." }
         if (s.formatVersion < 3) require(s.worlds.size == 1 && s.scenes.size == 1) { "Legacy backups must contain one world and one scene." }
-        require(listOf(s.worlds.size, s.entries.size, s.assets.size, s.scenes.size, s.messages.size, s.descriptions.size, s.chapters.size, s.generations.size).sum() <= MAX_RECORDS) { "Too many records." }
-        val allIds = s.worlds.map { it.id } + s.entries.map { it.id } + s.assets.map { it.id } + s.scenes.map { it.id } + s.messages.map { it.id } + s.descriptions.map { it.id } + s.chapters.map { it.id } + s.generations.map { it.id }
+        require(listOf(s.worlds.size, s.entries.size, s.assets.size, s.scenes.size, s.messages.size, s.descriptions.size, s.chapters.size, s.generations.size, s.continuityEvents.size).sum() <= MAX_RECORDS) { "Too many records." }
+        val allIds = s.worlds.map { it.id } + s.entries.map { it.id } + s.assets.map { it.id } + s.scenes.map { it.id } + s.messages.map { it.id } + s.descriptions.map { it.id } + s.chapters.map { it.id } + s.generations.map { it.id } + s.continuityEvents.map { it.id }
         require(allIds.all { safeId.matches(it) } && allIds.toSet().size == allIds.size) { "Invalid or duplicate record IDs." }
         val worlds = s.worlds.associateBy { it.id }
         val entries = s.entries.associateBy { it.id }
@@ -169,6 +170,29 @@ object BackupArchive {
             require(chapter.sceneId in scenes && chapter.title.isNotBlank() && chapter.title.length <= 200 && chapter.summary.length <= 20000 && chapter.updatedAt >= 0 && (!chapter.approved || chapter.summary.isNotBlank())) { "Invalid chapter." }
             require(sourceIds(chapter.sourceMessageIdsJson, chapter.sceneId).isNotEmpty()) { "Chapter has no transcript sources." }
         }
+        s.scenes.forEach { scene ->
+            val selected = s.scoped(scene.worldId, scene.id)
+            val events = s.continuityEvents.filter { it.sceneId == scene.id }.sortedBy { Continuity.decode(it.afterJson).revision }
+            var previous: ContinuityState? = null
+            events.forEach { event ->
+                require(event.createdAt >= 0) { "Invalid state event timestamp." }
+                val before = Continuity.decode(event.beforeJson)
+                val after = Continuity.decode(event.afterJson)
+                Continuity.validate(before, s, scene); Continuity.validate(after, s, scene)
+                require(after.revision == before.revision + 1 && (previous == null || previous == before)) { "Broken state revision history." }
+                if (previous == null) require(before.revision == 0L) { "Missing initial state history." }
+                event.sourceMessageId?.let { id ->
+                    require(s.messages.any { it.id == id && it.sceneId == scene.id && it.speaker == "character" && it.mode == "live" }) { "Broken state transcript source." }
+                }
+                previous = after
+            }
+            if (scene.continuityJson.isNotBlank()) {
+                val current = Continuity.current(selected)
+                Continuity.validate(current, s, scene)
+                require(previous == current) { "State does not match its revision history." }
+            } else require(events.isEmpty()) { "State history has no current snapshot." }
+        }
+        require(s.continuityEvents.all { it.sceneId in scenes }) { "Broken state scene reference." }
         s.generations.forEach { g ->
             require(g.sceneId in scenes && g.purpose in setOf("roleplay", "vision", "summary") && g.status in setOf("pending", "completed", "failed", "cancelled")) { "Invalid generation record." }
             require(g.model.isNotBlank() && g.model.length <= 200 && g.contextJson.length <= 100000 && g.output.length <= 20000 && g.usageJson.length <= 10000 && g.createdAt >= 0) { "Invalid generation metadata." }
