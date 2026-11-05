@@ -12,9 +12,24 @@ The private connection is deliberately absent from this public repository and AP
 
 See [verification and limitations](../docs/image-generation-evidence/README.md), [handback](../IMPLEMENTATION-HANDBACK.md), and [service contract](../server/README.md). The live workers.dev endpoint is deployed, but the build environment blocks outbound access to it; full public-endpoint verification remains pending.
 
-## 0.4.1 preview — scene continuity
 
-**[Download Void Canon Test (APK)](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.1-preview.apk)** · [SHA-256](void-canon-0.4.1-preview.apk.sha256) · [Preview notes](PREVIEW-NOTES.md)
+## 0.4.1 — regular Void Canon update
+
+**[Download Void Canon 0.4.1 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/main/downloads/void-canon-0.4.1.apk)** · [APK SHA-256](void-canon-0.4.1.apk.sha256) · [Release notes](RELEASE-0.4.1.md)
+
+[Source ZIP](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/main/downloads/void-canon-0.4.1-source.zip) · [Source SHA-256](void-canon-0.4.1-source.zip.sha256)
+
+This is **Void Canon**, package `org.voidcat.voidcanon`, version **0.4.1** (code 6), Android 8.0 or newer. It contains the new scene-continuity features in the regular app. The APK signing certificate matches the published 0.4.0 build.
+
+1. Download the APK and open it on your Android device.
+2. Choose **Update** over your existing Void Canon installation. Do not uninstall or clear app data; existing worlds, drafts, history, artwork, chapter memory, and AI settings remain in that app.
+3. Open **Play → Scene → Review scene continuity** to use the new state review/correction screen. Validated Live RP turns save story and state together.
+
+The older **Void Canon Test** preview below is optional and installs separately. Its data is not automatically merged into the regular app. Keep original exports when transferring data manually; restore replaces the receiving library, and 0.4.0 cannot read new format-4 backups.
+
+## Earlier isolated 0.4.1 preview
+
+**[Download Void Canon Test (APK)](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/main/downloads/void-canon-0.4.1-preview.apk)** · [SHA-256](void-canon-0.4.1-preview.apk.sha256) · [Preview notes](PREVIEW-NOTES.md)
 
 Requires Android 8.0 or newer. This is a separate test app named **Void Canon Test** (`org.voidcat.voidcanon.preview`), version **0.4.1-preview**. It installs alongside your current Void Canon app. Its worlds, scenes, settings and keys are stored separately.
 
@@ -24,9 +39,9 @@ Requires Android 8.0 or newer. This is a separate test app named **Void Canon Te
 4. In the test app's AI settings, enter your OpenRouter key, select current RP/image models, and enable the disclosure checkbox. Provider keys/settings do not transfer in a backup.
 5. In **Play**, select **Live RP**. After a successful turn, use **Scene → Review scene continuity** to inspect or correct positions, activities, held objects and other state. The scripted Demo does not perform automatic tracking.
 
-The original signing key is unavailable here, so this APK uses a separate package rather than attempting an in-place upgrade. Keep your original app installed. Preview backups use format 4 and cannot be imported into the older 0.4.0 app; keep your original export separately.
+This earlier preview was built in an environment without the original signing identity and uses a separate package. The regular update above now uses the verified original signing identity. Keep your original app installed. Preview backups use format 4 and cannot be imported into the older 0.4.0 app; keep your original export separately.
 
-New source is in the [feature branch](https://github.com/sorrowscry86/Void-Canon/tree/feature/scene-continuity). No provider keys, signing keys, or user-created device data are included in the APK.
+The 0.4.1 source and this preview are included on [main](https://github.com/sorrowscry86/Void-Canon/tree/main). No provider keys, signing keys, or user-created device data are included in the APK.
 
 ## Earlier 0.4.0 downloads
 

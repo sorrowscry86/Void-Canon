@@ -1,23 +1,29 @@
 # Void Canon
 
-A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, optional **Cloudflare artwork generation**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, saved artwork, transcripts, chapters, and backups remain usable offline.
+A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
+
+## Cloudflare artwork test — 0.4.2 preview
+
+[Download Void Canon Test 0.4.2](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.2-preview.apk). This optional test app adds prompt-based artwork generation and reference edits. It updates the earlier 0.4.1 preview, retaining its separate package and data; the regular 0.4.1 app remains available below. The private image connection file is supplied separately and is not bundled in the public APK.
 
 ## Install / upgrade
 
-Download the **[0.4.2 preview APK](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.2-preview.apk)** to test Cloudflare artwork generation and scene continuity. It appears as **Void Canon Test**, updates the 0.4.1 test app in place, and installs alongside the original Void Canon app with separate local data.
+Download the **[Void Canon 0.4.1 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/main/downloads/void-canon-0.4.1.apk)**. This regular app build includes scene continuity and updates your existing **Void Canon** installation.
 
-Requires Android 8.0 or newer. In your current app, export a ZIP backup if you want to test your existing worlds. Open **Void Canon Test**, restore that ZIP, then enter your OpenRouter key and choose models again; credentials are excluded from backups. Restore replaces only the test app's library. Select **Live RP** to exercise automatic state tracking; review it under **Play → Scene → Review scene continuity**.
+Requires Android 8.0 or newer. Install over 0.4.0 to retain your worlds, artwork, transcripts, chapters, drafts, and device-local AI settings. Do not uninstall or clear app data. Export a backup before upgrading if you want an additional copy. The package remains `org.voidcat.voidcanon`; the signing certificate matches the published 0.4.0 APK.
 
-The [Downloads](downloads/README.md) page has the APK checksum, test instructions, and the earlier 0.4.0 downloads. The preview has its own Android package (`org.voidcat.voidcanon.preview`) because the original signing key is not available in this build environment. Updating the original app in place still requires that original key. Keep your existing app installed.
+Use **Play → Scene → Review scene continuity** to inspect or correct positions, activities, held objects, learned facts, and elapsed time. Live RP tracks validated state changes alongside the story. Existing transcripts stay intact; old scenes begin with unknown state details instead of an invented reconstruction.
 
-Build the preview with:
+[Downloads](downloads/README.md) includes APK/source checksums, release notes, and older builds. The optional earlier **Void Canon Test** preview remains separate; its data is not automatically moved into the regular app. Both 0.4.1 variants support format-4 portable backups, but provider keys/settings are excluded from backups and restoring replaces the destination library.
+
+Build the regular APK with:
 
 ```sh
-./gradlew assemblePreview lintPreview
-adb install -r app/build/outputs/apk/preview/app-preview.apk
+./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The ordinary `debug` variant retains the original package and app name for builds made with the original signing identity. The Room database migrates without destructive recreation.
+Future in-place updates must reuse the original signing identity, which is kept outside Git. The optional `preview` build type uses a separate package; it is not the primary update download. These remain early debug builds.
 
 ## Build your own world
 
@@ -47,7 +53,7 @@ In Free only mode, requests set zero maximum prices for prompt, completion, requ
 - **Describe / review image:** write observable details manually, or choose **Propose from image**. The latter explicitly confirms sending just that image to OpenRouter. Review/correct the draft, then **Approve** it.
 - Descriptions retain their immutable asset ID, source hash, approval state, and provenance. New image imports get new identities; old approvals never silently move to a replacement image.
 - **Exploratory** references are excluded from context. Alternate outfits affect the scene only when selected as its active cutout/appearance. Generating another proposal does not replace an existing approved description until you choose to review/save it.
-- RP sends approved descriptions, not source images. Image interpretation sends one explicitly selected image and an observation prompt.
+- RP sends approved descriptions, not source images. Image interpretation sends one explicitly selected image and an observation prompt. Artwork generation is available in the optional 0.4.2 test preview described below.
 
 ## Generate artwork with Cloudflare
 
@@ -60,6 +66,7 @@ In Free only mode, requests set zero maximum prices for prompt, completion, requ
 Only the displayed prompt and selected reference are sent to the authenticated Cloudflare service. References are reduced to at most 448 pixels per side. Klein 4B is fixed; there are no retries or alternate models. The service reserves up to 5,000 estimated neurons per UTC day, including failed calls, as a conservative development budget. Cloudflare's free 10,000-neuron allowance is shared with other account usage; this guard is not an account billing cap. No paid plan was activated.
 
 The scoped service code is encrypted with Android Keystore and excluded from backups. **Disconnect image service** removes it from the device while retaining saved artwork. Do not share the private connection file: it grants access to the development service. Generated JPEGs are not transparent cutouts. See [implementation notes](IMPLEMENTATION-HANDBACK.md) and [service details](server/README.md).
+
 
 ## Play, context, and chapters
 

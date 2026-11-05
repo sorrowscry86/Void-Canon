@@ -2,7 +2,7 @@
 
 Project: `/workspace/Void-Canon` · Android package `org.voidcat.voidcanon` · version **0.4.0** (code 5), minimum Android 8.0/API 26. The user accepted the prototype direction and explicitly chose **their own worlds and characters first** for the full-app work. This is the first bounded product milestone, not completion of the broader vision.
 
-Earlier verification/history is preserved in [Stage 3 handback](docs/STAGE-3-HANDBACK.md) and [Stage 1 handback](docs/STAGE-1-HANDBACK.md). See [product roadmap](docs/PRODUCT-ROADMAP.md) for the proposed sequence and the original PDF's larger scope.
+Earlier verification/history is preserved in [Stage 3 handback](STAGE-3-HANDBACK.md) and [Stage 1 handback](STAGE-1-HANDBACK.md). See [product roadmap](PRODUCT-ROADMAP.md) for the proposed sequence and the original PDF's larger scope.
 
 ## Implemented behavior
 

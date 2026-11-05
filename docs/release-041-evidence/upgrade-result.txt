@@ -1,0 +1,2 @@
+PASS: regular package upgraded in place; Room 2 -> 3; every original record, ID and field retained; model settings retained; new continuity editor saved state and history without changing old transcripts.
+Original image files were read from the upgraded app and matched their preserved SHA-256 hashes.
