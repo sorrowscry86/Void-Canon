@@ -25,6 +25,9 @@ import org.voidcat.voidcanon.data.WorldRecord
 import org.voidcat.voidcanon.data.SceneRecord
 import org.voidcat.voidcanon.data.LibrarySnapshot
 import java.io.File
+import org.voidcat.voidcanon.data.GeneratedImageDraftStore
+import org.voidcat.voidcanon.data.ImageFiles
+import java.io.ByteArrayOutputStream
 
 /** Ordered UI actions prevent an older draft write racing a send, export, or restore. */
 class CanonViewModel(application: Application) : AndroidViewModel(application) {
@@ -32,6 +35,13 @@ class CanonViewModel(application: Application) : AndroidViewModel(application) {
     private val resolver = application.contentResolver
     private val settings = (application as VoidCanonApplication).aiSettings
     private val router = (application as VoidCanonApplication).aiClient
+    private val imageSettings = (application as VoidCanonApplication).imageSettings
+    private val imageClient get() = (getApplication<Application>() as VoidCanonApplication).imageClient
+    private val imageDrafts = GeneratedImageDraftStore(application.filesDir, application.cacheDir)
+    val imageConnected = MutableStateFlow(imageSettings.connected())
+    val imageEndpoint = MutableStateFlow(imageSettings.endpoint())
+    val imagePreview = MutableStateFlow(imageDrafts.load())
+    val imageError = MutableStateFlow<String?>(null)
     val configuration = MutableStateFlow(settings.configuration())
     val models = MutableStateFlow(settings.models())
     val catalogTime = MutableStateFlow(settings.catalogTime())
@@ -140,6 +150,73 @@ class CanonViewModel(application: Application) : AndroidViewModel(application) {
     fun describeImage(assetId: String) = generate("vision", assetId)
     fun proposeChapter() = generate("summary", null)
     fun cancelGeneration() { generationJob?.cancel() }
+
+    fun importImageConnection(uri: Uri) = transfer("Image service connected on this device. The access code is excluded from backups.") {
+        withContext(Dispatchers.IO) {
+            val output = ByteArrayOutputStream()
+            requireNotNull(resolver.openInputStream(uri)) { "Could not open the connection file." }.use {
+                org.voidcat.voidcanon.data.copyLimited(it, output, 8192)
+            }
+            val connection = try { Json.decodeFromString<ImageConnection>(output.toString("UTF-8")) }
+                catch (_: Exception) { error("Choose the private image connection JSON file.") }
+            imageSettings.save(connection)
+        }
+        imageConnected.value = imageSettings.connected(); imageEndpoint.value = imageSettings.endpoint()
+    }
+
+    fun disconnectImages() = enqueue {
+        require(generating.value == null) { "Cancel generation first." }
+        withContext(Dispatchers.IO) { imageSettings.clear() }
+        imageConnected.value = false; imageEndpoint.value = ""
+        notice.value = "Image service disconnected. Saved images remain available offline."
+    }
+
+    fun generatedPreviewFile(): File? = imagePreview.value?.let { File(imageDrafts.directory, it.fileName) }
+
+    fun generateArtwork(entityId: String, prompt: String, size: ImageSize, referenceId: String?, consent: Boolean) {
+        if (generating.value != null || busy.value) return
+        generating.value = "artwork"; imageError.value = null
+        val source = _snapshot.value
+        generationJob = viewModelScope.launch {
+            try {
+                require(consent) { "Allow sending this prompt and selected reference to Cloudflare first." }
+                require(imagePreview.value == null) { "Save or discard the previous preview first." }
+                val owner = requireNotNull(source.entry(entityId)) { "Choose a character or location first." }
+                val reference = referenceId?.let { id -> requireNotNull(source.asset(id)?.takeIf { it.entityId == entityId }) { "Choose a reference belonging to this entry." } }
+                val prepared = withContext(Dispatchers.IO) {
+                    reference?.let {
+                        val file = File(repo.images, it.fileName)
+                        require(imageHash(file) == it.contentHash) { "This reference changed on disk. Import it again." }
+                        ImageFiles.generationReference(file)
+                    }
+                }
+                val connection = withContext(Dispatchers.IO) { imageSettings.read() }
+                val response = imageClient.generate(connection, UUID.randomUUID().toString(), prompt, size, prepared)
+                imagePreview.value = withContext(Dispatchers.IO) {
+                    imageDrafts.save(owner.id, owner.name, prompt.trim(), size, reference?.id, reference?.contentHash, response)
+                }
+                notice.value = "Image ready for review. Save it to Gallery when you want to keep it."
+            } catch (e: CancellationException) {
+                imagePreview.value = imageDrafts.load()
+                imageError.value = "Cancelled. Any completed preview remains for review. Cloudflare may have accounted for work already performed."
+            } catch (e: Exception) {
+                imageError.value = e.message ?: "Image generation failed. Your local images are safe."
+            } finally { generating.value = null; generationJob = null }
+        }
+    }
+
+    fun discardGeneratedImage() = transfer("Preview discarded. Gallery images are unchanged.") {
+        withContext(Dispatchers.IO) { imageDrafts.clear() }; imagePreview.value = null
+    }
+
+    fun saveGeneratedImage() = transfer("Generated image saved as an exploratory reference. Choose it as a portrait or background when ready.") {
+        val preview = requireNotNull(imagePreview.value) { "Generate an image first." }
+        withContext(Dispatchers.IO) {
+            File(imageDrafts.directory, preview.fileName).inputStream().use { repo.importGeneratedImage(preview, it) }
+            imageDrafts.clear()
+        }
+        imagePreview.value = null
+    }
 
     fun refreshModels() {
         if (loadingModels.value) return

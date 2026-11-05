@@ -4,13 +4,30 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import androidx.exifinterface.media.ExifInterface
+import androidx.core.graphics.scale
 import java.io.File
 import java.io.InputStream
 import java.util.UUID
+import java.io.ByteArrayOutputStream
 
 object ImageFiles {
     const val MAX_FILE_BYTES = 16L * 1024 * 1024
     const val MAX_PIXELS = 24_000_000L
+
+    /** Send only a bounded local copy of the explicitly selected image. */
+    fun generationReference(file: File): ByteArray {
+        val bitmap = requireNotNull(BitmapFactory.decodeFile(file.path)) { "The selected reference cannot be read." }
+        try {
+            val ratio = minOf(1.0, 448.0 / maxOf(bitmap.width, bitmap.height))
+            val small = bitmap.scale(maxOf(1, (bitmap.width * ratio).toInt()), maxOf(1, (bitmap.height * ratio).toInt()), true)
+            return try {
+                ByteArrayOutputStream().use { out ->
+                    check(small.compress(Bitmap.CompressFormat.PNG, 100, out)) { "Could not prepare the reference." }
+                    out.toByteArray().also { require(it.size <= 480000) { "Choose a simpler or smaller reference image." } }
+                }
+            } finally { if (small !== bitmap) small.recycle() }
+        } finally { bitmap.recycle() }
+    }
 
     /** Normalize orientation, dimensions, and format; never retain a fragile picker URI. */
     fun import(input: InputStream, scratch: File, images: File): Pair<File, Boolean> {

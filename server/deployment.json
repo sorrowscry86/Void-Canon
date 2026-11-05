@@ -1,0 +1,9 @@
+{
+  "name": "void-canon-dev-images",
+  "endpoint": "https://void-canon-dev-images.sorrowscry86.workers.dev",
+  "main_module": "worker.js",
+  "compatibility_date": "2026-11-04",
+  "database_id": "fe57d66c-c590-40b3-877c-e33e09df5b01",
+  "daily_reserved_neuron_limit": 5000,
+  "secret_binding": "APP_ACCESS_TOKEN"
+}

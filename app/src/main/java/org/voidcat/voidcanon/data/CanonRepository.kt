@@ -286,6 +286,17 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
         db.withTransaction { selectAssetLocked(dao.assets().first { it.id == assetId }, role) }
     }
 
+    /** Save a reviewed output against its original owner. Activation and approval are separate. */
+    suspend fun importGeneratedImage(draft: GeneratedImageDraft, input: InputStream) = mutate {
+        require(dao.entries().any { it.id == draft.entityId }) { "The original image owner is unavailable." }
+        if (dao.assets().any { it.id == draft.requestId }) return@mutate
+        val (file, transparent) = ImageFiles.import(input, cache, images)
+        try {
+            dao.putAssets(listOf(AssetRecord(draft.requestId, draft.entityId, file.name, "reference",
+                "${draft.entityName} · Generated", draft.provenance(), transparent, imageHash(file), "exploratory")))
+        } catch (e: Exception) { file.delete(); throw e }
+    }
+
     private suspend fun selectAssetLocked(asset: AssetRecord, role: String) {
         val entry = dao.entries().first { it.id == asset.entityId }
         val scene = snapshot().scene

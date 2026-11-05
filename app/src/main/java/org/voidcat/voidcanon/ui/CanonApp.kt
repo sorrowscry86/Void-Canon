@@ -381,6 +381,8 @@ private fun GalleryScreen(s: WorldSnapshot, vm: CanonViewModel, ai: () -> Unit) 
     var entityId by rememberSaveable { mutableStateOf(s.scene?.characterId ?: s.entries.first().id) }
     val entity = s.entry(entityId) ?: s.entries.first()
     var role by rememberSaveable { mutableStateOf(if (entity.kind == "character") "portrait" else "background") }
+    var imageGenerationOpen by rememberSaveable { mutableStateOf(false) }
+    if (imageGenerationOpen) ImageGenerationSheet(s, entity, vm) { imageGenerationOpen = false }
     val busy by vm.busy.collectAsStateWithLifecycle()
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) vm.importImage(uri, entity.id, role)
@@ -418,6 +420,7 @@ private fun GalleryScreen(s: WorldSnapshot, vm: CanonViewModel, ai: () -> Unit) 
                     OutlinedButton(onClick = { picker.launch(arrayOf("image/*")) }, modifier = Modifier.fillMaxWidth(), enabled = !busy) {
                         Icon(CanonIcons.ImageAdd, null); Spacer(Modifier.width(8.dp)); Text("Import image")
                     }
+                    Button(onClick = { imageGenerationOpen = true }, modifier = Modifier.fillMaxWidth(), enabled = !busy) { Text("Generate artwork") }
                 }
             }
         }

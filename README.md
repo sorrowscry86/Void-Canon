@@ -1,10 +1,10 @@
 # Void Canon
 
-A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
+A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, optional **Cloudflare artwork generation**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, saved artwork, transcripts, chapters, and backups remain usable offline.
 
 ## Install / upgrade
 
-Download the **[0.4.1 preview APK](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.1-preview.apk)** to test scene continuity. It appears as **Void Canon Test** and installs alongside your current Void Canon app with separate local data.
+Download the **[0.4.2 preview APK](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.2-preview.apk)** to test Cloudflare artwork generation and scene continuity. It appears as **Void Canon Test**, updates the 0.4.1 test app in place, and installs alongside the original Void Canon app with separate local data.
 
 Requires Android 8.0 or newer. In your current app, export a ZIP backup if you want to test your existing worlds. Open **Void Canon Test**, restore that ZIP, then enter your OpenRouter key and choose models again; credentials are excluded from backups. Restore replaces only the test app's library. Select **Live RP** to exercise automatic state tracking; review it under **Play → Scene → Review scene continuity**.
 
@@ -47,7 +47,19 @@ In Free only mode, requests set zero maximum prices for prompt, completion, requ
 - **Describe / review image:** write observable details manually, or choose **Propose from image**. The latter explicitly confirms sending just that image to OpenRouter. Review/correct the draft, then **Approve** it.
 - Descriptions retain their immutable asset ID, source hash, approval state, and provenance. New image imports get new identities; old approvals never silently move to a replacement image.
 - **Exploratory** references are excluded from context. Alternate outfits affect the scene only when selected as its active cutout/appearance. Generating another proposal does not replace an existing approved description until you choose to review/save it.
-- RP sends approved descriptions, not source images. Image interpretation sends one explicitly selected image and an observation prompt. No artwork generation is implemented.
+- RP sends approved descriptions, not source images. Image interpretation sends one explicitly selected image and an observation prompt.
+
+## Generate artwork with Cloudflare
+
+1. Download the private image connection JSON supplied separately for your development service. It is not included in this public repository or APK.
+2. In **Gallery**, choose a character or location, then **Generate artwork → Import image connection** and choose that file.
+3. Enter a prompt and choose a size. Optionally choose one existing image of this entry as the reference; for variants, describe the change while preserving the subject. Review the selected image before allowing transmission.
+4. Check the disclosure checkbox and tap **Generate image**. Review the preview, then **Save to Gallery** or **Discard preview**.
+5. Saved results are exploratory references with prompt/model/source provenance. Use the existing controls to set a portrait/background and review their visual description/reference use. Generation does not automatically replace existing art or change canon.
+
+Only the displayed prompt and selected reference are sent to the authenticated Cloudflare service. References are reduced to at most 448 pixels per side. Klein 4B is fixed; there are no retries or alternate models. The service reserves up to 5,000 estimated neurons per UTC day, including failed calls, as a conservative development budget. Cloudflare's free 10,000-neuron allowance is shared with other account usage; this guard is not an account billing cap. No paid plan was activated.
+
+The scoped service code is encrypted with Android Keystore and excluded from backups. **Disconnect image service** removes it from the device while retaining saved artwork. Do not share the private connection file: it grants access to the development service. Generated JPEGs are not transparent cutouts. See [implementation notes](IMPLEMENTATION-HANDBACK.md) and [service details](server/README.md).
 
 ## Play, context, and chapters
 
