@@ -1,29 +1,12 @@
+Debug 0.4.2 already installed.
+Success
 
-org.voidcat.voidcanon.ImageGenerationUiTest:
-Error in generatePreviewAndSavePreservesTheBaseline(org.voidcat.voidcanon.ImageGenerationUiTest):
-java.lang.AssertionError: Action performScrollTo() failed.
-Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains 'Image prompt' (ignoreCase: false))
+Running Android HTTPS fixture image walkthrough; no live provider request.
 
-	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
-	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
-	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
-	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:82)
-	at org.voidcat.voidcanon.ImageGenerationUiTest.generatePreviewAndSavePreservesTheBaseline(ImageGenerationUiTest.kt:64)
+org.voidcat.voidcanon.ImageGenerationUiTest:.
 
+Time: 84.483
 
-Time: 39.578
-There was 1 failure:
-1) generatePreviewAndSavePreservesTheBaseline(org.voidcat.voidcanon.ImageGenerationUiTest)
-java.lang.AssertionError: Action performScrollTo() failed.
-Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains 'Image prompt' (ignoreCase: false))
-
-	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
-	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
-	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
-	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:82)
-	at org.voidcat.voidcanon.ImageGenerationUiTest.generatePreviewAndSavePreservesTheBaseline(ImageGenerationUiTest.kt:64)
-
-FAILURES!!!
-Tests run: 1,  Failures: 1
+OK (1 test)
 
 

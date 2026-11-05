@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -60,8 +61,9 @@ class ImageGenerationUiTest {
             compose.runOnIdle { vm.importImageConnection(Uri.fromFile(connection)) }
             compose.waitUntil(10000) { vm.imageConnected.value && !vm.busy.value }
             compose.onNodeWithText("Gallery").performClick()
-            compose.onNodeWithText("Generate artwork").performScrollTo().assertIsEnabled().performClick()
-            compose.waitUntil(15000) { compose.onAllNodesWithText("Image prompt").fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithText("Generate artwork").performScrollTo().assertIsEnabled()
+                .performSemanticsAction(SemanticsActions.OnClick) { it() }
+            compose.waitUntil(30000) { compose.onAllNodesWithText("Image prompt").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText("Image prompt").performScrollTo().performTextInput("A new portrait for a test")
             compose.onNodeWithText("Generate image").performScrollTo().assertIsNotEnabled()
             compose.onAllNodes(isToggleable()).onLast().performScrollTo().performClick()

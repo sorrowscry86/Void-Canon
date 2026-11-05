@@ -63,8 +63,13 @@ The server stores IDs/dates/reservations/status, not images or prompts.
   destination policy, including connector native fetch. A phone → new Worker
   → AI end-to-end result is not claimed. Earlier live Klein lab tests prove
   model behavior separately, not this deployed service's complete delivery.
-- An Android HTTPS fixture walkthrough covers consent, preview and explicit
-  save. Its execution/evidence status is recorded in the evidence README.
+- The Android HTTPS fixture walkthrough **passed**, `OK (1 test)`, 84.483 seconds
+  on API 29. It covers connection import, consent, one fixture request, preview,
+  explicit save and baseline/transcript preservation. An emulator System UI ANR
+  initially obstructed opening the form; the opening tap was checked manually
+  and the automated opening uses its accessibility action. See the evidence
+  README for captures and limitations. This does not prove a physical-phone or
+  deployed-service result.
 
 ## Build and signing
 

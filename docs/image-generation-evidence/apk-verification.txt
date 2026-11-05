@@ -1,0 +1,8 @@
+Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
+Signer #1 certificate SHA-256 digest: be36b09130f79882b6a032b7cbfc8c0515737952dac493d23c71cbbb7265a4c2
+Signer #1 certificate SHA-1 digest: adbd58a7dc8537d47667308dd99bc37a1ef1f0f5
+Signer #1 certificate MD5 digest: 4593b46d074baf5333a8b6628f724aa2
+package: name='org.voidcat.voidcanon.preview' versionCode='7' versionName='0.4.2-preview' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'
+sdkVersion:'26'
+targetSdkVersion:'35'
+394d58c736cab25951c0cd5838f6d80170d6669f2e4c223c65d594793434f720  downloads/void-canon-0.4.2-preview.apk
