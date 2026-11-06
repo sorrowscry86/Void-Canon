@@ -38,6 +38,9 @@ class CanonViewModel(application: Application) : AndroidViewModel(application) {
     private val imageSettings = (application as VoidCanonApplication).imageSettings
     private val imageClient get() = (getApplication<Application>() as VoidCanonApplication).imageClient
     private val imageDrafts = GeneratedImageDraftStore(application.filesDir, application.cacheDir)
+    private val wizardStore = org.voidcat.voidcanon.data.WizardDraftStore(application.noBackupFilesDir)
+    val wizardDraft = MutableStateFlow(wizardStore.load())
+    val wizardError = MutableStateFlow<String?>(null)
     val imageConnected = MutableStateFlow(imageSettings.connected())
     val imageEndpoint = MutableStateFlow(imageSettings.endpoint())
     val imagePreview = MutableStateFlow(imageDrafts.load())
@@ -150,6 +153,67 @@ class CanonViewModel(application: Application) : AndroidViewModel(application) {
     fun describeImage(assetId: String) = generate("vision", assetId)
     fun proposeChapter() = generate("summary", null)
     fun cancelGeneration() { generationJob?.cancel() }
+
+    fun startWizard(mode: String) {
+        if (generating.value != null || busy.value) return
+        if (wizardDraft.value == null) updateWizard(WizardDraft(mode = mode, worldId = snapshot.value.world?.id.orEmpty()))
+    }
+    fun updateWizard(value: WizardDraft) {
+        if (generating.value != null || busy.value) return
+        wizardDraft.value = value
+        enqueue { withContext(Dispatchers.IO) { wizardStore.save(value) } }
+    }
+    fun discardWizard() {
+        if (generating.value != null || busy.value) return
+        wizardDraft.value = null; wizardError.value = null
+        enqueue { withContext(Dispatchers.IO) { wizardStore.clear() } }
+    }
+    fun acceptWizard() {
+        val value = wizardDraft.value ?: return
+        libraryAction("Creation saved. Add artwork or choose a scene when ready.") {
+            repo.acceptWizard(value)
+            withContext(Dispatchers.IO) { wizardStore.clear() }
+            wizardDraft.value = null; wizardError.value = null
+        }
+    }
+    fun fetchWizardReference() {
+        val source = wizardDraft.value ?: return
+        wizardOperation("wiki reference") {
+            val ref = WikiReferenceClient().fetch(source.sourceUrl)
+            val next = source.copy(sourceUrl = ref.url, sourceTitle = ref.title, sourceRevision = ref.revision,
+                sourceLicense = "Not verified; see source page and attribution history", reference = ref.text, retrievedAt = System.currentTimeMillis())
+            withContext(Dispatchers.IO) { wizardStore.save(next) }; wizardDraft.value = next
+            if (ref.truncated) wizardError.value = "Loaded the first 12,000 characters. Review/select the excerpt before generating."
+        }
+    }
+    fun generateWizard() {
+        val source = wizardDraft.value ?: return
+        wizardOperation("creation draft") {
+            val config = configuration.value
+            require(config.consent) { "Enable OpenRouter consent in AI settings first." }
+            val model = requireNotNull(models.value.find { it.id == config.rpModel }) { "Refresh models and select a text model in AI settings." }
+            require(!config.freeOnly || model.free) { "Select a free model or explicitly disable Free only." }
+            val world = snapshot.value.world?.takeIf { it.id == source.worldId && source.mode == "character" }
+            val context = world?.let { "${it.name}\n${it.description}".take(4000) }.orEmpty()
+            val messages = CreationWizard.messages(source, context)
+            val key = withContext(Dispatchers.IO) { settings.readKey() }
+            val result = router.complete(key, model.id, messages, config.freeOnly, maxTokens = generationOutputTokens(model, messages, "creation"))
+            val next = CreationWizard.proposed(source, result)
+            withContext(Dispatchers.IO) { wizardStore.save(next) }; wizardDraft.value = next
+        }
+    }
+    private fun wizardOperation(label: String, operation: suspend () -> Unit) {
+        if (generating.value != null || busy.value) return
+        generating.value = label; wizardError.value = null
+        val saved = CompletableDeferred<Unit>()
+        enqueue { saved.complete(Unit) }
+        generationJob = viewModelScope.launch {
+            try { saved.await(); operation() }
+            catch (e: CancellationException) { wizardError.value = "Cancelled. Your last saved draft is available; provider work may already have been charged." }
+            catch (e: Exception) { wizardError.value = e.message ?: "Could not complete this step. Your draft is preserved." }
+            finally { generating.value = null; generationJob = null }
+        }
+    }
 
     fun importImageConnection(uri: Uri) = transfer("Image service connected on this device. The access code is excluded from backups.") {
         withContext(Dispatchers.IO) {
@@ -357,6 +421,8 @@ class CanonViewModel(application: Application) : AndroidViewModel(application) {
     fun restore(uri: Uri) = transfer("Backup restored. All references and images are available locally.") {
         val input = requireNotNull(resolver.openInputStream(uri)) { "Could not open the backup file." }
         repo.restore(input)
+        withContext(Dispatchers.IO) { wizardStore.clear() }
+        wizardDraft.value = null; wizardError.value = null
         publishLibrary(repo.library())
         draft.value = _snapshot.value.scene?.draft.orEmpty()
         restoreRevision.value += 1

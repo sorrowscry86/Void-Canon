@@ -95,6 +95,27 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
         require(name.isNotBlank() && name.length <= 200) { "Enter a name of 1–200 characters." }
     }
 
+    /** Stable draft IDs make retries after a completed save harmless. One transaction publishes a starter world. */
+    suspend fun acceptWizard(draft: WizardDraft): String = mutate {
+        CreationWizard.validate(draft)
+        val id = "wizard-${draft.id}"
+        val worldId = if (draft.mode == "world") id else draft.worldId
+        db.withTransaction {
+            if (draft.mode == "world") {
+                if (dao.worlds().none { it.id == id }) {
+                    dao.putWorlds(listOf(WorldRecord(id, draft.name.trim(), draft.description + "\n\n" + draft.lore + CreationWizard.provenance(draft), null)))
+                    dao.putEntries(draft.entries.mapIndexedNotNull { index, entry -> if (!entry.selected) null else
+                        EntryRecord("$id-$index", id, entry.kind, entry.name.trim(), entry.description, entry.lore + CreationWizard.provenance(draft)) })
+                }
+            } else {
+                require(dao.worlds().any { it.id == worldId }) { "The target world is no longer available. Start a new draft." }
+                if (dao.entries().none { it.id == id }) dao.putEntries(listOf(EntryRecord(id, worldId, "character", draft.name.trim(), draft.description, draft.lore + CreationWizard.provenance(draft))))
+            }
+        }
+        rememberSelection(worldId)
+        id
+    }
+
     suspend fun initialize() = mutate {
         if (dao.worlds().isNotEmpty()) {
             dao.putAssets(dao.assets().filter { it.contentHash.isBlank() }.map { it.copy(contentHash = imageHash(File(images, it.fileName))) })

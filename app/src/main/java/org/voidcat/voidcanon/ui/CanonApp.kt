@@ -220,6 +220,9 @@ private fun WorldScreen(s: WorldSnapshot, vm: CanonViewModel, play: () -> Unit, 
     var worldEditing by remember { mutableStateOf(false) }
     var creatingKind by remember { mutableStateOf<String?>(null) }
     var scenePicker by remember { mutableStateOf(false) }
+    var wizardOpen by rememberSaveable { mutableStateOf(false) }
+    val wizardDraft by vm.wizardDraft.collectAsStateWithLifecycle()
+    if (wizardOpen && wizardDraft != null) CreationWizardSheet(vm, { wizardOpen = false }, ai)
     var search by rememberSaveable { mutableStateOf("") }
     val scenes by vm.sceneLibrary.collectAsStateWithLifecycle()
     if (libraryOpen) WorldLibrarySheet(vm, world.id) { libraryOpen = false }
@@ -267,6 +270,9 @@ private fun WorldScreen(s: WorldSnapshot, vm: CanonViewModel, play: () -> Unit, 
                     OutlinedButton(onClick = { scenePicker = true }, modifier = Modifier.weight(1f)) { Text("Choose scene") }
                 }
                 Text("People & places", style = MaterialTheme.typography.titleLarge)
+                Button(onClick = { vm.startWizard("character"); wizardOpen = true }, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (wizardDraft != null) "Resume creation wizard" else "Creation wizard · character or world")
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = { creatingKind = "character" }, modifier = Modifier.weight(1f)) { Text("Add character") }
                     OutlinedButton(onClick = { creatingKind = "location" }, modifier = Modifier.weight(1f)) { Text("Add location") }
