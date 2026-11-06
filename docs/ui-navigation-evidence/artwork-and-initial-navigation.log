@@ -1,0 +1,59 @@
+Success
+
+Success
+
+Running navigation and Android HTTPS image fixture tests; no live provider request.
+
+org.voidcat.voidcanon.NavigationUiTest:
+Error in settingsAndExitsPreserveLocalWork(org.voidcat.voidcanon.NavigationUiTest):
+java.lang.AssertionError: Failed: performScrollToIndex(1)
+Reason: Expected exactly '1' node but found '2' nodes that satisfy: (ScrollToIndex is defined)
+Nodes found:
+1) Node #325 at (l=0.0, t=160.0, r=720.0, b=1024.0)px
+CollectionInfo = 'androidx.compose.ui.semantics.CollectionInfo@c8301c6'
+IsTraversalGroup = 'true'
+VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=100.0, reverseScrolling=false)'
+Actions = [GetScrollViewportLength, IndexForKey, ScrollBy, ScrollByOffset, ScrollToIndex]
+Has 6 children, 2 siblings
+2) Node #448 at (l=0.0, t=275.0, r=720.0, b=1184.0)px
+CollectionInfo = 'androidx.compose.ui.semantics.CollectionInfo@3764587'
+IsTraversalGroup = 'true'
+VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=100.0, reverseScrolling=false)'
+Actions = [GetScrollViewportLength, IndexForKey, ScrollBy, ScrollByOffset, ScrollToIndex]
+Has 9 children, 4 siblings
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollToIndex(Actions.kt:162)
+	at org.voidcat.voidcanon.NavigationUiTest.settingsAndExitsPreserveLocalWork(NavigationUiTest.kt:41)
+
+org.voidcat.voidcanon.ImageGenerationUiTest:.
+
+Time: 106.331
+There was 1 failure:
+1) settingsAndExitsPreserveLocalWork(org.voidcat.voidcanon.NavigationUiTest)
+java.lang.AssertionError: Failed: performScrollToIndex(1)
+Reason: Expected exactly '1' node but found '2' nodes that satisfy: (ScrollToIndex is defined)
+Nodes found:
+1) Node #325 at (l=0.0, t=160.0, r=720.0, b=1024.0)px
+CollectionInfo = 'androidx.compose.ui.semantics.CollectionInfo@c8301c6'
+IsTraversalGroup = 'true'
+VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=100.0, reverseScrolling=false)'
+Actions = [GetScrollViewportLength, IndexForKey, ScrollBy, ScrollByOffset, ScrollToIndex]
+Has 6 children, 2 siblings
+2) Node #448 at (l=0.0, t=275.0, r=720.0, b=1184.0)px
+CollectionInfo = 'androidx.compose.ui.semantics.CollectionInfo@3764587'
+IsTraversalGroup = 'true'
+VerticalScrollAxisRange = 'ScrollAxisRange(value=0.0, maxValue=100.0, reverseScrolling=false)'
+Actions = [GetScrollViewportLength, IndexForKey, ScrollBy, ScrollByOffset, ScrollToIndex]
+Has 9 children, 4 siblings
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollToIndex(Actions.kt:162)
+	at org.voidcat.voidcanon.NavigationUiTest.settingsAndExitsPreserveLocalWork(NavigationUiTest.kt:41)
+
+FAILURES!!!
+Tests run: 2,  Failures: 1

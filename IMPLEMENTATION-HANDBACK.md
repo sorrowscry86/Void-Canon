@@ -1,6 +1,13 @@
-# Void Canon — Cloudflare artwork increment
+# Void Canon — regular-app update and navigation
 
-Project: `/workspace/Void-Canon`. Version **0.4.2** (code 7), Android 8.0/API 26+.
+Project: `/workspace/Void-Canon`. Source version **0.4.3** (code 8), Android 8.0/API 26+.
+The user wants updates in the regular **Void Canon** app, without a separate test
+installation. The source now adds central Settings, installed version/build
+information, and persistent Close/Back controls. See the current
+[UI/navigation handback](docs/UI-NAVIGATION-HANDBACK.md) for checks and the
+outstanding original-signing-key requirement. **0.4.3 is not distributed yet.**
+
+The artwork increment below was previously distributed only as 0.4.2 preview.
 The user approved adding the tested Cloudflare image workflow to the app for development.
 The prior implementation is preserved in [scene continuity handback](docs/SCENE-CONTINUITY-HANDBACK.md).
 
@@ -73,7 +80,16 @@ The server stores IDs/dates/reservations/status, not images or prompts.
 
 ## Build and signing
 
-The preview retains `org.voidcat.voidcanon.preview` / **Void Canon Test**.
+Regular updates must use package `org.voidcat.voidcanon`, launcher **Void Canon**,
+and the original certificate SHA-256
+`d2c8a958809475255d9fa24ead371f3225f19e3a5189db3b416217817de5f56a`.
+Pass the recovered original key through `-PvoidCanonDebugKeystore=...` when
+building `assembleDebug`. Verify the APK certificate before publishing.
+The normal workspace debug key is suitable only for disposable emulator
+fixtures; it cannot update the user's regular installation. Do not distribute
+it as the regular update, uninstall the user's app, or clear their data.
+
+Historical preview: `org.voidcat.voidcanon.preview` / **Void Canon Test**.
 Use the existing preview key for in-place updates; no private key is committed:
 
 ```sh
@@ -83,7 +99,8 @@ Use the existing preview key for in-place updates; no private key is committed:
 The optional Gradle property selects the debug-derived variants' existing key.
 The preview certificate SHA-256 is
 `be36b09130f79882b6a032b7cbfc8c0515737952dac493d23c71cbbb7265a4c2`.
-The original production app remains a separate package.
+The preview key cannot sign an update to the regular package. No new preview
+is requested or published for the navigation changes.
 
 ## Boundary
 

@@ -2,9 +2,11 @@
 
 A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
 
-## Cloudflare artwork test — 0.4.2 preview
+## Next regular update — 0.4.3 (not released)
 
-[Download Void Canon Test 0.4.2](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.2-preview.apk). This optional test app adds prompt-based artwork generation and reference edits. It updates the earlier 0.4.1 preview, retaining its separate package and data; the regular 0.4.1 app remains available below. The private image connection file is supplied separately and is not bundled in the public APK.
+The next update targets the existing **Void Canon** app. Source includes Cloudflare artwork generation, a central **Settings** menu, visible version/build information, and fixed Close/Back controls. Distribution is pending recovery of the regular app's original signing key. The available workspace keys do not match it, so no replacement regular APK is published yet. See [the UI handback](docs/UI-NAVIGATION-HANDBACK.md).
+
+The earlier 0.4.2 **Void Canon Test** download is retained in [Downloads](downloads/README.md) as historical preview evidence. Further updates are intended for the regular app.
 
 ## Install / upgrade
 

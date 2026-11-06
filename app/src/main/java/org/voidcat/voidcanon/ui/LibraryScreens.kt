@@ -21,18 +21,20 @@ fun WorldLibrarySheet(vm: CanonViewModel, currentId: String?, dismiss: () -> Uni
     val worlds by vm.worlds.collectAsStateWithLifecycle()
     var creating by remember { mutableStateOf(false) }
     ModalBottomSheet(onDismissRequest = dismiss, containerColor = Panel, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-        LazyColumn(Modifier.fillMaxWidth().fillMaxHeight(.9f), contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            item {
-                Text("Your worlds", style = MaterialTheme.typography.headlineLarge)
-                Text("Independent settings, shared creative freedom.", color = Muted)
-                Button(onClick = { creating = true }, modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) { Text("New world") }
-            }
-            items(worlds, key = { it.id }) { world ->
-                Surface(onClick = { vm.selectWorld(world.id); dismiss() }, color = Panel, shape = MaterialTheme.shapes.large, border = BorderStroke(1.dp, if (world.id == currentId) Violet else Line)) {
-                    Column(Modifier.fillMaxWidth().padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(world.name, style = MaterialTheme.typography.titleLarge)
-                        Text(if (world.id == currentId) "Current world" else "Open world", color = Violet, style = MaterialTheme.typography.labelMedium)
-                        if (world.description.isNotBlank()) Text(world.description, maxLines = 3, color = Muted)
+        Column(Modifier.fillMaxWidth().fillMaxHeight(.9f)) {
+            SheetHeader("Your worlds", dismiss)
+            LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                item {
+                    Text("Independent settings, shared creative freedom.", color = Muted)
+                    Button(onClick = { creating = true }, modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) { Text("New world") }
+                }
+                items(worlds, key = { it.id }) { world ->
+                    Surface(onClick = { vm.selectWorld(world.id); dismiss() }, color = Panel, shape = MaterialTheme.shapes.large, border = BorderStroke(1.dp, if (world.id == currentId) Violet else Line)) {
+                        Column(Modifier.fillMaxWidth().padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(world.name, style = MaterialTheme.typography.titleLarge)
+                            Text(if (world.id == currentId) "Current world" else "Open world", color = Violet, style = MaterialTheme.typography.labelMedium)
+                            if (world.description.isNotBlank()) Text(world.description, maxLines = 3, color = Muted)
+                        }
                     }
                 }
             }

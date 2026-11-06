@@ -78,7 +78,7 @@ class ImageGenerationUiTest {
             assertEquals(before.messages, after.messages)
             assertEquals(1, server.requestCount)
             assertEquals("exploratory", after.assets.last { it.provenance.contains("A new portrait for a test") }.referenceKind)
-            compose.onNodeWithText("Close").performScrollTo().performClick()
+            compose.onNodeWithText("Close").assertIsDisplayed().performClick()
             val capture = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
             val screenshot = File(app.filesDir, "screenshots/17-image-generation-fixture.png").apply { parentFile!!.mkdirs() }
             screenshot.outputStream().use { capture.compress(Bitmap.CompressFormat.PNG, 100, it) }; capture.recycle()

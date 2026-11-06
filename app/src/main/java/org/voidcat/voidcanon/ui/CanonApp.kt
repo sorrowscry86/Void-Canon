@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -62,6 +63,9 @@ fun CanonApp(vm: CanonViewModel) {
     val destination = Destination.valueOf(destinationName)
     var detailId by rememberSaveable { mutableStateOf<String?>(null) }
     var aiOpen by remember { mutableStateOf(false) }
+    var settingsOpen by remember { mutableStateOf(false) }
+    var imageSettingsOpen by remember { mutableStateOf(false) }
+    var returnToSettings by remember { mutableStateOf(false) }
     var contextOpen by remember { mutableStateOf(false) }
     var sceneOpen by remember { mutableStateOf(false) }
     val generating by vm.generating.collectAsStateWithLifecycle()
@@ -69,6 +73,16 @@ fun CanonApp(vm: CanonViewModel) {
     var restoreUri by remember { mutableStateOf<Uri?>(null) }
     val snackbar = remember { SnackbarHostState() }
     val keyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    val identity = rememberAppIdentity()
+    val focus = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    fun backToWorld() {
+        focus.clearFocus(); keyboard?.hide()
+        if (detailId != null) detailId = null else destinationName = Destination.World.name
+    }
+    fun closeSettingsChild() {
+        if (returnToSettings) { returnToSettings = false; settingsOpen = true }
+    }
     val exportPicker = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
         if (uri != null) vm.export(uri)
     }
@@ -79,22 +93,32 @@ fun CanonApp(vm: CanonViewModel) {
     }
     LaunchedEffect(revision) { detailId = null }
     LaunchedEffect(snapshot.world?.id) { detailId = null; destinationName = Destination.World.name }
-    BackHandler(detailId != null || destination != Destination.World) {
-        if (detailId != null) detailId = null else destinationName = Destination.World.name
-    }
+    BackHandler(!settingsOpen && !aiOpen && !imageSettingsOpen && !contextOpen && !sceneOpen && !backupOpen && (detailId != null || destination != Destination.World)) { backToWorld() }
 
     Scaffold(
         modifier = Modifier.fillMaxSize().imePadding(),
         containerColor = Ink,
         snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
-            if (generating != null) Surface(color = Panel) {
+            Surface(color = Ink) {
                 Column(Modifier.statusBarsPadding()) {
-                    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text("Generating ${generating}…", modifier = Modifier.weight(1f))
-                        TextButton(onClick = vm::cancelGeneration) { Text("Cancel") }
+                    Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        if (detailId != null || destination != Destination.World) TextButton(onClick = ::backToWorld, enabled = !busy) {
+                            Icon(CanonIcons.Back, null, Modifier.size(18.dp)); Spacer(Modifier.width(4.dp)); Text("Back")
+                        }
+                        Column(Modifier.weight(1f).padding(horizontal = 8.dp)) {
+                            Text(identity.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text("${identity.version} · build ${identity.build}", color = Muted, style = MaterialTheme.typography.labelSmall)
+                        }
+                        TextButton(onClick = { focus.clearFocus(); keyboard?.hide(); settingsOpen = true }, enabled = !busy) { Text("Settings") }
                     }
-                    LinearProgressIndicator(Modifier.fillMaxWidth())
+                    if (generating != null) {
+                        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text("Generating ${generating}…", modifier = Modifier.weight(1f))
+                            TextButton(onClick = vm::cancelGeneration) { Text("Cancel") }
+                        }
+                        LinearProgressIndicator(Modifier.fillMaxWidth())
+                    }
                 }
             }
         },
@@ -142,20 +166,30 @@ fun CanonApp(vm: CanonViewModel) {
         }
     }
 
-    if (aiOpen) AiSettingsSheet(vm) { aiOpen = false }
+    if (settingsOpen) AppSettingsSheet(vm, { settingsOpen = false }, {
+        settingsOpen = false; returnToSettings = true; aiOpen = true
+    }, {
+        settingsOpen = false; returnToSettings = true; imageSettingsOpen = true
+    }, {
+        settingsOpen = false; returnToSettings = true; backupOpen = true
+    })
+    if (aiOpen) AiSettingsSheet(vm) { aiOpen = false; closeSettingsChild() }
+    if (imageSettingsOpen) ImageConnectionSettingsSheet(vm) { imageSettingsOpen = false; closeSettingsChild() }
     if (contextOpen) ContextSheet(snapshot, vm) { contextOpen = false }
     if (sceneOpen) SceneDetailsDialog(snapshot, vm) { sceneOpen = false }
-    if (backupOpen) ModalBottomSheet(onDismissRequest = { backupOpen = false }, containerColor = Panel) {
-        Column(Modifier.padding(horizontal = 24.dp).padding(bottom = 32.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text("Your library, with you", style = MaterialTheme.typography.headlineMedium)
-            Text("A portable backup includes every world, private author notes, artwork, visual descriptions, drafts, transcripts, chapters, and request diagnostics. Your OpenRouter key and AI settings are excluded.", color = Muted)
-            FilledTonalButton(onClick = { backupOpen = false; exportPicker.launch("Void-Canon-backup.zip") }, modifier = Modifier.fillMaxWidth(), enabled = !busy) {
-                Icon(CanonIcons.Upload, null); Spacer(Modifier.width(8.dp)); Text("Export backup")
+    if (backupOpen) ModalBottomSheet(onDismissRequest = { backupOpen = false; closeSettingsChild() }, containerColor = Panel) {
+        Column(Modifier.fillMaxWidth().fillMaxHeight(.8f)) {
+            SheetHeader("Backups & data", { backupOpen = false; closeSettingsChild() })
+            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp).padding(top = 16.dp, bottom = 32.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Text("A portable backup includes every world, private author notes, artwork, visual descriptions, drafts, transcripts, chapters, and request diagnostics. Your OpenRouter key and AI settings are excluded.", color = Muted)
+                FilledTonalButton(onClick = { backupOpen = false; closeSettingsChild(); exportPicker.launch("Void-Canon-backup.zip") }, modifier = Modifier.fillMaxWidth(), enabled = !busy) {
+                    Icon(CanonIcons.Upload, null); Spacer(Modifier.width(8.dp)); Text("Export backup")
+                }
+                OutlinedButton(onClick = { backupOpen = false; closeSettingsChild(); restorePicker.launch(arrayOf("application/zip", "application/octet-stream", "application/x-zip-compressed")) }, modifier = Modifier.fillMaxWidth(), enabled = !busy) {
+                    Icon(CanonIcons.Download, null); Spacer(Modifier.width(8.dp)); Text("Restore backup")
+                }
+                Text("Local work is available offline. AI actions send the selected story context or image you authorize; backup exports are a separate action.", style = MaterialTheme.typography.bodySmall, color = Muted)
             }
-            OutlinedButton(onClick = { backupOpen = false; restorePicker.launch(arrayOf("application/zip", "application/octet-stream", "application/x-zip-compressed")) }, modifier = Modifier.fillMaxWidth(), enabled = !busy) {
-                Icon(CanonIcons.Download, null); Spacer(Modifier.width(8.dp)); Text("Restore backup")
-            }
-            Text("Local work is available offline. AI actions send the selected story context or image you authorize; backup exports are a separate action.", style = MaterialTheme.typography.bodySmall, color = Muted)
         }
     }
     restoreUri?.let { uri ->
@@ -545,9 +579,9 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
     }
     if (historyOpen) ModalBottomSheet(onDismissRequest = { historyOpen = false }, containerColor = Panel) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(.85f)) {
-            Text("Scene history", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(horizontal = 24.dp))
+            SheetHeader("Scene history", { historyOpen = false })
             Text("Preserved scene transcript · demo and live messages", color = Muted, modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp))
-            LazyColumn(contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
+            LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
                 items(s.messages, key = { it.id }) { message ->
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Text(if (message.speaker == "user") "You" else character.name, color = Violet, style = MaterialTheme.typography.labelLarge)
