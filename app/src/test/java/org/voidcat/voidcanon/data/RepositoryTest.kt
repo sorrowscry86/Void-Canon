@@ -33,6 +33,42 @@ import java.util.zip.ZipOutputStream
 @Config(application = Application::class, sdk = [28])
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class RepositoryTest {
+    @Test fun wizardWorldIsAtomicIdempotentAndPortableWithoutRewritingHistory() = runBlocking {
+        val before = repo.workspaceSnapshot()
+        val d = WizardDraft(mode = "world", name = "New Harbor", description = "A port", reference = "A reviewed excerpt", sourceUrl = "https://example.fandom.com/wiki/Harbor",
+            entries = listOf(WizardEntry(name = "Traveler"), WizardEntry(kind = "location", name = "Quay"), WizardEntry(kind = "location", name = "Omit", selected = false)))
+        repo.acceptWizard(d); repo.acceptWizard(d)
+        val all = repo.workspaceSnapshot()
+        assertEquals(before.worlds.size + 1, all.worlds.size)
+        assertEquals(before.entries.size + 2, all.entries.size)
+        assertEquals(before.messages, all.messages)
+        assertTrue(repo.snapshot().world!!.description.contains("reviewed excerpt"))
+        val bytes = ByteArrayOutputStream().also { repo.export(it) }.toByteArray()
+        repo.restore(ByteArrayInputStream(bytes))
+        assertEquals(all.worlds, repo.workspaceSnapshot().worlds)
+        val invalid = d.copy(id = UUID.randomUUID().toString(), entries = listOf(WizardEntry(kind = "bad", name = "Invalid")))
+        assertTrue(runCatching { repo.acceptWizard(invalid) }.isFailure)
+        assertEquals(all.worlds, repo.workspaceSnapshot().worlds)
+    }
+    @Test fun wizardCharacterTargetsItsOriginalWorldAndRejectsMissingTargets() = runBlocking {
+        val d = WizardDraft(worldId = "glass-harbor", name = "Guest", description = "Travel coat")
+        repo.createWorld("Other world", "")
+        repo.acceptWizard(d); repo.acceptWizard(d)
+        assertEquals("glass-harbor", repo.snapshot().world!!.id)
+        assertEquals(1, repo.workspaceSnapshot().entries.count { it.id == "wizard-${d.id}" })
+        assertTrue(runCatching { repo.acceptWizard(d.copy(id = "missing", worldId = "missing")) }.isFailure)
+    }
+    @Test fun wizardDraftSurvivesReopenAndClearsWithoutChangingLibrary() = runBlocking {
+        val directory = File(context.cacheDir, "wizard-${UUID.randomUUID()}").apply { mkdirs() }
+        try {
+            val d = WizardDraft(premise = "A new idea", name = "Draft")
+            WizardDraftStore(directory).save(d)
+            assertEquals(d, WizardDraftStore(directory).load())
+            WizardDraftStore(directory).clear()
+            assertNull(WizardDraftStore(directory).load())
+            assertEquals("glass-harbor", repo.snapshot().world!!.id)
+        } finally { directory.deleteRecursively() }
+    }
     private lateinit var context: Application
     private lateinit var db: CanonDatabase
     private lateinit var repo: CanonRepository

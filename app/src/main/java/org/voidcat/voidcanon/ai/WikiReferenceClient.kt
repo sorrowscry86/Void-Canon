@@ -57,7 +57,12 @@ class WikiReferenceClient(private val http: OkHttpClient = OkHttpClient.Builder(
             return page.newBuilder().encodedPath("/").query(null).fragment(null).apply {
                 segments.take(wiki).forEach { addPathSegment(it) }
                 addPathSegment("api.php")
-                addQueryParameter("action", "parse"); addQueryParameter("page", title)
+                addQueryParameter("action", "parse")
+                val oldId = page.queryParameter("oldid")
+                if (oldId != null) {
+                    require(oldId.toLongOrNull()?.let { it > 0 } == true) { "Invalid article revision." }
+                    addQueryParameter("oldid", oldId)
+                } else addQueryParameter("page", title)
                 addQueryParameter("prop", "text|revid"); addQueryParameter("format", "json"); addQueryParameter("formatversion", "2")
             }.build()
         }
@@ -72,7 +77,10 @@ class WikiReferenceClient(private val http: OkHttpClient = OkHttpClient.Builder(
             val cleaned = html.replace(Regex("<(script|style)\\b[^>]*>.*?</\\1>", setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)), "")
             val text = Html.fromHtml(cleaned, Html.FROM_HTML_MODE_LEGACY).toString().trim()
             require(text.isNotBlank()) { "No article text was returned. Paste an excerpt instead." }
-            return WikiReference(title, url.trim(), revision, text.take(12000), text.length > 12000)
+            val canonical = url.trim().toHttpUrlOrNull()?.newBuilder()?.query(null)?.fragment(null)?.apply {
+                if (revision.toLongOrNull()?.let { it > 0 } == true) addQueryParameter("oldid", revision)
+            }?.build()?.toString() ?: url.trim()
+            return WikiReference(title, canonical, revision, text.take(12000), text.length > 12000)
         }
     }
 }

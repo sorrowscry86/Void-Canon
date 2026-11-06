@@ -16,7 +16,7 @@ data class WizardDraft(
     val reference: String = "", val sourceUrl: String = "", val sourceTitle: String = "",
     val sourceRevision: String = "", val sourceLicense: String = "", val retrievedAt: Long = 0,
     val name: String = "", val description: String = "", val lore: String = "",
-    val entries: List<WizardEntry> = emptyList(), val model: String = "", val usage: String = "{}",
+    val entries: List<WizardEntry> = emptyList(), val model: String = "", val usage: String = "{}", val proposalRevision: Long = 0,
 )
 
 @Serializable
@@ -48,7 +48,7 @@ object CreationWizard {
         val reply = try { json.decodeFromString<WizardReply>(raw) }
             catch (_: Exception) { error("The model did not return a usable creation draft. Your previous draft is preserved; choose another model or retry.") }
         val next = d.copy(name = reply.name, description = reply.description, lore = reply.lore,
-            entries = reply.entries.map { it.copy(selected = true) }, model = result.model, usage = result.usageJson)
+            entries = reply.entries.map { it.copy(selected = true) }, model = result.model, usage = result.usageJson, proposalRevision = d.proposalRevision + 1)
         validate(next)
         return next
     }

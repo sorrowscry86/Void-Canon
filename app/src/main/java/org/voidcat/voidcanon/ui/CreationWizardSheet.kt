@@ -23,7 +23,7 @@ fun CreationWizardSheet(vm: CanonViewModel, dismiss: () -> Unit, ai: () -> Unit)
     var review by rememberSaveable(d.id) { mutableStateOf(d.name.isNotBlank()) }
     var discard by remember { mutableStateOf(false) }
     val enabled = generating == null && !busy
-    LaunchedEffect(d.model, d.name) { if (d.model.isNotBlank()) review = true }
+    LaunchedEffect(d.proposalRevision) { if (d.proposalRevision > 0) review = true }
     ModalBottomSheet(onDismissRequest = dismiss, containerColor = Panel,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(.95f).imePadding()) {

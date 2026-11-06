@@ -1,3 +1,17 @@
+# Creation wizard — next-version checkpoint
+
+The November 6 user request authorizes moving directly toward the next live version, saving checkpoints and debugging as needed; do not stop at the original sequential stage boundaries. Extend the existing app, not a new prototype.
+
+Current working checkout: `C:/Users/sorro/Documents/Codex/void-canon-live`; branch `feat/creation-wizard`. Baseline was main/0.4.3. Source is now 0.5.0/build 9. The historical distribution notes below document 0.4.3, not the new increment.
+
+Implemented: character/world wizard, approved visual-description inputs, editable proposals and selection of up to four starter entries; persistent atomic private draft; manual no-AI path; existing OpenRouter provider/configuration; single-page Fandom/Wikia importer and pasted fallback; transactionally accepted stable-ID creations with source provenance. Room schema 3 and portable format 4 are unchanged. See `docs/CREATION-WIZARD.md` for behavior and limits.
+
+Checkpoint 1: `2dec522` (initial implementation). Additional validation and packaging are in progress; see the subsequent verification section/commits for actual results. Tests added cover parsing/bounds, untrusted source separation, wiki URL/revision/text conversion, duplicate acceptance, world targeting, draft persistence, and backup/restore.
+
+This new Windows workspace initially had neither Java nor Android SDK. Local build tooling is being prepared outside Git at `C:/Users/sorro/Documents/Codex/work/void-build`. `local.properties` is untracked. The original signing key described below was available in a different distribution workspace and has not been found here. Do not publish an APK signed by a new key as a regular upgrade. The user has been asked for the original key/workspace location; no secret value should be pasted into chat or committed.
+
+---
+
 # Void Canon — regular-app update and navigation
 
 Project: `/workspace/Void-Canon`. Source version **0.4.3** (code 8), Android 8.0/API 26+.
