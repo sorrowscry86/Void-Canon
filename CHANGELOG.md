@@ -1,11 +1,11 @@
-# 0.5.0 — creation wizard (source checkpoint)
+# Changelog
+
+## 0.5.0 — creation wizard (source checkpoint)
 
 - Optional character and small starter-world generation with the existing OpenRouter configuration; no scene required.
 - Editable proposals, selected starter entries, manual/offline authoring, persistent local drafts, and idempotent transactional saves.
 - Selected Fandom/Wikia article import, editable excerpts, reported revision links, approved visual-description references, and pasted-text fallback.
 - Existing schema, backups, transcripts, lore, artwork, and provider controls are retained. Regular APK publication requires the original signing identity and successful release checks.
-
-# Changelog
 
 ## 0.4.3 — Artwork and regular-app navigation
 

@@ -54,7 +54,7 @@ fun CreationWizardSheet(vm: CanonViewModel, dismiss: () -> Unit, ai: () -> Unit)
                     Text("Loading contacts that wiki only. Review the excerpt below; access may be unavailable. Pasted reference text works offline. No images are downloaded.", color = Muted, style = MaterialTheme.typography.bodySmall)
                     if (d.sourceTitle.isNotBlank()) Text("${d.sourceTitle} · revision ${d.sourceRevision.ifBlank { "unknown" }}", color = Violet)
                     OutlinedTextField(d.reference, { vm.updateWizard(d.copy(reference = it.take(12000))) }, label = { Text("Reference text / editable excerpt") }, minLines = 3, maxLines = 8, modifier = Modifier.fillMaxWidth(), enabled = enabled)
-                    val descriptions = s.descriptions.filter { desc -> desc.approved && s.asset(desc.assetId)?.let { it.contentHash == desc.sourceHash && it.referenceKind != "exploratory" } == true }
+                    val descriptions = s.descriptions.filter { desc -> (d.mode == "world" || s.world?.id == d.worldId) && desc.approved && s.asset(desc.assetId)?.let { it.contentHash == desc.sourceHash && it.referenceKind != "exploratory" } == true }
                     if (descriptions.isNotEmpty()) {
                         Text("Or use an approved image description", style = MaterialTheme.typography.labelLarge)
                         descriptions.forEach { desc ->

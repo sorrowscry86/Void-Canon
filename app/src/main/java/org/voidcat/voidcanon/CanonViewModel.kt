@@ -193,7 +193,7 @@ class CanonViewModel(application: Application) : AndroidViewModel(application) {
             require(config.consent) { "Enable OpenRouter consent in AI settings first." }
             val model = requireNotNull(models.value.find { it.id == config.rpModel }) { "Refresh models and select a text model in AI settings." }
             require(!config.freeOnly || model.free) { "Select a free model or explicitly disable Free only." }
-            val world = snapshot.value.world?.takeIf { it.id == source.worldId && source.mode == "character" }
+            val world = worlds.value.find { it.id == source.worldId && source.mode == "character" }
             val context = world?.let { "${it.name}\n${it.description}".take(4000) }.orEmpty()
             val messages = CreationWizard.messages(source, context)
             val key = withContext(Dispatchers.IO) { settings.readKey() }
