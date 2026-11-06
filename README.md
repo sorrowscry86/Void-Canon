@@ -1,5 +1,7 @@
 # Void Canon
 
+**Next source increment: 0.5.0.** Optional character/world creation wizard, persistent editable proposals, and selected Fandom/Wikia reference import. See [the creation wizard](docs/CREATION-WIZARD.md). Until a matching-signed 0.5.0 APK is published and verified, the regular install below remains 0.4.3.
+
 A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
 
 ## Install / upgrade — 0.4.3

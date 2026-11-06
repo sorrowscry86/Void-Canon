@@ -1,3 +1,26 @@
+# Creation wizard — next-version checkpoint
+
+The November 6 user request authorizes moving directly toward the next live version, saving checkpoints and debugging as needed; do not stop at the original sequential stage boundaries. Extend the existing app, not a new prototype.
+
+Current working checkout: `C:/Users/sorro/Documents/Codex/void-canon-live`; branch `feat/creation-wizard`. Baseline was main/0.4.3. Source is now 0.5.0/build 9. The historical distribution notes below document 0.4.3, not the new increment.
+
+Implemented: character/world wizard, approved visual-description inputs, editable proposals and selection of up to four starter entries; persistent atomic private draft; manual no-AI path; existing OpenRouter provider/configuration; single-page Fandom/Wikia importer and pasted fallback; transactionally accepted stable-ID creations with source provenance. Room schema 3 and portable format 4 are unchanged. See `docs/CREATION-WIZARD.md` for behavior and limits.
+
+Checkpoints pushed to `feat/creation-wizard`: `2dec522` (initial implementation), `0f0118e` (validation, recovery, provenance), and `5fa4c0c` (Android CI and correct target-world context for resumed drafts). Review: https://github.com/sorrowscry86/Void-Canon/pull/4.
+
+## Current verification and release blockers
+
+- Nine new tests cover parsing/bounds, untrusted source separation, wiki URL/revision/text conversion, duplicate acceptance, world targeting, draft persistence, and backup/restore. No passing test result is claimed yet.
+- `git diff --check` passed. Java 17.0.17, SDK Platform 35, Build Tools 35.0.0, and Gradle 8.11.1 were installed/prepared outside Git.
+- Local command `assembleDebug testDebugUnitTest lintDebug assembleDebugAndroidTest` is running through unusually slow first-run Gradle initialization/dependency setup. Process inspection showed active work, not a completed test run. The running command session in this chat is `87005`; inspect it before starting a competing Gradle build. Toolchain environment paths are described below; JAVA_HOME is the extracted JDK directory, ANDROID_HOME is `work/void-build/android-sdk`, GRADLE_USER_HOME is `work/void-build/gradle`, and ANDROID_USER_HOME is `work/void-build/android-user`, all beneath `C:/Users/sorro/Documents/Codex/`.
+- GitHub Actions runs https://github.com/sorrowscry86/Void-Canon/actions/runs/42185963773 and https://github.com/sorrowscry86/Void-Canon/actions/runs/42185958908 failed before any steps or runner assignment. GitHub's diagnostic annotation says: “The job was not started because your account is locked due to a billing issue.” No billing settings were changed.
+- No emulator/device walkthrough, live OpenRouter generation, or live Fandom import has been verified for this increment. Wiki source handling is covered by added fixtures, not live-access evidence.
+- No 0.5.0 APK, source release tag, or replacement regular download has been published. Main and the regular 0.4.3 download remain untouched. The original signing key/workspace location was requested from the user and is pending. Do not imply the PR is a live app release.
+
+This new Windows workspace initially had neither Java nor Android SDK. Local build tooling is being prepared outside Git at `C:/Users/sorro/Documents/Codex/work/void-build`. `local.properties` is untracked. The original signing key described below was available in a different distribution workspace and has not been found here. Do not publish an APK signed by a new key as a regular upgrade. The user has been asked for the original key/workspace location; no secret value should be pasted into chat or committed.
+
+---
+
 # Void Canon — regular-app update and navigation
 
 Project: `/workspace/Void-Canon`. Source version **0.4.3** (code 8), Android 8.0/API 26+.

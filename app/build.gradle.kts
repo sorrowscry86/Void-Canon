@@ -13,8 +13,8 @@ android {
         applicationId = "org.voidcat.voidcanon"
         minSdk = 26
         targetSdk = 35
-        versionCode = 8
-        versionName = "0.4.3"
+        versionCode = 9
+        versionName = "0.5.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         resValue("string", "app_name", "Void Canon")
     }

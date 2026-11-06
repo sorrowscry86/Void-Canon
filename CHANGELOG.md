@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 — creation wizard (source checkpoint)
+
+- Optional character and small starter-world generation with the existing OpenRouter configuration; no scene required.
+- Editable proposals, selected starter entries, manual/offline authoring, persistent local drafts, and idempotent transactional saves.
+- Selected Fandom/Wikia article import, editable excerpts, reported revision links, approved visual-description references, and pasted-text fallback.
+- Existing schema, backups, transcripts, lore, artwork, and provider controls are retained. Regular APK publication requires the original signing identity and successful release checks.
+
 ## 0.4.3 — Artwork and regular-app navigation
 
 - Bring the reviewed Cloudflare artwork workflow from the 0.4.2 preview into the regular app: optional selected reference, explicit consent, recoverable preview, and author-controlled save/discard. Saved art starts as exploratory, with provenance.
