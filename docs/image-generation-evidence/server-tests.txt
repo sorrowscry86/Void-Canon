@@ -1,0 +1,15 @@
+✔ authentication and validation never spend image budget (614.514567ms)
+{"action":"image_complete","requestId":"00000000-0000-4000-8000-000000000005","model":"@cf/black-forest-labs/flux-2-klein-4b","milliseconds":1,"reserved":32}
+✔ real multipart request returns an image; duplicates do not generate twice (26.688789ms)
+{"action":"image_failed","requestId":"00000000-0000-4000-8000-000000000006"}
+✔ a provider failure retains the reservation and hides private diagnostics (17.732215ms)
+{"action":"image_complete","requestId":"00000000-0000-4000-8000-000000000007","model":"@cf/black-forest-labs/flux-2-klein-4b","milliseconds":0,"reserved":27}
+✔ concurrent requests cannot exceed the persistent daily budget (49.895053ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 740.33761

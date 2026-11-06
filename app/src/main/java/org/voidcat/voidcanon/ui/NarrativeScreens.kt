@@ -41,11 +41,10 @@ fun AiSettingsSheet(vm: CanonViewModel, dismiss: () -> Unit) {
     val visible = models.filter { (!config.freeOnly || it.free) && (!config.freeOnly || !freeVariants || it.id.endsWith(":free") || it.id == "openrouter/free") && (!visionOnly || it.vision) && (it.name.contains(query, true) || it.id.contains(query, true)) }
     ModalBottomSheet(onDismissRequest = dismiss, containerColor = Panel, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(.94f).imePadding()) {
-            Row(Modifier.padding(horizontal = 24.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("OpenRouter", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.weight(1f))
+            SheetHeader("OpenRouter", dismiss) {
                 TextButton(onClick = { vm.saveAiSettings(config, key); key = ""; dismiss() }) { Text("Save") }
             }
-            LazyColumn(contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            LazyColumn(modifier = Modifier.weight(1f), contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 item {
                     Text("Choose your models", style = MaterialTheme.typography.titleLarge)
                     Text("Browse the current free options without entering a key. Refresh checks OpenRouter's live catalog; availability and rate limits can change.", color = Muted)
@@ -164,24 +163,27 @@ fun SceneDetailsDialog(s: WorldSnapshot, vm: CanonViewModel, dismiss: () -> Unit
 @Composable
 fun ContextSheet(s: WorldSnapshot, vm: CanonViewModel, dismiss: () -> Unit) {
     ModalBottomSheet(onDismissRequest = dismiss, containerColor = Panel, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-        LazyColumn(Modifier.fillMaxHeight(.9f), contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            item { Text("Scene context", style = MaterialTheme.typography.headlineMedium); Text("Author-only notes are excluded. RP uses approved descriptions; it sends no source images.", color = Muted) }
-            val preview = runCatching { vm.contextPreview() }
-            preview.getOrNull()?.let { context ->
-                item { Text("Next request preview · ${context.budgetCharacters} character budget", color = Violet) }
-                if (context.omissions.isNotEmpty()) item { Text("Omissions / missing references\n" + context.omissions.joinToString("\n"), color = MaterialTheme.colorScheme.error) }
-                items(context.messages) { message -> Text("${message.role.uppercase()}\n${message.content}") }
-                item { Text("Source IDs: ${context.sourceIds.joinToString()}", style = MaterialTheme.typography.bodySmall, color = Muted) }
-            }
-            preview.exceptionOrNull()?.let { item { Text(it.message.orEmpty()) } }
-            item { HorizontalDivider(); Text("Recorded requests", style = MaterialTheme.typography.titleLarge) }
-            items(s.generations.asReversed(), key = { it.id }) { generation ->
-                var expanded by remember { mutableStateOf(false) }
-                TextButton(onClick = { expanded = !expanded }) { Text("${generation.purpose} · ${generation.status} · ${generation.actualModel.ifBlank { generation.model }}") }
-                if (expanded) Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(generation.contextJson, style = MaterialTheme.typography.bodySmall)
-                    if (generation.error.isNotBlank()) Text(generation.error, color = MaterialTheme.colorScheme.error)
-                    Text("Reported usage: ${generation.usageJson}", style = MaterialTheme.typography.bodySmall, color = Muted)
+        Column(Modifier.fillMaxHeight(.94f)) {
+            SheetHeader("Scene context", dismiss)
+            LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                item { Text("Author-only notes are excluded. RP uses approved descriptions; it sends no source images.", color = Muted) }
+                val preview = runCatching { vm.contextPreview() }
+                preview.getOrNull()?.let { context ->
+                    item { Text("Next request preview · ${context.budgetCharacters} character budget", color = Violet) }
+                    if (context.omissions.isNotEmpty()) item { Text("Omissions / missing references\n" + context.omissions.joinToString("\n"), color = MaterialTheme.colorScheme.error) }
+                    items(context.messages) { message -> Text("${message.role.uppercase()}\n${message.content}") }
+                    item { Text("Source IDs: ${context.sourceIds.joinToString()}", style = MaterialTheme.typography.bodySmall, color = Muted) }
+                }
+                preview.exceptionOrNull()?.let { item { Text(it.message.orEmpty()) } }
+                item { HorizontalDivider(); Text("Recorded requests", style = MaterialTheme.typography.titleLarge) }
+                items(s.generations.asReversed(), key = { it.id }) { generation ->
+                    var expanded by remember { mutableStateOf(false) }
+                    TextButton(onClick = { expanded = !expanded }) { Text("${generation.purpose} · ${generation.status} · ${generation.actualModel.ifBlank { generation.model }}") }
+                    if (expanded) Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(generation.contextJson, style = MaterialTheme.typography.bodySmall)
+                        if (generation.error.isNotBlank()) Text(generation.error, color = MaterialTheme.colorScheme.error)
+                        Text("Reported usage: ${generation.usageJson}", style = MaterialTheme.typography.bodySmall, color = Muted)
+                    }
                 }
             }
         }

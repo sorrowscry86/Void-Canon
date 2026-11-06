@@ -638,6 +638,53 @@ class RepositoryTest {
         images.forEach { (file, bytesBefore) -> assertArrayEquals(bytesBefore, File(repo.images, file).readBytes()) }
     }
 
+    @Test fun generatedArtworkPreservesOwnerBaselineAndProvenanceAcrossBackup() = runBlocking {
+        val before = repo.snapshot()
+        val draft = GeneratedImageDraft(UUID.randomUUID().toString(), "mira", "Mira", "Change only the outfit", "portrait",
+            "mira-cutout", before.assets.first { it.entityId == "mira" }.contentHash, CloudflareImageClient.MODEL,
+            "preview.png", System.currentTimeMillis(), 32)
+        repo.createWorld("Another world", "")
+        repo.importGeneratedImage(draft, imageBytes(false).inputStream())
+        repo.importGeneratedImage(draft, imageBytes(false).inputStream())
+        val all = repo.workspaceSnapshot()
+        val output = all.assets.single { it.id == draft.requestId }
+        assertEquals("mira", output.entityId)
+        assertEquals("exploratory", output.referenceKind)
+        assertTrue(output.provenance.contains(draft.prompt))
+        assertTrue(output.provenance.contains(draft.model))
+        assertEquals(before.entries.first { it.id == "mira" }.primaryAssetId, all.entries.first { it.id == "mira" }.primaryAssetId)
+        assertEquals(before.scene!!.backgroundAssetId, all.scenes.first { it.id == before.scene!!.id }.backgroundAssetId)
+        val archive = ByteArrayOutputStream().also { repo.export(it) }.toByteArray()
+        repo.restore(archive.inputStream())
+        val restored = repo.workspaceSnapshot().assets.first { it.id == draft.requestId }
+        assertEquals(output.copy(fileName = restored.fileName), restored)
+        assertEquals(output.contentHash, imageHash(File(repo.images, restored.fileName)))
+    }
+
+    @Test fun generatedPreviewSurvivesReopenAndChecksOutputDimensions() {
+        val files = File(context.cacheDir, "draft-test-${UUID.randomUUID()}").apply { mkdirs() }
+        try {
+            val store = GeneratedImageDraftStore(files, context.cacheDir)
+            val bitmap = Bitmap.createBitmap(512, 512, Bitmap.Config.ARGB_8888).apply { eraseColor(android.graphics.Color.BLUE) }
+            val bytes = ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }.toByteArray()
+            bitmap.recycle()
+            val result = GeneratedImage(bytes, CloudflareImageClient.MODEL, UUID.randomUUID().toString(), 27)
+            val draft = store.save("mira", "Mira", "A portrait", ImageSize.Portrait, null, null, result)
+            val file = File(store.directory, draft.fileName)
+            val originalHash = imageHash(file)
+            val reference = ImageFiles.generationReference(file)
+            val bounds = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            android.graphics.BitmapFactory.decodeByteArray(reference, 0, reference.size, bounds)
+            assertEquals(448, bounds.outWidth); assertEquals(448, bounds.outHeight)
+            assertEquals(originalHash, imageHash(file))
+            assertEquals(draft, GeneratedImageDraftStore(files, context.cacheDir).load())
+            assertTrue(runCatching { store.save("mira", "Mira", "A second", ImageSize.Portrait, null, null, result) }.isFailure)
+            store.clear(); assertNull(store.load())
+            assertTrue(runCatching { store.save("mira", "Mira", "Wrong dimensions", ImageSize.Large, null, null, result) }.isFailure)
+            assertNull(store.load())
+        } finally { files.deleteRecursively() }
+    }
+
     private fun imageBytes(transparent: Boolean): ByteArray {
         val bitmap = Bitmap.createBitmap(24, 24, Bitmap.Config.ARGB_8888)
         bitmap.eraseColor(if (transparent) 0x00000000 else 0xFF334455.toInt())

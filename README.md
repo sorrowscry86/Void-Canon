@@ -2,6 +2,12 @@
 
 A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
 
+## Next regular update — 0.4.3 (not released)
+
+The next update targets the existing **Void Canon** app. Source includes Cloudflare artwork generation, a central **Settings** menu, visible version/build information, and fixed Close/Back controls. Distribution is pending recovery of the regular app's original signing key. The available workspace keys do not match it, so no replacement regular APK is published yet. See [the UI handback](docs/UI-NAVIGATION-HANDBACK.md).
+
+The earlier 0.4.2 **Void Canon Test** download is retained in [Downloads](downloads/README.md) as historical preview evidence. Further updates are intended for the regular app.
+
 ## Install / upgrade
 
 Download the **[Void Canon 0.4.1 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/main/downloads/void-canon-0.4.1.apk)**. This regular app build includes scene continuity and updates your existing **Void Canon** installation.
@@ -49,7 +55,20 @@ In Free only mode, requests set zero maximum prices for prompt, completion, requ
 - **Describe / review image:** write observable details manually, or choose **Propose from image**. The latter explicitly confirms sending just that image to OpenRouter. Review/correct the draft, then **Approve** it.
 - Descriptions retain their immutable asset ID, source hash, approval state, and provenance. New image imports get new identities; old approvals never silently move to a replacement image.
 - **Exploratory** references are excluded from context. Alternate outfits affect the scene only when selected as its active cutout/appearance. Generating another proposal does not replace an existing approved description until you choose to review/save it.
-- RP sends approved descriptions, not source images. Image interpretation sends one explicitly selected image and an observation prompt. No artwork generation is implemented.
+- RP sends approved descriptions, not source images. Image interpretation sends one explicitly selected image and an observation prompt. Artwork generation is available in the optional 0.4.2 test preview described below.
+
+## Generate artwork with Cloudflare
+
+1. Download the private image connection JSON supplied separately for your development service. It is not included in this public repository or APK.
+2. In **Gallery**, choose a character or location, then **Generate artwork → Import image connection** and choose that file.
+3. Enter a prompt and choose a size. Optionally choose one existing image of this entry as the reference; for variants, describe the change while preserving the subject. Review the selected image before allowing transmission.
+4. Check the disclosure checkbox and tap **Generate image**. Review the preview, then **Save to Gallery** or **Discard preview**.
+5. Saved results are exploratory references with prompt/model/source provenance. Use the existing controls to set a portrait/background and review their visual description/reference use. Generation does not automatically replace existing art or change canon.
+
+Only the displayed prompt and selected reference are sent to the authenticated Cloudflare service. References are reduced to at most 448 pixels per side. Klein 4B is fixed; there are no retries or alternate models. The service reserves up to 5,000 estimated neurons per UTC day, including failed calls, as a conservative development budget. Cloudflare's free 10,000-neuron allowance is shared with other account usage; this guard is not an account billing cap. No paid plan was activated.
+
+The scoped service code is encrypted with Android Keystore and excluded from backups. **Disconnect image service** removes it from the device while retaining saved artwork. Do not share the private connection file: it grants access to the development service. Generated JPEGs are not transparent cutouts. See [implementation notes](IMPLEMENTATION-HANDBACK.md) and [service details](server/README.md).
+
 
 ## Play, context, and chapters
 

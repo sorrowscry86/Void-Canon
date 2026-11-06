@@ -1,0 +1,12 @@
+Debug 0.4.2 already installed.
+Success
+
+Running Android HTTPS fixture image walkthrough; no live provider request.
+
+org.voidcat.voidcanon.ImageGenerationUiTest:.
+
+Time: 84.483
+
+OK (1 test)
+
+

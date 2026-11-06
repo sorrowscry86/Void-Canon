@@ -13,6 +13,10 @@ captures/
 *.pfx
 .env
 .env.*
+node_modules
+.mf/
+.dev.vars*
+*image-connection*.json
 *.apk
 *.aab
 !gradle/wrapper/gradle-wrapper.jar

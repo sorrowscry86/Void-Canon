@@ -1,5 +1,7 @@
 # Void Canon downloads
 
+The next update will target the regular **Void Canon** app. Source version 0.4.3 adds artwork generation, Settings and visible exits; its APK is pending recovery of the original signing key. See [the handback](../docs/UI-NAVIGATION-HANDBACK.md). The current compatible regular download is 0.4.1 below.
+
 ## 0.4.1 — regular Void Canon update
 
 **[Download Void Canon 0.4.1 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/main/downloads/void-canon-0.4.1.apk)** · [APK SHA-256](void-canon-0.4.1.apk.sha256) · [Release notes](RELEASE-0.4.1.md)
@@ -13,6 +15,19 @@ This is **Void Canon**, package `org.voidcat.voidcanon`, version **0.4.1** (code
 3. Open **Play → Scene → Review scene continuity** to use the new state review/correction screen. Validated Live RP turns save story and state together.
 
 The older **Void Canon Test** preview below is optional and installs separately. Its data is not automatically merged into the regular app. Keep original exports when transferring data manually; restore replaces the receiving library, and 0.4.0 cannot read new format-4 backups.
+
+## Historical 0.4.2 preview — Cloudflare artwork
+
+**[Download Void Canon Test 0.4.2 (APK)](https://github.com/sorrowscry86/Void-Canon/raw/refs/heads/feature/scene-continuity/downloads/void-canon-0.4.2-preview.apk)** · [SHA-256](void-canon-0.4.2-preview.apk.sha256)
+
+Updates the existing **Void Canon Test** 0.4.1 preview in place; signing certificate and package are retained. Keep your original Void Canon app installed. Backing up the test app before updating is recommended. Database/backup formats are unchanged.
+
+In **Gallery**, choose an entry and tap **Generate artwork**. Import the private image connection file supplied separately, enter a prompt, optionally select an existing reference, allow sending the selection to Cloudflare, and generate. Preview before **Save to Gallery**. Saving creates an exploratory reference without replacing your existing image; use the portrait/background controls when ready.
+
+The private connection is deliberately absent from this public repository and APK. Saved artwork works offline and exports with its provenance; access codes stay on the device and are excluded from backups. Generation uses Cloudflare Klein 4B with a bounded development budget and no retries/fallback. It does not create transparent cutouts or generate images during dialogue.
+
+See [verification and limitations](../docs/image-generation-evidence/README.md), [handback](../IMPLEMENTATION-HANDBACK.md), and [service contract](../server/README.md). The live workers.dev endpoint is deployed, but the build environment blocks outbound access to it; full public-endpoint verification remains pending.
+
 
 ## Earlier isolated 0.4.1 preview
 
