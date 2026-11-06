@@ -1,5 +1,7 @@
 # Navigation and regular-update evidence
 
+Historical source-workspace checks below used fixture signing identities. The subsequent [regular 0.4.3 release checks](../release-043-evidence/README.md) resolve the signing gate with the original key and verify the signed in-place upgrade.
+
 Source: **0.4.3 / code 8**. Android API 29 software emulator, SDK/build tools 35,
 JDK 21, Gradle 8.11.1. Device data consists only of disposable authored fixtures.
 
@@ -35,8 +37,8 @@ certificate. Fixture APKs were signed with the emulator's existing debug
 identity to retain its library. See [public certificate checks](fixture-apk-verification.txt).
 
 **Neither emulator identity matches the published regular 0.4.1 certificate.**
-These fixture APKs are not distributed. A regular 0.4.1 → 0.4.3 signed upgrade
-still requires the original distribution key; this evidence does not claim
-that upgrade or physical-phone verification. No live AI requests were made.
+These fixture APKs are not distributed. These source-workspace checks did not establish a regular 0.4.1 → 0.4.3
+signed upgrade; that is recorded separately in the release evidence above.
+Neither set of emulator checks establishes physical-phone verification. No live AI requests were made.
 The image-test response is a solid-color local HTTPS fixture, not evidence of
 Cloudflare output quality or the deployed endpoint's delivery.

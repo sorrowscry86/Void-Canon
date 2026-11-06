@@ -1,8 +1,18 @@
 # Void Canon downloads
 
-The next update will target the regular **Void Canon** app. Source version 0.4.3 adds artwork generation, Settings and visible exits; its APK is pending recovery of the original signing key. See [the handback](../docs/UI-NAVIGATION-HANDBACK.md). The current compatible regular download is 0.4.1 below.
+## 0.4.3 — current regular Void Canon update
 
-## 0.4.1 — regular Void Canon update
+**[Download Void Canon 0.4.3 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.3/downloads/void-canon-0.4.3.apk)** · [APK SHA-256](void-canon-0.4.3.apk.sha256) · [Release notes](RELEASE-0.4.3.md)
+
+[Source ZIP](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.3/downloads/void-canon-0.4.3-source.zip) · [Source SHA-256](void-canon-0.4.3-source.zip.sha256)
+
+Updates your existing **Void Canon** app: package `org.voidcat.voidcanon`, version **0.4.3 / build 8**, Android 8.0+. Install over it without uninstalling or clearing data. The APK uses the same signing certificate as regular 0.4.0/0.4.1. **Void Canon Test** remains a separate historical preview.
+
+Includes Cloudflare artwork generation with reviewed prompts/references and explicit save, central Settings, visible version/build, and Back/Close fixes. Open **Settings → Artwork connection** to import the private connection file supplied separately; it is absent from the APK and public source. Saved images remain usable offline. Live generation requires networking and the configured service.
+
+See [verification, data retention and limits](../docs/release-043-evidence/README.md). Room schema 3 and portable backup format 4 are unchanged; no user-data reset or migration to a separate package is required.
+
+## Earlier 0.4.1 — regular Void Canon update
 
 **[Download Void Canon 0.4.1 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/main/downloads/void-canon-0.4.1.apk)** · [APK SHA-256](void-canon-0.4.1.apk.sha256) · [Release notes](RELEASE-0.4.1.md)
 

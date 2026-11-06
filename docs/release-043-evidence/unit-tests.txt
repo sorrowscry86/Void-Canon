@@ -1,0 +1,6 @@
+org.voidcat.voidcanon.ai.CloudflareImageClientTest: 5 tests, 0 failures, 0 errors
+org.voidcat.voidcanon.ai.OpenRouterClientTest: 7 tests, 0 failures, 0 errors
+org.voidcat.voidcanon.ai.RequestBudgetTest: 3 tests, 0 failures, 0 errors
+org.voidcat.voidcanon.data.ContinuityTest: 6 tests, 0 failures, 0 errors
+org.voidcat.voidcanon.data.RepositoryTest: 38 tests, 0 failures, 0 errors
+Total: 59 tests, 0 failures, 0 errors

@@ -1,0 +1,1 @@
+PASS: navigation/settings/keyboard exercise retained the original upgrade fixture, including the original draft, continuity history and AI settings.

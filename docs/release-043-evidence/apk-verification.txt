@@ -1,0 +1,13 @@
+Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
+Signer #1 certificate SHA-256 digest: d2c8a958809475255d9fa24ead371f3225f19e3a5189db3b416217817de5f56a
+Signer #1 certificate SHA-1 digest: ef6bee5cf5156d574a4c5e893e5c6894c045528d
+Signer #1 certificate MD5 digest: f0fc528dd14848923d5640c159293f7d
+package: name='org.voidcat.voidcanon' versionCode='8' versionName='0.4.3' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'
+sdkVersion:'26'
+targetSdkVersion:'35'
+uses-permission: name='android.permission.INTERNET'
+uses-permission: name='org.voidcat.voidcanon.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+application-label:'Void Canon'
+
+Published regular 0.4.1: Signer #1 certificate SHA-256 digest: d2c8a958809475255d9fa24ead371f3225f19e3a5189db3b416217817de5f56a
+MATCH: regular 0.4.1 and outgoing regular 0.4.3 signing certificate.

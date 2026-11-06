@@ -9,6 +9,8 @@ Start with the [project README](../README.md) for APK installation, upgrading, c
 | [Architecture](ARCHITECTURE.md) | World/scene isolation, Room storage, context assembly, credentials, generation lifecycle, and portable archive validation |
 | [Asset provenance](ASSETS.md) | Demo artwork sources, transparency, and replacement guidance |
 | [Changelog](../CHANGELOG.md) | Release-by-release behavior changes |
+| [Regular 0.4.3 release evidence](release-043-evidence/README.md) | Original signing identity, 0.4.1 in-place upgrade, Settings/keyboard and artwork fixture checks |
+| [UI/navigation handback](UI-NAVIGATION-HANDBACK.md) | Central Settings, version display and visible modal/keyboard exits |
 | [Regular 0.4.1 release evidence](release-041-evidence/README.md) | Original-package APK signing and 0.4.0 upgrade verification |
 | [Scene continuity evidence](continuity-evidence/README.md) | State-editor and regression verification for the 0.4.1 source |
 | [World-library Android evidence](world-library-evidence/README.md) | Earlier emulator walkthrough and screenshots, including blank worlds, creation, and switching |

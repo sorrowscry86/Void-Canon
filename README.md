@@ -2,30 +2,24 @@
 
 A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
 
-## Next regular update — 0.4.3 (not released)
+## Install / upgrade — 0.4.3
 
-The next update targets the existing **Void Canon** app. Source includes Cloudflare artwork generation, a central **Settings** menu, visible version/build information, and fixed Close/Back controls. Distribution is pending recovery of the regular app's original signing key. The available workspace keys do not match it, so no replacement regular APK is published yet. See [the UI handback](docs/UI-NAVIGATION-HANDBACK.md).
+Download the **[Void Canon 0.4.3 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.3/downloads/void-canon-0.4.3.apk)**. This regular app update adds reviewed Cloudflare artwork generation, a central **Settings** menu, installed version/build display, and persistent Back/Close controls. It includes the scene-continuity features introduced in 0.4.1.
 
-The earlier 0.4.2 **Void Canon Test** download is retained in [Downloads](downloads/README.md) as historical preview evidence. Further updates are intended for the regular app.
+Requires Android 8.0 or newer. Install over your existing **Void Canon** app; do not uninstall or clear app data. The package remains `org.voidcat.voidcanon`, version **0.4.3 / build 8**, and the signing certificate matches published regular 0.4.0/0.4.1. Worlds, artwork, transcripts, chapters, drafts, continuity history, and device-local AI settings remain in that installation. A portable export provides an optional additional copy before upgrading.
 
-## Install / upgrade
+Open **Settings** from the app header to confirm the installed version, configure AI/models or the artwork connection, and export/restore backups. Back remains visible in Play with the keyboard open; modal Close controls stay outside scrolling content. Closing a settings child returns to Settings.
 
-Download the **[Void Canon 0.4.1 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/main/downloads/void-canon-0.4.1.apk)**. This regular app build includes scene continuity and updates your existing **Void Canon** installation.
+[Downloads](downloads/README.md) includes APK/source checksums, [release notes](downloads/RELEASE-0.4.3.md), and older builds. [Release evidence](docs/release-043-evidence/README.md) records the signed 0.4.1 → 0.4.3 upgrade and Android checks. The historical **Void Canon Test** app installs separately; its data is not automatically moved into the regular app. Portable restore replaces the receiving library and excludes provider credentials/settings.
 
-Requires Android 8.0 or newer. Install over 0.4.0 to retain your worlds, artwork, transcripts, chapters, drafts, and device-local AI settings. Do not uninstall or clear app data. Export a backup before upgrading if you want an additional copy. The package remains `org.voidcat.voidcanon`; the signing certificate matches the published 0.4.0 APK.
-
-Use **Play → Scene → Review scene continuity** to inspect or correct positions, activities, held objects, learned facts, and elapsed time. Live RP tracks validated state changes alongside the story. Existing transcripts stay intact; old scenes begin with unknown state details instead of an invented reconstruction.
-
-[Downloads](downloads/README.md) includes APK/source checksums, release notes, and older builds. The optional earlier **Void Canon Test** preview remains separate; its data is not automatically moved into the regular app. Both 0.4.1 variants support format-4 portable backups, but provider keys/settings are excluded from backups and restoring replaces the destination library.
-
-Build the regular APK with:
+Build the regular APK with the original private signing key supplied locally:
 
 ```sh
-./gradlew assembleDebug
+./gradlew -PvoidCanonDebugKeystore=/private/path/to/original-debug.keystore assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Future in-place updates must reuse the original signing identity, which is kept outside Git. The optional `preview` build type uses a separate package; it is not the primary update download. These remain early debug builds.
+The original key stays outside Git. Omitting the property uses the local development key, which may not match the installed app. Verify the certificate before distributing an update. The optional historical `preview` build type has a separate package. These remain early debug builds.
 
 ## Build your own world
 
@@ -55,12 +49,12 @@ In Free only mode, requests set zero maximum prices for prompt, completion, requ
 - **Describe / review image:** write observable details manually, or choose **Propose from image**. The latter explicitly confirms sending just that image to OpenRouter. Review/correct the draft, then **Approve** it.
 - Descriptions retain their immutable asset ID, source hash, approval state, and provenance. New image imports get new identities; old approvals never silently move to a replacement image.
 - **Exploratory** references are excluded from context. Alternate outfits affect the scene only when selected as its active cutout/appearance. Generating another proposal does not replace an existing approved description until you choose to review/save it.
-- RP sends approved descriptions, not source images. Image interpretation sends one explicitly selected image and an observation prompt. Artwork generation is available in the optional 0.4.2 test preview described below.
+- RP sends approved descriptions, not source images. Image interpretation sends one explicitly selected image and an observation prompt. Artwork generation is available in the regular 0.4.3 app as described below.
 
 ## Generate artwork with Cloudflare
 
 1. Download the private image connection JSON supplied separately for your development service. It is not included in this public repository or APK.
-2. In **Gallery**, choose a character or location, then **Generate artwork → Import image connection** and choose that file.
+2. Open **Settings → Artwork connection → Import image connection** and choose that file. Then in **Gallery**, choose a character or location and tap **Generate artwork**. The Gallery form also supports connection import.
 3. Enter a prompt and choose a size. Optionally choose one existing image of this entry as the reference; for variants, describe the change while preserving the subject. Review the selected image before allowing transmission.
 4. Check the disclosure checkbox and tap **Generate image**. Review the preview, then **Save to Gallery** or **Discard preview**.
 5. Saved results are exploratory references with prompt/model/source provenance. Use the existing controls to set a portrait/background and review their visual description/reference use. Generation does not automatically replace existing art or change canon.
@@ -80,7 +74,7 @@ The scoped service code is encrypted with Android Keystore and excluded from bac
 
 **Chapters** lets you write a summary offline or request a draft from OpenRouter. New drafts cover messages after the last approved chapter. Review the read-only source transcript, edit the summary, and **Approve chapter** to include its memory in subsequent RP. Saving or editing a summary never edits the source messages. New RP events and model proposals never rewrite world lore automatically.
 
-## Scene continuity (0.4.1 source)
+## Scene continuity
 
 Live RP keeps compact, scene-local records of participants, positions, activities, relevant conditions, held objects, and explicit elapsed time. The model receives at most 4,000 characters of current state; older revisions stay local. Story and validated changes save together. Invalid model responses preserve your draft, transcript, and state, with details in Context.
 

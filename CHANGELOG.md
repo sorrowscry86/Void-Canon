@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.3 — Artwork and regular-app navigation
+
+- Bring the reviewed Cloudflare artwork workflow from the 0.4.2 preview into the regular app: optional selected reference, explicit consent, recoverable preview, and author-controlled save/discard. Saved art starts as exploratory, with provenance.
+- Add central Settings for AI/models, artwork connection, and backups, plus visible installed version/build.
+- Keep Back available with the keyboard open and Close outside modal scrollers; child settings return to Settings. Preserve the unsent draft when leaving Play.
+- Publish the original package signed with the regular 0.4.0/0.4.1 certificate; retain Room schema 3 and backup format 4.
+
+See [0.4.3 release notes](downloads/RELEASE-0.4.3.md) and [distribution verification](docs/release-043-evidence/README.md). The earlier 0.4.2 artwork preview is retained as historical evidence.
+
 ## 0.4.1 — Scene continuity
 
 - Persist bounded participant/object state, explicit elapsed time, and source-linked before/after revisions separately from transcripts and chapter memory.

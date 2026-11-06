@@ -1,0 +1,11 @@
+Waiting for the disposable API 29 emulator.
+Performing Streamed Install
+Success
+
+/workspace/tooling/release-043-upgrade/fixture.db: 1 file pushed, 0 skipped. 309.1 MB/s (90112 bytes in 0.000s)
+/workspace/tooling/release-041-upgrade/openrouter-private.xml: 1 file pushed, 0 skipped. 0.3 MB/s (160 bytes in 0.000s)
+Verified old 0.4.1 fixture: edited entries, transcript, chapter, draft, private notes, continuity history, artwork and model settings.
+Performing Streamed Install
+Success
+
+PASS: regular 0.4.1 -> 0.4.3 installed with no uninstall or data clear. All 9 domain-table contents, IDs, drafts, continuity history, schema 3, image hashes, and model-preference bytes are unchanged.

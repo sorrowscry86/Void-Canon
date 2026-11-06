@@ -1,15 +1,16 @@
 # Void Canon — regular-app update and navigation
 
 Project: `/workspace/Void-Canon`. Source version **0.4.3** (code 8), Android 8.0/API 26+.
-The user wants updates in the regular **Void Canon** app, without a separate test
-installation. The source now adds central Settings, installed version/build
-information, and persistent Close/Back controls. See the current
-[UI/navigation handback](docs/UI-NAVIGATION-HANDBACK.md) for checks and the
-outstanding original-signing-key requirement. **0.4.3 is not distributed yet.**
+The regular **Void Canon 0.4.3** update includes the reviewed Cloudflare image
+workflow, central Settings, installed version/build display, and persistent
+Close/Back controls. PR #3 supplies the implementation; the original distribution
+workspace supplies the matching signing identity and regular APK. See the
+[release notes](downloads/RELEASE-0.4.3.md), [release verification](docs/release-043-evidence/README.md),
+and [UI/navigation handback](docs/UI-NAVIGATION-HANDBACK.md).
 
-The artwork increment below was previously distributed only as 0.4.2 preview.
-The user approved adding the tested Cloudflare image workflow to the app for development.
-The prior implementation is preserved in [scene continuity handback](docs/SCENE-CONTINUITY-HANDBACK.md).
+The artwork increment was previously distributed only as the separate 0.4.2
+preview. It is now included in the regular package. Earlier scene-continuity
+behavior is preserved in the [continuity handback](docs/SCENE-CONTINUITY-HANDBACK.md).
 
 ## Flow and author control
 
@@ -55,52 +56,63 @@ The server stores IDs/dates/reservations/status, not images or prompts.
 
 ## Verification
 
-- 59 JVM tests pass: HTTPS privacy, response validation, no retries/redirects,
-  cancellation, stable owner/baseline, duplicate save, portable provenance,
-  preview recovery, dimensions, and reference resizing without source mutation.
-- 4 workerd/Miniflare tests pass with real SQLite D1 and a fixture AI binding:
-  authorization/validation, multipart input, duplicate IDs, failed reservations,
-  and concurrent daily-limit enforcement. Fixtures are not live AI evidence.
-- SDK 35, Gradle 8.11.1 and JDK 21: assemblePreview, assembleDebug,
-  testDebugUnitTest, lintPreview and assembleDebugAndroidTest are the build checks.
-  Final logs and device status are in docs/image-generation-evidence/.
-- Worker upload, AI/D1/secret bindings, logs/traces and workers.dev activation
-  were verified through Cloudflare's API.
-- The deployed workers.dev hostname is blocked by this execution environment's
-  destination policy, including connector native fetch. A phone → new Worker
-  → AI end-to-end result is not claimed. Earlier live Klein lab tests prove
-  model behavior separately, not this deployed service's complete delivery.
-- The Android HTTPS fixture walkthrough **passed**, `OK (1 test)`, 84.483 seconds
-  on API 29. It covers connection import, consent, one fixture request, preview,
-  explicit save and baseline/transcript preservation. An emulator System UI ANR
-  initially obstructed opening the form; the opening tap was checked manually
-  and the automated opening uses its accessibility action. See the evidence
-  README for captures and limitations. This does not prove a physical-phone or
-  deployed-service result.
+The original distribution workspace rebuilt the regular 0.4.3 artifact using
+JDK 17.0.17, SDK/build tools 35 and Gradle 8.11.1:
+`assembleDebug testDebugUnitTest lintDebug assembleDebugAndroidTest`.
+All 59 JVM tests passed and lint reported no issues. Exact current APK identity,
+upgrade results, Android test logs, and screenshots are in
+[0.4.3 release evidence](docs/release-043-evidence/README.md).
+
+The JVM suite covers HTTPS privacy/response validation, no retries/redirects,
+cancellation, stable owners/baselines, duplicate saves, portable provenance,
+preview recovery, dimensions, reference resizing, repository/backup validation,
+continuity and OpenRouter behavior. Earlier provider/service verification is
+preserved in [artwork evidence](docs/image-generation-evidence/README.md) and
+[navigation evidence](docs/ui-navigation-evidence/README.md), including four
+workerd/Miniflare checks with fixture AI and real SQLite D1. Those fixtures are
+not live generation evidence.
+
+The source workspace verified Worker deployment, AI/D1/secret bindings and
+workers.dev activation. This environment blocks the deployed hostname; a
+phone → deployed Worker → AI result is still not claimed. The Android artwork
+walkthrough uses a local HTTPS fixture with a solid-color response. Physical-phone
+layout, live provider behavior and generated artwork quality require separate
+verification. See release evidence for the software-emulator System UI stall
+and recovery; no application data was cleared.
 
 ## Build and signing
 
 Regular updates must use package `org.voidcat.voidcanon`, launcher **Void Canon**,
 and the original certificate SHA-256
 `d2c8a958809475255d9fa24ead371f3225f19e3a5189db3b416217817de5f56a`.
-Pass the recovered original key through `-PvoidCanonDebugKeystore=...` when
-building `assembleDebug`. Verify the APK certificate before publishing.
-The normal workspace debug key is suitable only for disposable emulator
-fixtures; it cannot update the user's regular installation. Do not distribute
-it as the regular update, uninstall the user's app, or clear their data.
+The original key was available privately in the distribution workspace.
+The regular 0.4.3 APK was built with `-PvoidCanonDebugKeystore=<original-key-path>`
+and its public certificate verified against the published regular 0.4.1 APK.
+The key is never included in Git, APKs, portable backups or source archives.
+Use the same identity for future updates and verify every outgoing APK.
+A different development key cannot update the existing regular installation.
 
-Historical preview: `org.voidcat.voidcanon.preview` / **Void Canon Test**.
-Use the existing preview key for in-place updates; no private key is committed:
-
-```sh
-./gradlew -PvoidCanonDebugKeystore=/workspace/.android/debug.keystore assemblePreview lintPreview
-```
-
-The optional Gradle property selects the debug-derived variants' existing key.
-The preview certificate SHA-256 is
+Historical preview: `org.voidcat.voidcanon.preview` / **Void Canon Test**,
+certificate SHA-256
 `be36b09130f79882b6a032b7cbfc8c0515737952dac493d23c71cbbb7265a4c2`.
-The preview key cannot sign an update to the regular package. No new preview
-is requested or published for the navigation changes.
+It is separate from the regular app. If rebuilding that historical variant,
+select its own private preview key; the key paths in other workspaces are not
+interchangeable. No new preview is published for 0.4.3.
+
+## Storage and next increment
+
+Structured library data remains in Room schema 3; app-private image files keep
+stable asset IDs and hashes. Completed unsaved image previews remain private
+until saved/discarded; only saved art enters portable backup format 4. Device-local
+provider credentials/settings remain outside portable backups. Artwork service
+codes are encrypted with Android Keystore. The update does not change schemas
+or reset existing work. The released source ZIP excludes signing keys, service
+connections, provider secrets, emulator databases and user-created content.
+
+The immediate follow-up is physical-phone verification of the regular update,
+Settings/keyboard exits, private connection import and one reviewed live artwork
+request. Keep further feature work incremental; the broader roadmap remains
+in [the product roadmap](docs/PRODUCT-ROADMAP.md).
 
 ## Boundary
 
