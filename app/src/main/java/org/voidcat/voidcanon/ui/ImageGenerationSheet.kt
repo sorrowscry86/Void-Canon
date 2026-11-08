@@ -20,11 +20,12 @@ import org.voidcat.voidcanon.data.WorldSnapshot
 @Composable
 fun ImageGenerationSheet(snapshot: WorldSnapshot, owner: EntryRecord, vm: CanonViewModel, dismiss: () -> Unit) {
     val connected by vm.imageConnected.collectAsStateWithLifecycle()
-    val generating by vm.generating.collectAsStateWithLifecycle()
+    val manualGenerating by vm.manualImageGenerating.collectAsStateWithLifecycle()
+    val imageBusy by vm.imageBusy.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
     val preview by vm.imagePreview.collectAsStateWithLifecycle()
     val error by vm.imageError.collectAsStateWithLifecycle()
-    val active = generating != null
+    val active = manualGenerating
     var prompt by rememberSaveable(owner.id) { mutableStateOf("") }
     var sizeName by rememberSaveable(owner.id) { mutableStateOf(if (owner.kind == "location") ImageSize.Background.name else ImageSize.Portrait.name) }
     var referenceId by rememberSaveable(owner.id) { mutableStateOf<String?>(null) }
@@ -42,8 +43,8 @@ fun ImageGenerationSheet(snapshot: WorldSnapshot, owner: EntryRecord, vm: CanonV
                         modifier = Modifier.fillMaxWidth().heightIn(min = 240.dp, max = 440.dp))
                     Text(draft.prompt, color = Muted)
                     Text("Saved images keep the prompt, model and selected reference identity. This image has not replaced a portrait or background.", color = Muted, style = MaterialTheme.typography.bodySmall)
-                    Button(onClick = vm::saveGeneratedImage, enabled = !busy && !active, modifier = Modifier.fillMaxWidth()) { Text("Save to Gallery") }
-                    OutlinedButton(onClick = vm::discardGeneratedImage, enabled = !busy && !active, modifier = Modifier.fillMaxWidth()) { Text("Discard preview") }
+                    Button(onClick = vm::saveGeneratedImage, enabled = !busy && !active && !imageBusy, modifier = Modifier.fillMaxWidth()) { Text("Save to Gallery") }
+                    OutlinedButton(onClick = vm::discardGeneratedImage, enabled = !busy && !active && !imageBusy, modifier = Modifier.fillMaxWidth()) { Text("Discard preview") }
                 } else {
                     Text("For ${owner.name}", style = MaterialTheme.typography.titleLarge)
                     OutlinedTextField(prompt, { if (it.length <= 2000) prompt = it }, label = { Text("Image prompt") },
@@ -74,7 +75,7 @@ fun ImageGenerationSheet(snapshot: WorldSnapshot, owner: EntryRecord, vm: CanonV
                 if (active) {
                     LinearProgressIndicator(Modifier.fillMaxWidth())
                     Text("Generating image…", color = Muted)
-                    OutlinedButton(onClick = vm::cancelGeneration, modifier = Modifier.fillMaxWidth()) { Text("Cancel generation") }
+                    OutlinedButton(onClick = vm::cancelImageGeneration, modifier = Modifier.fillMaxWidth()) { Text("Cancel generation") }
                 }
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 Spacer(Modifier.height(24.dp))

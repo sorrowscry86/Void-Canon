@@ -38,6 +38,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
 import org.voidcat.voidcanon.CanonViewModel
 import org.voidcat.voidcanon.data.AssetRecord
@@ -65,6 +68,7 @@ fun CanonApp(vm: CanonViewModel) {
     var aiOpen by remember { mutableStateOf(false) }
     var settingsOpen by remember { mutableStateOf(false) }
     var imageSettingsOpen by remember { mutableStateOf(false) }
+    var autoSettingsOpen by remember { mutableStateOf(false) }
     var returnToSettings by remember { mutableStateOf(false) }
     var contextOpen by remember { mutableStateOf(false) }
     var sceneOpen by remember { mutableStateOf(false) }
@@ -73,6 +77,13 @@ fun CanonApp(vm: CanonViewModel) {
     var restoreUri by remember { mutableStateOf<Uri?>(null) }
     val snackbar = remember { SnackbarHostState() }
     val keyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, destination, detailId) {
+        fun update() = vm.artworkVisible(destination == Destination.Play && detailId == null && lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
+        val observer = LifecycleEventObserver { _, _ -> update() }
+        lifecycleOwner.lifecycle.addObserver(observer); update()
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer); vm.artworkVisible(false) }
+    }
     val identity = rememberAppIdentity()
     val focus = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
@@ -93,7 +104,7 @@ fun CanonApp(vm: CanonViewModel) {
     }
     LaunchedEffect(revision) { detailId = null }
     LaunchedEffect(snapshot.world?.id) { detailId = null; destinationName = Destination.World.name }
-    BackHandler(!settingsOpen && !aiOpen && !imageSettingsOpen && !contextOpen && !sceneOpen && !backupOpen && (detailId != null || destination != Destination.World)) { backToWorld() }
+    BackHandler(!settingsOpen && !aiOpen && !autoSettingsOpen && !imageSettingsOpen && !contextOpen && !sceneOpen && !backupOpen && (detailId != null || destination != Destination.World)) { backToWorld() }
 
     Scaffold(
         modifier = Modifier.fillMaxSize().imePadding(),
@@ -172,12 +183,13 @@ fun CanonApp(vm: CanonViewModel) {
         settingsOpen = false; returnToSettings = true; imageSettingsOpen = true
     }, {
         settingsOpen = false; returnToSettings = true; backupOpen = true
-    })
+    }, { settingsOpen = false; returnToSettings = true; autoSettingsOpen = true })
     if (aiOpen) AiSettingsSheet(vm) { aiOpen = false; closeSettingsChild() }
+    if (autoSettingsOpen) ArtworkSettingsSheet(vm) { autoSettingsOpen = false; closeSettingsChild() }
     if (imageSettingsOpen) ImageConnectionSettingsSheet(vm) { imageSettingsOpen = false; closeSettingsChild() }
     if (contextOpen) ContextSheet(snapshot, vm) { contextOpen = false }
     if (sceneOpen) SceneDetailsDialog(snapshot, vm) { sceneOpen = false }
-    if (backupOpen) ModalBottomSheet(onDismissRequest = { backupOpen = false; closeSettingsChild() }, containerColor = Panel) {
+    if (backupOpen) ModalBottomSheet(onDismissRequest = { backupOpen = false; closeSettingsChild() }, containerColor = Panel, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(.8f)) {
             SheetHeader("Backups & data", { backupOpen = false; closeSettingsChild() })
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp).padding(top = 16.dp, bottom = 32.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -515,25 +527,35 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
     val generating by vm.generating.collectAsStateWithLifecycle()
     val generationError by vm.generationError.collectAsStateWithLifecycle()
     val hasKey by vm.hasKey.collectAsStateWithLifecycle()
+    val artwork by vm.artwork.collectAsStateWithLifecycle()
+    val visualPlan = artwork.plan?.takeIf { it.snapshot.sceneId == scene.id && it.snapshot.worldId == scene.worldId }
+    val illustration = artwork.image?.takeIf { artwork.illustrated && visualPlan != null }
+    val classicView = !artwork.illustrated || (artwork.image == null && !artwork.enabled)
+    val visibleLocation = if (classicView) location else s.entry(visualPlan?.snapshot?.locationId) ?: location
+    val backdropId = if (visibleLocation.id == location.id) scene.backgroundAssetId else visibleLocation.primaryAssetId
+    val showCutout = illustration == null && (classicView || visualPlan?.snapshot?.let { it.ownerId == character.id && it.appearance.isBlank() } == true)
     val isDemo = scene.id == "harbor-scene"
     var liveMode by rememberSaveable { mutableStateOf(!isDemo || vm.hasKey.value) }
     var historyOpen by remember { mutableStateOf(false) }
+    var artworkSettingsOpen by remember(scene.id) { mutableStateOf(false) }
+    val keyboard = LocalSoftwareKeyboardController.current
     val focus = LocalFocusManager.current
     val lastMessage = s.messages.lastOrNull()
     val dialogueScroll = rememberScrollState()
     LaunchedEffect(lastMessage?.id) { dialogueScroll.scrollTo(0) }
 
     BoxWithConstraints(Modifier.fillMaxSize()) {
-        LocalImage(vm, scene.backgroundAssetId, "Scene at ${location.name}", Modifier.fillMaxSize())
+        LocalImage(vm, backdropId, "Scene at ${visibleLocation.name}", Modifier.fillMaxSize())
+        if (illustration != null) AsyncImage(illustration, "Current scene illustration", Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
         val spriteHeight = (maxHeight - if (keyboardVisible) 196.dp else 230.dp).coerceAtLeast(64.dp)
         val dialogueMaxHeight = (maxHeight * .34f).coerceAtLeast(72.dp)
-        LocalImage(vm, scene.cutoutAssetId, "${character.name}, layered over the setting",
+        if (showCutout) LocalImage(vm, scene.cutoutAssetId, "${character.name}, layered over the setting",
             Modifier.align(Alignment.TopCenter).padding(top = if (keyboardVisible) 44.dp else 100.dp).fillMaxWidth().height(spriteHeight), ContentScale.Fit)
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Ink.copy(alpha = .55f), Color.Transparent, Ink.copy(alpha = .65f)))))
         Column(Modifier.fillMaxSize().padding(horizontal = 16.dp).padding(bottom = 10.dp)) {
             Row(Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(location.name, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 13.sp)
+                    Text(visibleLocation.name, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 13.sp)
                     Text(if (liveMode) "OpenRouter · ${if (hasKey) "live RP" else "setup needed"}" else "Scripted demo · offline", fontSize = 10.sp, color = Violet)
                 }
                 IconButton(onClick = { focus.clearFocus(); historyOpen = true }) { Icon(CanonIcons.History, "Scene history") }
@@ -545,6 +567,7 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
                 TextButton(onClick = context) { Text("Context") }
                 TextButton(onClick = details) { Text("Scene") }
                 TextButton(onClick = ai) { Text("AI") }
+                ArtworkControls(vm) { focus.clearFocus(); keyboard?.hide(); artworkSettingsOpen = true }
             }
             if (liveMode && generationError != null) Text(generationError.orEmpty(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.fillMaxWidth().background(Panel).padding(8.dp).heightIn(max = 84.dp).verticalScroll(rememberScrollState()))
@@ -577,6 +600,7 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
             }
         }
     }
+    if (artworkSettingsOpen) ArtworkSettingsSheet(vm) { artworkSettingsOpen = false }
     if (historyOpen) ModalBottomSheet(onDismissRequest = { historyOpen = false }, containerColor = Panel) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(.85f)) {
             SheetHeader("Scene history", { historyOpen = false })

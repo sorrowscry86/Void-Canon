@@ -41,12 +41,22 @@ abstract class CanonDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE) abstract suspend fun putContinuityEvents(rows: List<ContinuityEvent>)
     @Query("DELETE FROM continuity_events") abstract suspend fun clearContinuityEvents()
 
+    @Query("SELECT * FROM illustration_jobs ORDER BY createdAt, id") abstract suspend fun illustrationJobs(): List<IllustrationJob>
+    @Insert(onConflict = OnConflictStrategy.REPLACE) abstract suspend fun putIllustration(row: IllustrationJob)
+    @Query("SELECT * FROM illustration_frames WHERE sceneId=:sceneId") abstract suspend fun illustrationFrame(sceneId: String): IllustrationFrame?
+    @Insert(onConflict = OnConflictStrategy.REPLACE) abstract suspend fun putIllustrationFrame(row: IllustrationFrame)
+    @Query("DELETE FROM illustration_jobs") abstract suspend fun clearIllustrations()
+    @Query("SELECT * FROM illustration_allowance") abstract suspend fun illustrationAllowances(): List<IllustrationAllowance>
+    @Insert(onConflict = OnConflictStrategy.REPLACE) abstract suspend fun putIllustrationAllowance(row: IllustrationAllowance)
+    @Query("DELETE FROM illustration_frames") abstract suspend fun clearIllustrationFrames()
+
     // Call within a Room transaction for a consistent graph.
     suspend fun snapshot() = WorldSnapshot(
         worlds = worlds(), entries = entries(), assets = assets(), scenes = scenes(), messages = messages(),
         descriptions = descriptions(), chapters = chapters(), generations = generations(), continuityEvents = continuityEvents(),
     )
     suspend fun replace(snapshot: WorldSnapshot) {
+        clearIllustrations(); clearIllustrationFrames()
         clearContinuityEvents(); clearGenerations(); clearChapters(); clearDescriptions()
         clearMessages(); clearScenes(); clearAssets(); clearEntries(); clearWorlds()
         putWorlds(snapshot.worlds); putEntries(snapshot.entries); putAssets(snapshot.assets)
@@ -56,8 +66,8 @@ abstract class CanonDao {
 }
 
 @Database(
-    entities = [WorldRecord::class, EntryRecord::class, AssetRecord::class, SceneRecord::class, MessageRecord::class, VisualDescription::class, ChapterRecord::class, GenerationRecord::class, ContinuityEvent::class],
-    version = 3, exportSchema = true,
+    entities = [WorldRecord::class, EntryRecord::class, AssetRecord::class, SceneRecord::class, MessageRecord::class, VisualDescription::class, ChapterRecord::class, GenerationRecord::class, ContinuityEvent::class, IllustrationJob::class, IllustrationFrame::class, IllustrationAllowance::class],
+    version = 4, exportSchema = true,
 )
 abstract class CanonDatabase : RoomDatabase() {
     abstract fun canonDao(): CanonDao
@@ -83,5 +93,13 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE scenes ADD COLUMN continuityJson TEXT NOT NULL DEFAULT ''")
         db.execSQL("CREATE TABLE IF NOT EXISTS continuity_events (id TEXT NOT NULL PRIMARY KEY, sceneId TEXT NOT NULL, sourceMessageId TEXT, beforeJson TEXT NOT NULL, afterJson TEXT NOT NULL, createdAt INTEGER NOT NULL)")
+    }
+}
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS illustration_jobs (id TEXT NOT NULL PRIMARY KEY, sceneId TEXT NOT NULL, worldId TEXT NOT NULL, visualKey TEXT NOT NULL, planJson TEXT NOT NULL, automatic INTEGER NOT NULL, status TEXT NOT NULL, createdAt INTEGER NOT NULL, lastUsedAt INTEGER NOT NULL, dispatchedAt INTEGER NOT NULL, day TEXT NOT NULL, fileName TEXT NOT NULL, error TEXT NOT NULL)")
+        db.execSQL("CREATE TABLE IF NOT EXISTS illustration_allowance (day TEXT NOT NULL PRIMARY KEY, attempts INTEGER NOT NULL, lastDispatchAt INTEGER NOT NULL)")
+        db.execSQL("CREATE TABLE IF NOT EXISTS illustration_frames (sceneId TEXT NOT NULL PRIMARY KEY, planJson TEXT NOT NULL)")
     }
 }

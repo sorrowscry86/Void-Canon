@@ -42,7 +42,7 @@ fun SheetHeader(title: String, close: () -> Unit, actions: @Composable RowScope.
 }
 
 @Composable
-fun AppSettingsSheet(vm: CanonViewModel, close: () -> Unit, ai: () -> Unit, images: () -> Unit, backup: () -> Unit) {
+fun AppSettingsSheet(vm: CanonViewModel, close: () -> Unit, ai: () -> Unit, images: () -> Unit, backup: () -> Unit, automatic: () -> Unit) {
     val app = rememberAppIdentity()
     val connected by vm.imageConnected.collectAsStateWithLifecycle()
     val config by vm.configuration.collectAsStateWithLifecycle()
@@ -58,6 +58,7 @@ fun AppSettingsSheet(vm: CanonViewModel, close: () -> Unit, ai: () -> Unit, imag
                 SettingsLink("AI & models", "OpenRouter · roleplay and image descriptions" +
                     if (config.rpModel.isNotBlank()) "\nRP: ${config.rpModel}" else "\nChoose models and manage your key", ai)
                 SettingsLink("Artwork connection", if (connected) "Cloudflare image service connected" else "Connect Cloudflare image generation", images)
+                SettingsLink("Automatic scene artwork", "Scene illustrations, visual brief, style and upload permission", automatic)
                 SettingsLink("Backups & data", "Export or restore your local world library", backup)
                 HorizontalDivider()
                 Text("Local world editing and saved artwork work offline. Provider connections are optional. Keys and access codes are excluded from portable backups.", style = MaterialTheme.typography.bodySmall, color = Muted)
@@ -84,14 +85,16 @@ fun ImageConnectionControls(vm: CanonViewModel) {
     val endpoint by vm.imageEndpoint.collectAsStateWithLifecycle()
     val generating by vm.generating.collectAsStateWithLifecycle()
     val busy by vm.busy.collectAsStateWithLifecycle()
+    val imageBusy by vm.imageBusy.collectAsStateWithLifecycle()
+    val manualGenerating by vm.manualImageGenerating.collectAsStateWithLifecycle()
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri -> uri?.let(vm::importImageConnection) }
     if (connected) {
         Text("Connected to $endpoint", style = MaterialTheme.typography.bodySmall, color = Muted)
-        TextButton(onClick = vm::disconnectImages, enabled = generating == null && !busy) { Text("Disconnect image service") }
+        TextButton(onClick = vm::disconnectImages, enabled = generating == null && !busy && !imageBusy && !manualGenerating) { Text("Disconnect image service") }
     } else {
         Text("Import your private image connection file once to connect this device to the development image service.", color = Muted)
     }
-    OutlinedButton(onClick = { picker.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) }, enabled = generating == null && !busy) {
+    OutlinedButton(onClick = { picker.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) }, enabled = generating == null && !busy && !imageBusy && !manualGenerating) {
         Text(if (connected) "Replace image connection" else "Import image connection")
     }
 }

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.4 — Automatic scene artwork (source)
+
+- Optional meaningful-change illustrations in Play, with independent RP/image work,
+  selected-reference prompt building, quoted visual cues and prompt inspection.
+- Durable/coalescing jobs, foreground dispatch, daily allowance, no automatic replay,
+  a bounded cache, layered-view toggle and explicit exploratory Gallery retention.
+- Room 3→4 migration preserves story records. Backup format remains 4; operational
+  image state and upload permissions stay device-local. Regular APK packaging pending.
+
 ## 0.4.3 — Artwork and regular-app navigation
 
 - Bring the reviewed Cloudflare artwork workflow from the 0.4.2 preview into the regular app: optional selected reference, explicit consent, recoverable preview, and author-controlled save/discard. Saved art starts as exploratory, with provenance.

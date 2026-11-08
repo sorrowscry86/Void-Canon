@@ -30,12 +30,25 @@ enum class ImageSize(val title: String, val wire: String, val width: Int, val he
 }
 
 data class GeneratedImage(val bytes: ByteArray, val model: String, val requestId: String, val reservedNeurons: Int)
+data class ImageServiceStatus(val day: String, val remaining: Int)
+class ImageServiceException(val status: Int, message: String) : IOException(message)
 
 /** One explicit call. Never retries, follows redirects, or sends a Cloudflare account token. */
 class CloudflareImageClient(
     private val http: OkHttpClient = OkHttpClient.Builder().retryOnConnectionFailure(false)
-        .followRedirects(false).followSslRedirects(false).callTimeout(120, TimeUnit.SECONDS).build(),
+        .followRedirects(false).followSslRedirects(false).readTimeout(120, TimeUnit.SECONDS).callTimeout(120, TimeUnit.SECONDS).build(),
 ) {
+    suspend fun status(connection: ImageConnection): ImageServiceStatus {
+        connection.validate()
+        val result = Json.parseToJsonElement(request(Request.Builder().url(connection.endpoint.trimEnd('/') + "/v1/status")
+            .header("Authorization", "Bearer ${connection.accessToken}").build())).jsonObject
+        val day = result.getValue("day").jsonPrimitive.content
+        val limit = result.getValue("limit").jsonPrimitive.int
+        val reserved = result.getValue("reserved").jsonPrimitive.int
+        require(day.matches(Regex("[0-9]{4}-[0-9]{2}-[0-9]{2}")) && limit in 0..5000 && reserved >= 0 && result["model"]?.jsonPrimitive?.content == MODEL) { "Unrecognized image allowance response." }
+        return ImageServiceStatus(day, (limit - reserved).coerceAtLeast(0))
+    }
+
     suspend fun generate(connection: ImageConnection, requestId: String, prompt: String, size: ImageSize, reference: ByteArray?): GeneratedImage {
         connection.validate()
         require(prompt.isNotBlank() && prompt.length <= 2000) { "Use a prompt of 1–2,000 characters." }
@@ -67,13 +80,13 @@ class CloudflareImageClient(
             override fun onResponse(call: Call, response: Response) {
                 try {
                     val text = response.use {
-                        check(response.isSuccessful) { when (response.code) {
+                        if (!response.isSuccessful) throw ImageServiceException(response.code, when (response.code) {
                             401, 403 -> "Image access was rejected. Import your connection file again."
                             429 -> "The image service's daily development budget or Cloudflare limit was reached. Wait before generating again."
                             409 -> "This image request was already submitted. Check the preview before generating again."
                             400, 413 -> "The prompt or reference was rejected. Try a shorter prompt or a smaller reference."
                             else -> "Cloudflare could not finish this image (HTTP ${response.code}). No automatic retry was made."
-                        } }
+                        })
                         val body = requireNotNull(response.body) { "The image service returned an empty response." }
                         require(body.contentLength() <= 12500000) { "The image response was too large." }
                         val source = body.source()

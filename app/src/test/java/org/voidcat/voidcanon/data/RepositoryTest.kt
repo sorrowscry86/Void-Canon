@@ -46,7 +46,7 @@ class RepositoryTest {
     }
 
     private fun openDatabase() {
-        db = Room.databaseBuilder(context, CanonDatabase::class.java, dbName).addMigrations(MIGRATION_1_2, MIGRATION_2_3).allowMainThreadQueries().build()
+        db = Room.databaseBuilder(context, CanonDatabase::class.java, dbName).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).allowMainThreadQueries().build()
         repo = CanonRepository(context, db)
     }
 

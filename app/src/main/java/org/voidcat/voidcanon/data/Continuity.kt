@@ -52,6 +52,7 @@ data class ContinuityReply(
     val timeEvidence: String = "",
     val actors: List<ActorChange> = emptyList(),
     val objects: List<ObjectChange> = emptyList(),
+    val visual: kotlinx.serialization.json.JsonElement? = null,
 )
 
 @Serializable

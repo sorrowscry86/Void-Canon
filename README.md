@@ -2,6 +2,16 @@
 
 A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
 
+## Automatic scene artwork — 0.4.4 source
+
+The next increment adds opt-in scene illustrations to Play: generate after meaningful
+visual changes, continue RP while images render, inspect the assembled prompt, pause,
+switch to layered artwork, and explicitly keep favorites in Gallery. Defaults are
+512-square images and 30 automatic attempts per device per UTC day. Private notes and
+character knowledge are excluded from image prompts; original artwork and canon stay
+under author control. The regular 0.4.4 APK is not published yet. See the
+[current handback](IMPLEMENTATION-HANDBACK.md) and [verification](docs/automatic-artwork-evidence/README.md).
+
 ## Install / upgrade — 0.4.3
 
 Download the **[Void Canon 0.4.3 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.3/downloads/void-canon-0.4.3.apk)**. This regular app update adds reviewed Cloudflare artwork generation, a central **Settings** menu, installed version/build display, and persistent Back/Close controls. It includes the scene-continuity features introduced in 0.4.1.

@@ -1,0 +1,17 @@
+{
+  "fixture_only": true,
+  "before_schema": 4,
+  "after_schema": 4,
+  "all_existing_rows_and_ids_unchanged": true,
+  "domain_row_counts": {
+    "worlds": 2,
+    "entries": 4,
+    "assets": 6,
+    "scenes": 2,
+    "messages": 7,
+    "visual_descriptions": 1,
+    "chapters": 1,
+    "generations": 2,
+    "continuity_events": 2
+  }
+}
