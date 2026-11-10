@@ -1,0 +1,69 @@
+Retained fixture schema before update: 3
+Success
+
+Success
+
+Starting: Intent { cmp=org.voidcat.voidcanon/.MainActivity }
+
+In-place fixture upgrade preserved every domain row and ID.
+Running automatic-artwork, manual-artwork and navigation Android HTTPS fixtures; no live inference.
+
+org.voidcat.voidcanon.AutomaticArtworkUiTest:
+Error in automaticArtDoesNotBlockRpAndRequiresExplicitGalleryRetention(org.voidcat.voidcanon.AutomaticArtworkUiTest):
+java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertTrue(Assert.java:53)
+	at org.voidcat.voidcanon.AutomaticArtworkUiTest.automaticArtDoesNotBlockRpAndRequiresExplicitGalleryRetention(AutomaticArtworkUiTest.kt:113)
+
+org.voidcat.voidcanon.ImageGenerationUiTest:.
+org.voidcat.voidcanon.NavigationUiTest:
+Error in settingsAndExitsPreserveLocalWork(org.voidcat.voidcanon.NavigationUiTest):
+androidx.test.espresso.base.RootViewPicker$RootViewWithoutFocusException: Waited for the root of the view hierarchy to have window focus and not request layout for 10 seconds. If you specified a non default root matcher, it may be picking a root that never takes focus. Root:
+Root{application-window-token=android.view.ViewRootImpl$W@93dd5c4, window-token=android.view.ViewRootImpl$W@93dd5c4, has-window-focus=false, layout-params-type=1, layout-params-string={(0,0)(fillxfill) sim={adjust=resize forwardNavigation} layoutInDisplayCutoutMode=always ty=BASE_APPLICATION wanim=0x10302fe
+  fl=LAYOUT_IN_SCREEN LAYOUT_INSET_DECOR SPLIT_TOUCH HARDWARE_ACCELERATED DRAWS_SYSTEM_BAR_BACKGROUNDS
+  pfl=FORCE_DRAW_STATUS_BAR_BACKGROUND}, decor-view-string=DecorView{id=-1, visibility=VISIBLE, width=720, height=1280, has-focus=false, has-focusable=true, has-window-focus=false, is-clickable=false, is-enabled=true, is-focused=false, is-focusable=false, is-layout-requested=false, is-selected=false, layout-params={(0,0)(fillxfill) sim={adjust=resize forwardNavigation} layoutInDisplayCutoutMode=always ty=BASE_APPLICATION wanim=0x10302fe
+  fl=LAYOUT_IN_SCREEN LAYOUT_INSET_DECOR SPLIT_TOUCH HARDWARE_ACCELERATED DRAWS_SYSTEM_BAR_BACKGROUNDS
+  pfl=FORCE_DRAW_STATUS_BAR_BACKGROUND}, tag=null, root-is-layout-requested=false, has-input-connection=false, x=0.0, y=0.0, child-count=2}}
+	at dalvik.system.VMStack.getThreadStackTrace(Native Method)
+	at java.lang.Thread.getStackTrace(Thread.java:1720)
+	at androidx.test.espresso.base.EspressoExceptionHandler.handleSafely(EspressoExceptionHandler.java:34)
+	at androidx.test.espresso.base.EspressoExceptionHandler.handleSafely(EspressoExceptionHandler.java:26)
+	at androidx.test.espresso.base.DefaultFailureHandler$TypedFailureHandler.handle(DefaultFailureHandler.java:158)
+	at androidx.test.espresso.base.DefaultFailureHandler.handle(DefaultFailureHandler.java:120)
+	at androidx.test.espresso.ViewInteraction.waitForAndHandleInteractionResults(ViewInteraction.java:385)
+	at androidx.test.espresso.ViewInteraction.desugaredPerform(ViewInteraction.java:212)
+	at androidx.test.espresso.ViewInteraction.perform(ViewInteraction.java:140)
+	at androidx.test.espresso.Espresso.pressBack(Espresso.java:237)
+	at org.voidcat.voidcanon.NavigationUiTest.settingsAndExitsPreserveLocalWork(NavigationUiTest.kt:46)
+
+
+Time: 174.928
+There were 2 failures:
+1) automaticArtDoesNotBlockRpAndRequiresExplicitGalleryRetention(org.voidcat.voidcanon.AutomaticArtworkUiTest)
+java.lang.AssertionError
+	at org.junit.Assert.fail(Assert.java:87)
+	at org.junit.Assert.assertTrue(Assert.java:42)
+	at org.junit.Assert.assertTrue(Assert.java:53)
+	at org.voidcat.voidcanon.AutomaticArtworkUiTest.automaticArtDoesNotBlockRpAndRequiresExplicitGalleryRetention(AutomaticArtworkUiTest.kt:113)
+2) settingsAndExitsPreserveLocalWork(org.voidcat.voidcanon.NavigationUiTest)
+androidx.test.espresso.base.RootViewPicker$RootViewWithoutFocusException: Waited for the root of the view hierarchy to have window focus and not request layout for 10 seconds. If you specified a non default root matcher, it may be picking a root that never takes focus. Root:
+Root{application-window-token=android.view.ViewRootImpl$W@93dd5c4, window-token=android.view.ViewRootImpl$W@93dd5c4, has-window-focus=false, layout-params-type=1, layout-params-string={(0,0)(fillxfill) sim={adjust=resize forwardNavigation} layoutInDisplayCutoutMode=always ty=BASE_APPLICATION wanim=0x10302fe
+  fl=LAYOUT_IN_SCREEN LAYOUT_INSET_DECOR SPLIT_TOUCH HARDWARE_ACCELERATED DRAWS_SYSTEM_BAR_BACKGROUNDS
+  pfl=FORCE_DRAW_STATUS_BAR_BACKGROUND}, decor-view-string=DecorView{id=-1, visibility=VISIBLE, width=720, height=1280, has-focus=false, has-focusable=true, has-window-focus=false, is-clickable=false, is-enabled=true, is-focused=false, is-focusable=false, is-layout-requested=false, is-selected=false, layout-params={(0,0)(fillxfill) sim={adjust=resize forwardNavigation} layoutInDisplayCutoutMode=always ty=BASE_APPLICATION wanim=0x10302fe
+  fl=LAYOUT_IN_SCREEN LAYOUT_INSET_DECOR SPLIT_TOUCH HARDWARE_ACCELERATED DRAWS_SYSTEM_BAR_BACKGROUNDS
+  pfl=FORCE_DRAW_STATUS_BAR_BACKGROUND}, tag=null, root-is-layout-requested=false, has-input-connection=false, x=0.0, y=0.0, child-count=2}}
+	at dalvik.system.VMStack.getThreadStackTrace(Native Method)
+	at java.lang.Thread.getStackTrace(Thread.java:1720)
+	at androidx.test.espresso.base.EspressoExceptionHandler.handleSafely(EspressoExceptionHandler.java:34)
+	at androidx.test.espresso.base.EspressoExceptionHandler.handleSafely(EspressoExceptionHandler.java:26)
+	at androidx.test.espresso.base.DefaultFailureHandler$TypedFailureHandler.handle(DefaultFailureHandler.java:158)
+	at androidx.test.espresso.base.DefaultFailureHandler.handle(DefaultFailureHandler.java:120)
+	at androidx.test.espresso.ViewInteraction.waitForAndHandleInteractionResults(ViewInteraction.java:385)
+	at androidx.test.espresso.ViewInteraction.desugaredPerform(ViewInteraction.java:212)
+	at androidx.test.espresso.ViewInteraction.perform(ViewInteraction.java:140)
+	at androidx.test.espresso.Espresso.pressBack(Espresso.java:237)
+	at org.voidcat.voidcanon.NavigationUiTest.settingsAndExitsPreserveLocalWork(NavigationUiTest.kt:46)
+
+FAILURES!!!
+Tests run: 3,  Failures: 2

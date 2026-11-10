@@ -1,0 +1,15 @@
+Fixture APK only. The installed regular-app signing identity is required before public distribution.
+
+downloads/void-canon-0.4.3.apk
+
+Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
+Signer #1 certificate SHA-256 digest: d2c8a958809475255d9fa24ead371f3225f19e3a5189db3b416217817de5f56a
+Signer #1 certificate SHA-1 digest: ef6bee5cf5156d574a4c5e893e5c6894c045528d
+Signer #1 certificate MD5 digest: f0fc528dd14848923d5640c159293f7d
+
+app/build/outputs/apk/debug/app-debug.apk
+
+Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
+Signer #1 certificate SHA-256 digest: be36b09130f79882b6a032b7cbfc8c0515737952dac493d23c71cbbb7265a4c2
+Signer #1 certificate SHA-1 digest: adbd58a7dc8537d47667308dd99bc37a1ef1f0f5
+Signer #1 certificate MD5 digest: 4593b46d074baf5333a8b6628f724aa2

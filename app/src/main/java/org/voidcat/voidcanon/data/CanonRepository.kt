@@ -23,6 +23,7 @@ import org.voidcat.voidcanon.ai.*
 class CanonRepository(private val context: Context, private val db: CanonDatabase) {
     private val dao = db.canonDao()
     private val lock = Mutex()
+    val artworkPreferences = ArtworkPreferences(context)
     val images = File(context.filesDir, "images").apply { mkdirs() }
     private val cache = context.cacheDir
 
@@ -230,6 +231,16 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
                 "summary" -> dao.putChapters(listOf(ChapterRecord(UUID.randomUUID().toString(), record.sceneId, "Chapter ${s.chapters.size + 1}", result.text, record.sourceMessageIdsJson, false, System.currentTimeMillis())))
                 else -> error("Unknown generation purpose.")
             }
+            if (record.purpose == "roleplay" && artworkPreferences.enabled(record.sceneId)) {
+                // Freeze a durable image intent beside the committed turn. Artwork validation cannot reject that turn.
+                val after = dao.snapshot().scoped(sourceScene.worldId, sourceScene.id)
+                val prior = dao.illustrationFrame(record.sceneId)?.let { IllustrationStore.decode(it.planJson) }
+                val narrative = after.messages.last().text
+                val visual = VisualBeat.parse(result.text, record.userText, narrative)
+                val plan = runCatching { ArtworkPlanning.build(after, artworkPreferences.brief(record.sceneId),
+                    artworkPreferences.style(sourceScene.worldId), prior, visual) }.getOrNull()
+                if (plan != null) IllustrationStore.record(dao, plan, true)
+            }
             dao.putGenerations(listOf(record.copy(status = "completed", actualModel = result.model, output = result.text, usageJson = result.usageJson)))
         }
         require(rejection == null) { rejection!! }
@@ -340,6 +351,7 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
                 }
                 db.withTransaction { dao.replace(staged.snapshot.copy(assets = assets)) }
                 committed = true
+                artworkPreferences.resetPermissions()
                 selectionRevision.value += 1
                 // Old files are harmless orphans if deletion is interrupted, never broken references.
                 val retained = assets.map { it.fileName }.toSet()

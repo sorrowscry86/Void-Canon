@@ -11,10 +11,12 @@ import org.voidcat.voidcanon.ai.ImageSize
 @Serializable
 data class GeneratedImageDraft(val requestId: String, val entityId: String, val entityName: String,
     val prompt: String, val size: String, val referenceId: String?, val referenceHash: String?,
-    val model: String, val fileName: String, val createdAt: Long, val reservedNeurons: Int) {
+    val model: String, val fileName: String, val createdAt: Long, val reservedNeurons: Int,
+    val sourceSceneId: String? = null, val sourceMessageId: String? = null, val visualKey: String? = null) {
     fun provenance() = "Generated with Cloudflare Workers AI · $model\nPrompt: $prompt\n" +
         (referenceId?.let { "Reference: $it · SHA-256: $referenceHash\n" } ?: "Text-only generation\n") +
-        "Request: $requestId · $createdAt · $size"
+        "Request: $requestId · $createdAt · $size" +
+        (sourceSceneId?.let { "\nScene: $it · source message: $sourceMessageId · visual fingerprint: $visualKey" } ?: "")
 }
 
 class GeneratedImageDraftStore(files: File, private val scratch: File) {

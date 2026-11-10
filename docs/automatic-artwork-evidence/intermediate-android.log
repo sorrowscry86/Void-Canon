@@ -1,0 +1,46 @@
+Retained fixture schema before update: 4
+Success
+
+Success
+
+Starting: Intent { cmp=org.voidcat.voidcanon/.MainActivity }
+
+In-place fixture upgrade preserved every domain row and ID.
+Running automatic-artwork and navigation reruns; manual fixture previously passed. No live inference.
+
+org.voidcat.voidcanon.AutomaticArtworkUiTest:
+Error in automaticArtDoesNotBlockRpAndRequiresExplicitGalleryRetention(org.voidcat.voidcanon.AutomaticArtworkUiTest):
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains 'Regenerate image' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:82)
+	at org.voidcat.voidcanon.AutomaticArtworkUiTest.automaticArtDoesNotBlockRpAndRequiresExplicitGalleryRetention(AutomaticArtworkUiTest.kt:134)
+
+org.voidcat.voidcanon.NavigationUiTest:
+Error in settingsAndExitsPreserveLocalWork(org.voidcat.voidcanon.NavigationUiTest):
+java.lang.AssertionError: Assert failed: The component is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at org.voidcat.voidcanon.NavigationUiTest.settingsAndExitsPreserveLocalWork(NavigationUiTest.kt:48)
+
+
+Time: 119.413
+There were 2 failures:
+1) automaticArtDoesNotBlockRpAndRequiresExplicitGalleryRetention(org.voidcat.voidcanon.AutomaticArtworkUiTest)
+java.lang.AssertionError: Action performScrollTo() failed.
+Reason: Expected exactly '1' node but could not find any node that satisfies: (Text + InputText + EditableText contains 'Regenerate image' (ignoreCase: false))
+
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow(SemanticsNodeInteraction.kt:178)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchOneOrThrow$default(SemanticsNodeInteraction.kt:150)
+	at androidx.compose.ui.test.SemanticsNodeInteraction.fetchSemanticsNode(SemanticsNodeInteraction.kt:84)
+	at androidx.compose.ui.test.ActionsKt.performScrollTo(Actions.kt:82)
+	at org.voidcat.voidcanon.AutomaticArtworkUiTest.automaticArtDoesNotBlockRpAndRequiresExplicitGalleryRetention(AutomaticArtworkUiTest.kt:134)
+2) settingsAndExitsPreserveLocalWork(org.voidcat.voidcanon.NavigationUiTest)
+java.lang.AssertionError: Assert failed: The component is not displayed!
+	at androidx.compose.ui.test.AssertionsKt.assertIsDisplayed(Assertions.kt:34)
+	at org.voidcat.voidcanon.NavigationUiTest.settingsAndExitsPreserveLocalWork(NavigationUiTest.kt:48)
+
+FAILURES!!!
+Tests run: 2,  Failures: 2

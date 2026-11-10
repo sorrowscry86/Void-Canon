@@ -4,7 +4,8 @@ Start with the [project README](../README.md) for APK installation, upgrading, c
 
 | Document | Purpose |
 | --- | --- |
-| [Current implementation handback](../IMPLEMENTATION-HANDBACK.md) | Delivered scope, storage decisions, exact verification evidence, limitations, and the next increment |
+| [Automatic artwork checks](automatic-artwork-evidence/README.md) | JVM, migration, Android HTTPS fixtures and limits |
+| [Current implementation handback](../IMPLEMENTATION-HANDBACK.md) | Current source behavior, storage, verification and regular-release boundary |
 | [Product roadmap](PRODUCT-ROADMAP.md) | Prototype progress and the planned path from personal worlds to World Workshop, campaign depth, and manuscript authoring |
 | [Architecture](ARCHITECTURE.md) | World/scene isolation, Room storage, context assembly, credentials, generation lifecycle, and portable archive validation |
 | [Asset provenance](ASSETS.md) | Demo artwork sources, transparency, and replacement guidance |

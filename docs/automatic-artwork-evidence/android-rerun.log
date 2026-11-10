@@ -1,0 +1,16 @@
+Retained fixture schema before update: 4
+Success
+
+Success
+
+Starting: Intent { cmp=org.voidcat.voidcanon/.MainActivity }
+
+In-place fixture upgrade preserved every domain row and ID.
+Running automatic-artwork and navigation reruns; manual fixture previously passed. No live inference.
+
+org.voidcat.voidcanon.AutomaticArtworkUiTest:.
+org.voidcat.voidcanon.NavigationUiTest:.
+
+Time: 156.981
+
+OK (2 tests)
