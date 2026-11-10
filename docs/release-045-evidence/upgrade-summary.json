@@ -1,0 +1,19 @@
+{
+  "schemaBefore": 4,
+  "schemaAfter": 4,
+  "allNineDomainTablesExactlyEqual": true,
+  "privateImageHashesEqual": true,
+  "nonSecretModelPreferenceBytesEqual": true,
+  "postNavigationComparisonPassed": true,
+  "retainedRows": {
+    "worlds": 1,
+    "entries": 2,
+    "assets": 4,
+    "scenes": 1,
+    "messages": 5,
+    "visual_descriptions": 1,
+    "chapters": 1,
+    "generations": 1,
+    "continuity_events": 2
+  }
+}

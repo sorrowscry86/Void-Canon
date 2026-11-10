@@ -1,0 +1,19 @@
+
+org.voidcat.voidcanon.ImageGenerationUiTest:
+Error in generatePreviewAndSavePreservesTheBaseline(org.voidcat.voidcanon.ImageGenerationUiTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:504)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:339)
+	at org.voidcat.voidcanon.ImageGenerationUiTest.generatePreviewAndSavePreservesTheBaseline(ImageGenerationUiTest.kt:74)
+
+
+Time: 105.359
+There was 1 failure:
+1) generatePreviewAndSavePreservesTheBaseline(org.voidcat.voidcanon.ImageGenerationUiTest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 10000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:504)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:339)
+	at org.voidcat.voidcanon.ImageGenerationUiTest.generatePreviewAndSavePreservesTheBaseline(ImageGenerationUiTest.kt:74)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1

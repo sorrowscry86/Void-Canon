@@ -1,6 +1,18 @@
 # Void Canon downloads
 
-## 0.4.4 — current regular Void Canon update
+## 0.4.5 — current regular Void Canon update
+
+**[Download Void Canon 0.4.5 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.5/downloads/void-canon-0.4.5.apk)** · [APK SHA-256](void-canon-0.4.5.apk.sha256) · [Release notes](RELEASE-0.4.5.md)
+
+[Source ZIP](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.5/downloads/void-canon-0.4.5-source.zip) · [Source SHA-256](void-canon-0.4.5-source.zip.sha256)
+
+Regular **Void Canon 0.4.5 / build 10**, Android 8.0+. Install over your current regular app to retain data and private connections. The original signing certificate matches 0.4.4.
+
+Fixes automatic-artwork settings that failed to save when connection/reference setup was incomplete. Completed scene images now populate Gallery automatically with visible-context captions, also displayed in Play. Gallery copies survive cache eviction and are included in backups. They remain exploratory; portraits, approved descriptions and story records stay under your control.
+
+See [current verification](../docs/release-045-evidence/README.md). The existing private connection file is configured separately; it is never bundled in public downloads.
+
+## Earlier 0.4.4 — regular Void Canon update
 
 **[Download Void Canon 0.4.4 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.4/downloads/void-canon-0.4.4.apk)** · [APK SHA-256](void-canon-0.4.4.apk.sha256) · [Release notes](RELEASE-0.4.4.md)
 

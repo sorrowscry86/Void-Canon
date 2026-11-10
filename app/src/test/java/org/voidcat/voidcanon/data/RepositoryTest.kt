@@ -58,6 +58,24 @@ class RepositoryTest {
             Json.encodeToString(SceneContext.build(s, input)), SceneContext.fingerprint(s), input).also { repo.beginGeneration(it) }
     }
 
+    @Test fun publishingExploratoryArtworkDoesNotInvalidateAnInFlightRoleplayTurn() = runBlocking {
+        val before = repo.snapshot()
+        val request = trackedRequest()
+        val image = GeneratedImageDraft(UUID.randomUUID().toString(), "mira", "Mira", "The visible harbor", "portrait",
+            null, null, CloudflareImageClient.MODEL, "fixture.png", 0, 27, sourceSceneId = before.scene!!.id,
+            caption = "Mira · The Docks")
+        repo.importGeneratedImage(image, imageBytes(false).inputStream())
+        repo.saveDescription(image.requestId, "Observed generated-image clothing", false, AUTOMATIC_ARTWORK_DESCRIPTION + "fixture/vision")
+        val reply = ContinuityReply(1, Continuity.current(before).revision, "Mira watches the ships.")
+        repo.finishGeneration(request.id, RouterResult(Continuity.json.encodeToString(reply), "fixture/free", "{}"))
+        val after = repo.snapshot()
+        assertEquals("completed", after.generations.single().status)
+        assertEquals(before.messages.size + 2, after.messages.size)
+        assertEquals("Mira watches the ships.", after.messages.last().text)
+        assertEquals("Mira · The Docks", after.assets.single { it.id == image.requestId }.label)
+        assertEquals(before.entries, after.entries)
+    }
+
     @Test fun trackedTurnStateAndSourcesCommitOnceAndSurviveReopenAndBackup() = runBlocking {
         repo.saveDraft("I wait.")
         val before = repo.snapshot()

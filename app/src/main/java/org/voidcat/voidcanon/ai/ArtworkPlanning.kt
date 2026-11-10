@@ -45,6 +45,10 @@ data class ImagePromptPlan(
     val actionSourceId: String? = null, val environmentSourceId: String? = null,
     val actionEvidence: String = "", val environmentEvidence: String = "",
 ) {
+    /** A local scene-context caption, never a claim to have interpreted the generated pixels. */
+    fun caption() = listOf(if (snapshot.ownerId == snapshot.locationId) snapshot.locationName else "${snapshot.ownerName} · ${snapshot.locationName}",
+        snapshot.action.ifBlank { snapshot.appearance }, snapshot.environment)
+        .filter { it.isNotBlank() }.joinToString(" — ").replace(Regex("\\s+"), " ").take(240).trim()
     val visualEvidence get() = listOf(actionEvidence, environmentEvidence).filter { it.isNotBlank() }.distinct().joinToString("\n")
     val estimatedNeurons get() = if (snapshot.referenceId == null) 27 else 32
 }
@@ -66,7 +70,7 @@ object ArtworkPlanning {
             it.assetId == asset?.id && it.approved && it.sourceHash == asset?.contentHash
         }
         val identity = if (focus != null) brief.trim().ifBlank { description(reference)?.text.orEmpty() } else ""
-        require(focus == null || reference != null || identity.isNotBlank()) { "Choose a character reference or write a visual brief before enabling automatic artwork." }
+        require(focus == null || reference != null || identity.isNotBlank()) { "Choose a character reference or write a visual brief before generating artwork." }
         require(brief.length <= 800 && style.length <= 300) { "Keep the visual brief within 800 characters and style within 300." }
         val background = (s.asset(scene.backgroundAssetId)?.takeIf { it.entityId == location.id } ?: s.asset(location.primaryAssetId))
             ?.takeIf { it.referenceKind != "exploratory" }

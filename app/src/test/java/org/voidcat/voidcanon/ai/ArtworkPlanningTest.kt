@@ -24,6 +24,15 @@ class ArtworkPlanningTest {
     }
     private fun plan(s: WorldSnapshot, previous: ImagePromptPlan? = null, beat: VisualBeat? = null) = ArtworkPlanning.build(s, "", "", previous, beat)
 
+    @Test fun captionsUseVisibleContextWithoutPrivateFieldsAndRemainBounded() {
+        val s = scene()
+        val p = plan(s, beat = VisualBeat("action", "Mira watches the ships.", "Fog on the water.", "Mira watches the ships. Fog on the water."))
+        assertEquals("Mira · Docks — Mira watches the ships. — Fog on the water.", p.caption())
+        assertFalse(p.caption().contains("SECRET"))
+        assertEquals("Mira · Docks", plan(s).caption())
+        assertTrue(p.copy(snapshot = p.snapshot.copy(action = "x".repeat(500))).caption().length <= 240)
+    }
+
     @Test fun compilesOnlyAllowlistedVisualMaterialWithExplicitTemporaryAppearance() {
         val s = scene()
         val state = Continuity.current(s).let { it.copy(actors = it.actors.map { a -> if (a.actorId == "mira") a.copy(appearance = "Red raincoat", knownFacts = "SECRET_FACT") else a }) }

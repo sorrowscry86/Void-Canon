@@ -32,6 +32,7 @@ class ArtworkDirector(
     private val now: () -> Long = System::currentTimeMillis,
     private val recover: suspend () -> Unit = { store.recover() },
     private val canDispatch: () -> Boolean = { true },
+    private val retain: suspend (IllustrationJob, File) -> Unit,
 ) {
     val ui = MutableStateFlow(ArtworkUiState())
     private val updates = Channel<Unit>(Channel.CONFLATED)
@@ -41,6 +42,21 @@ class ArtworkDirector(
     private var timer: Job? = null
     private var requestScene: String? = null
     private var connectionRejected = false
+    private val retentionLock = Mutex()
+    private val retained = mutableSetOf<String>()
+    private val retentionErrors = mutableMapOf<String, String>()
+
+    private suspend fun retainCompleted() = retentionLock.withLock {
+        for (job in store.jobs().filter { it.status == "complete" && it.id !in retained }) {
+            val file = store.file(job) ?: continue
+            try {
+                retain(job, file)
+                retained += job.id
+                retentionErrors.remove(job.id)
+            } catch (e: CancellationException) { throw e }
+            catch (e: Exception) { retentionErrors[job.id] = "Gallery save failed: ${e.message ?: "Try saving again."}" }
+        }
+    }
 
     init {
         scope.launch { lane.busy.collect { if (!it) refresh() } }
@@ -82,6 +98,7 @@ class ArtworkDirector(
     fun imageFile() = ui.value.image
 
     private suspend fun reconcile() {
+        retainCompleted()
         timer?.cancel(); timer = null
         val s = source
         val scene = s.scene
@@ -109,6 +126,7 @@ class ArtworkDirector(
             else -> "Waiting for a visible moment."
         }
         if (!visible && enabled) status = "Automatic artwork resumes in Play."
+        cached?.id?.let { id -> retentionLock.withLock { retentionErrors[id] } }?.let { status = it }
         ui.value = ArtworkUiState(plan, cached ?: job, store.file(cached), enabled, prefs.illustrated(scene.id),
             request != null && requestScene == scene.id, used, status)
         if (!visible || !canDispatch() || request != null || lane.manualWaiting || lane.busy.value || job?.status != "pending") return
@@ -161,6 +179,7 @@ class ArtworkDirector(
                         val image = client().generate(service, claimed.id, plan.prompt, ImageSize.Portrait, reference)
                         withContext(NonCancellable + Dispatchers.IO) {
                             store.finish(claimed, image)
+                            retainCompleted()
                             store.prune(if (ui.value.plan?.visualKey == job.visualKey) job.id else ui.value.job?.id)
                         }
                     } finally { lane.busy.value = false }

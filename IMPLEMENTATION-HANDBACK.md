@@ -1,120 +1,101 @@
-# Void Canon — automatic scene artwork
+# Void Canon — artwork settings and automatic captioned Gallery
 
-Regular release **0.4.4 / code 9**, package `org.voidcat.voidcanon`, Android 8.0+.
-PR #5 implements automatic scene artwork and grounded prompt building. The
-original distribution workspace signs the regular update with the same identity
-as 0.4.3, validates the populated in-place upgrade, and publishes the APK/source
-archive, checksums and release documentation. See [0.4.4 release notes](downloads/RELEASE-0.4.4.md)
-and [signed-artifact evidence](docs/release-044-evidence/README.md).
-The prior release is preserved in [its handback](docs/RELEASE-043-HANDBACK.md).
+Version **0.4.5 / build 10**, regular `org.voidcat.voidcanon`, Android 8.0+.
+This maintenance update addresses settings that appear not to save and the request
+for generated scene images/captions to populate both Gallery and Play.
+The previous release is preserved in [the 0.4.4 handback](docs/RELEASE-044-HANDBACK.md).
 
-## Implemented behavior
+## Settings fix
 
-Settings → **Automatic scene artwork**, or Play → **Artwork**, configures the
-selected scene. Import the existing private image connection first. Enable the
-upload permission once, optionally write an 800-character visual brief and a
-300-character world style, then save. Defaults: 512-square illustrations, 30
-automatic attempts per device per UTC day, at least 30 seconds between automatic
-dispatches, and illustrated Play. Automation starts disabled in existing scenes.
+Previously, Save called the prompt planner and required a connected image service
+before writing any preferences. Missing references, a missing connection, or a
+currently unbuildable prompt rejected the entire form. Its snackbar was behind
+the modal, making the failure look like a lost save.
 
-The prompt compiler consumes selected non-exploratory references, hash-matched
-approved visual descriptions, the optional author brief/style and visible
-continuity state. It does not read author notes, knowledge, lore or chapter
-memory. A bounded optional visual observation in the existing RP response can
-supply major action/environment excerpts with exact supporting quotes. Invalid
-optional artwork data does not reject an otherwise valid story/state response.
-No second text-model request is made. The source-message IDs and quotes for
-carried action/weather details remain attached to those original observations.
+Save now persists the scene permission/visual brief and world style independently
+of generation readiness. Missing setup pauses generation and is shown as status;
+it does not discard settings. Storage/input errors remain inside the form.
+Permission remains explicit and initially off. Fields retain the existing scene
+and world scope, and restore still clears device-local artwork preferences.
 
-Prompts prioritize identity, current appearance, visible action, setting and
-composition/style. They stay within 2,000 characters, omit whole optional blocks
-with diagnostics, and fail locally rather than silently clipping essential
-identity. The character reference is preferred when the character is present
-with the player; otherwise the current location reference is used. The player
-stays outside the frame. Missing identity/reference material pauses artwork
-until the author supplies a visual brief/reference.
+## Automatic images and captions
 
-Visual fingerprints ignore dialogue, known facts, elapsed seconds and minor
-positions. Location, visible appearance/objects, reference/profile/style changes
-and supported major visual moments can create a new candidate. The latest pending
-automatic candidate supersedes older pending work. RP and images have separate
-jobs; a shared image lane gives manual Gallery work priority after the current
-request. Dialogue and story commits do not wait for an image.
+Every completed scene illustration is copied into Gallery under its stable job ID,
+including late results for their original scene/owner. Matching images appear in
+Play with the same caption. Local captions use owner/location and visible action,
+appearance/environment; they are limited to 240 characters. No additional model
+request is made, and captions are not burned into image pixels.
 
-Completed matching images appear in Play, without the layered cutout. **Layered
-view / Illustrated view** switches rendering; **Pause artwork** stops automatic
-uploads, and **View prompt** exposes sources, omissions, cost, explicit regeneration
-and **Keep in Gallery**. Late/mismatched images never overwrite the active view.
-Image errors fall back to the existing Play rendering and leave story data intact.
+Gallery labels carry captions through the existing portable asset record. They are
+scene-context captions, not approved image interpretations. Assets remain
+exploratory: portraits, selected references, approved visual descriptions, lore,
+continuity and source transcripts are not silently changed. Manual Gallery
+previews retain their review/save flow and receive a prompt-based caption on save.
 
-## Persistence and compatibility
+A completed job remains durable until its Gallery publication can be retried.
+Recovery publishes completed cached images idempotently without another image
+request. Repository locking checks that the job, scene and owner still exist;
+a library restore cannot resurrect old images. Gallery copies survive cache
+eviction and enter ordinary backups. Local save failures are visible and retryable.
 
-Room **4**, migration `MIGRATION_3_4`, adds operational illustration jobs, current
-visual frames and a device allowance ledger. Accepted RP commits record eligible
-image intents in the same transaction. These tables are absent from the narrative
-snapshot/fingerprint and portable archives. **Backup format remains 4**; older
-archives remain readable, and restore clears image jobs/frames and upload
-permissions while retaining the device's consumed daily allowance.
+## Automatic image descriptions for the RP model
 
-The image cache is separate from Gallery and bounded to 50 MiB with LRU eviction.
-The current image and Gallery originals are protected. Kept illustrations use
-existing idempotent exploratory-asset import, with prompt/model/reference and
-scene/message/fingerprint provenance; they do not select portraits, approve
-visual descriptions or become future automatic identity references.
+The separate **Automatically describe generated images for roleplay** setting is
+an explicit per-scene opt-in. It sends the actual generated PNG to the selected
+OpenRouter image-capable model, using the existing key/consent and Free only
+setting. It makes at most one automatic vision attempt per image, capped at
+1,000 output tokens (and the selected model's limit), with no fallback/retry.
+Settings can be saved before a key/model is ready; setup/failure status is visible.
 
-Pending jobs survive restart. Submitted requests become interrupted and are
-never automatically replayed. Failures/cancellations after an attempt reservation
-retain its local allowance. Authentication errors require reconnection; service
-budget exhaustion pauses until the next UTC day. A foreground Play view is required
-for dispatch. No WorkManager service, per-turn requirement or background simulation.
+Descriptions populate the Gallery visual-description field and the artwork prompt
+panel. They remain labeled automatic observations, not author-approved canon.
+When enabled, the matching illustrated scene's hash-bound description enters
+Context preview and the next RP request as temporary visible observations. It
+never becomes an identity reference or world lore. Other scenes and unmatched,
+stale, missing or unreviewed manual descriptions are excluded. Authors can review,
+correct or approve a description. An in-flight proposal never overwrites their
+existing description. A restored library cannot receive a late description.
 
-## Service and verification
+Vision requests are independent of RP/image jobs. Their stable generation IDs,
+source hashes, request text, model/results/errors and usage are recorded in the
+existing generation table. Interrupted attempts are not replayed automatically.
+Gallery → Describe / review image provides the existing explicit retry/review path.
+Background Gallery saves and automatic observations do not invalidate a concurrent
+RP response; author edits and selected reference changes still do.
 
-The deployed Klein Worker/API and its 5,000-estimated-neuron UTC ledger are
-unchanged. Each referenced 512-square image reserves 32 estimated neurons; 30
-automatic attempts reserve at most 960, shared with the service's existing overall
-budget. Manual requests still use the overall service budget. There are no automatic
-retries, paid fallbacks or Cloudflare billing changes. Connection secrets remain
-encrypted, outside Git/APKs/exports. See [service contract](server/README.md).
+## Compatibility, verification and delivery
 
-Checks and limitations: [automatic artwork evidence](docs/automatic-artwork-evidence/README.md).
-The new Android flow uses local HTTPS fixtures. Fixtures cannot establish live
-Klein identity consistency or phone-to-deployed-Worker delivery. No live inference
-is used for automated verification; physical-phone/visual-quality assessment remains
-separate. The build environment still lacks access to the live workers.dev host.
+Room remains **4**, portable backup format **4**. No migration or data reset is
+introduced. Existing image connections and OpenRouter settings remain device-local.
+The private image service code is not included in source/APKs/exports. The S26's
+replacement connection is maintained separately in its private Notion download.
 
-## Build, signing and distribution
+See [0.4.5 release evidence](docs/release-045-evidence/README.md) for exact build,
+unit, upgraded-installation and Android fixture results. New checks cover offline
+settings persistence/recreation, visible-context captions, duplicate publication,
+restart recovery, cache eviction, portable retention and restore fencing. The
+Android image/RP responses use local HTTPS fixtures; they are not live Cloudflare
+quality evidence or physical Galaxy S26 verification.
 
-Use a full JDK 17 or 21, Android platform/build tools 35 and the pinned Gradle
-8.11.1 wrapper. Select the original private key locally:
+Build with JDK 17/21, SDK/build tools 35 and Gradle 8.11.1:
 
 ```sh
 ./gradlew -PvoidCanonDebugKeystore=<private-original-key-path> assembleDebug testDebugUnitTest lintDebug assembleDebugAndroidTest --continue
-adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The distribution workspace retains the original key outside Git. The outgoing
-regular APK certificate must match the published 0.4.3 certificate SHA-256:
-`d2c8a958809475255d9fa24ead371f3225f19e3a5189db3b416217817de5f56a`.
-Its app name remains **Void Canon**, package `org.voidcat.voidcanon`, version
-**0.4.4 / build 9**. Install over the existing regular app to retain data.
-A workspace's default debug key is not interchangeable with this identity.
-No private signing key, provider credential, development image connection,
-emulator database or user-created content belongs in public artifacts.
+Future regular updates must keep the original package and signing identity,
+certificate SHA-256 `d2c8a958809475255d9fa24ead371f3225f19e3a5189db3b416217817de5f56a`.
+The key stays outside Git. Install the regular update over the current app.
+[Release notes](downloads/RELEASE-0.4.5.md) and [downloads](downloads/README.md)
+include APK/source checksums and source revision information.
 
-[Release evidence](docs/release-044-evidence/README.md) separates the original
-source-workspace checks from the distribution rebuild, migration and Android
-fixture rerun. The release source ZIP records its source revision and excludes
-distribution binaries/archives and device data. Earlier published APKs remain
-available; no new separate Test launcher is published.
+## Limits and next step
 
-## Limitations and next increment
-
-Physical-phone verification of the regular update, existing image connection,
-keyboard behavior and one live illustrated RP session remains separate from
-emulator/TLS fixtures. A live assessment must judge identity, outfit/hand fidelity
-and useful visual-change frequency; fixtures do not establish those qualities.
-The unchanged Worker needs no new deployment for this release. No Cloudflare
-billing settings or service budgets were changed. Campaign/ensemble depth,
-background image generation, synchronization and automatic canon promotion
-remain outside this increment; see [the roadmap](docs/PRODUCT-ROADMAP.md).
+Image dispatch remains foreground-only, 512-square by default, at most 30 automatic
+attempts/device/UTC day and at least 30 seconds apart. The existing shared service
+budget and no-automatic-network-retry behavior remain. The operational cache is
+bounded to 50 MiB; automatically retained Gallery artwork is durable library data.
+Caption correctness is limited to the supplied visible scene context, not a new
+inspection of the generated pixels. Physical S26 save/reopen behavior and live
+artwork quality still require device confirmation. No Worker, model, billing,
+provider-key, or synchronization changes are part of this update.

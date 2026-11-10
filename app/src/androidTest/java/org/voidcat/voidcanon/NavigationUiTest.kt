@@ -27,11 +27,11 @@ class NavigationUiTest {
         val vm = ViewModelProvider(compose.activity)[CanonViewModel::class.java]
         val before = runBlocking { app.repository.snapshot() }
         val configuration = app.aiSettings.configuration()
-        compose.onNodeWithText("0.4.4 · build 9").assertIsDisplayed()
+        compose.onNodeWithText("0.4.5 · build 10").assertIsDisplayed()
         for (destination in listOf("World", "Gallery", "Play", "Chapters")) {
             compose.onNode(hasText(destination) and hasClickAction()).performClick()
             compose.onNodeWithText("Settings").assertIsDisplayed().performClick()
-            compose.onNodeWithText("Version 0.4.4 · build 9").assertIsDisplayed()
+            compose.onNodeWithText("Version 0.4.5 · build 10").assertIsDisplayed()
             compose.onNodeWithText("Regular Void Canon app").assertIsDisplayed()
             compose.onNodeWithText("Close").assertIsDisplayed().performClick()
         }

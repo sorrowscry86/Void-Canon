@@ -1,0 +1,4 @@
+Performing Streamed Install
+Success
+
+PASS: regular 0.4.4 -> 0.4.5, all nine domain-table values/IDs, schema 4, image hashes, draft, history and non-secret model-preference bytes unchanged.

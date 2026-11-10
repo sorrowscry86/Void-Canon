@@ -9,14 +9,15 @@ class ArtworkPreferences(context: Context) {
     fun enabled(sceneId: String) = prefs.getBoolean("enabled:$sceneId", false)
     fun authorized(sceneId: String) = prefs.getBoolean("authorized:$sceneId", false)
     fun illustrated(sceneId: String) = prefs.getBoolean("illustrated:$sceneId", true)
+    fun describeForRoleplay(sceneId: String) = prefs.getBoolean("describe:$sceneId", false)
     fun brief(sceneId: String) = prefs.getString("brief:$sceneId", "").orEmpty()
     fun style(worldId: String) = prefs.getString("style:$worldId", "").orEmpty()
     fun blockedDay() = prefs.getString("blocked-day", "").orEmpty()
     fun block(day: String) { check(prefs.edit().putString("blocked-day", day).commit()) }
-    fun configure(sceneId: String, worldId: String, enabled: Boolean, brief: String, style: String) {
+    fun configure(sceneId: String, worldId: String, enabled: Boolean, brief: String, style: String, describe: Boolean = describeForRoleplay(sceneId)) {
         require(brief.length <= 800 && style.length <= 300)
         check(prefs.edit().putBoolean("authorized:$sceneId", enabled || authorized(sceneId)).putBoolean("enabled:$sceneId", enabled).putString("brief:$sceneId", brief.trim())
-            .putString("style:$worldId", style.trim()).commit()) { "Could not save artwork settings." }
+            .putString("style:$worldId", style.trim()).putBoolean("describe:$sceneId", describe).commit()) { "Could not save artwork settings." }
     }
     fun view(sceneId: String, illustrated: Boolean) { check(prefs.edit().putBoolean("illustrated:$sceneId", illustrated).commit()) }
     fun pause(sceneId: String) { check(prefs.edit().putBoolean("enabled:$sceneId", false).commit()) }

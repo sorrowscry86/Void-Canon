@@ -36,7 +36,7 @@ import java.util.zip.ZipInputStream
 class AutomaticArtworkUiTest {
     @get:Rule val compose = createAndroidComposeRule<MainActivity>()
 
-    @Test fun automaticArtDoesNotBlockRpAndRequiresExplicitGalleryRetention() {
+    @Test fun automaticArtDoesNotBlockRpAndPopulatesCaptionedGallery() {
         IdlingPolicies.setMasterPolicyTimeout(120, TimeUnit.SECONDS)
         IdlingPolicies.setIdlingResourceTimeout(120, TimeUnit.SECONDS)
         compose.waitUntil(120000) { compose.onAllNodesWithText("The Glass Harbor").fetchSemanticsNodes().isNotEmpty() }
@@ -52,7 +52,8 @@ class AutomaticArtworkUiTest {
         }
         val before = runBlocking { app.repository.snapshot() }
         val gate = CountDownLatch(1)
-        val imageCalls = AtomicInteger(); val rpCalls = AtomicInteger()
+        val imageCalls = AtomicInteger(); val rpCalls = AtomicInteger(); val visionCalls = AtomicInteger()
+        val observedImage = "[FIXTURE] The image shows a teal coat, a brass clasp and fog beside a railing."
         val certificate = HeldCertificate.Builder().addSubjectAlternativeName("localhost").build()
         val serverTls = HandshakeCertificates.Builder().heldCertificate(certificate).build()
         val clientTls = HandshakeCertificates.Builder().addTrustedCertificate(certificate.certificate).build()
@@ -65,9 +66,19 @@ class AutomaticArtworkUiTest {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 if (request.path == "/v1/status") return MockResponse().setBody("""{"day":"${LocalDate.now(ZoneOffset.UTC)}","limit":5000,"reserved":0,"model":"${CloudflareImageClient.MODEL}"}""")
                 if (request.path == "/router/chat/completions") {
-                    rpCalls.incrementAndGet()
                     val payload = Json.parseToJsonElement(request.body.readUtf8()).jsonObject
-                    assertTrue(payload.getValue("messages").toString().contains("Optional artwork observation"))
+                    if (payload.getValue("messages").toString().contains("image_url")) {
+                        visionCalls.incrementAndGet()
+                        assertTrue(payload.toString().contains("data:image/png;base64,"))
+                        assertFalse(payload.toString().contains("PRIVATE"))
+                        return MockResponse().setBody(buildJsonObject {
+                            put("model", "fixture/vision:free")
+                            putJsonArray("choices") { addJsonObject { put("finish_reason", "stop"); putJsonObject("message") { put("content", observedImage) } } }
+                        }.toString())
+                    }
+                    val turn = rpCalls.incrementAndGet()
+                    if (turn > 1) assertTrue(payload.getValue("messages").toString().contains(observedImage))
+                    if (turn == 1) assertTrue(payload.getValue("messages").toString().contains("Optional artwork observation"))
                     val state = runBlocking { Continuity.current(app.repository.snapshot()) }
                     val reply = Continuity.json.encodeToString(ContinuityReply(1, state.revision, "[FIXTURE] Mira waits beside the railing."))
                     return MockResponse().setBody(buildJsonObject {
@@ -97,10 +108,11 @@ class AutomaticArtworkUiTest {
         try {
             compose.runOnIdle {
                 vm.importImageConnection(Uri.fromFile(connection))
-                vm.models.value = listOf(RouterModel("fixture/text:free", "[FIXTURE] RP", 16000, false, true, "0", "0"))
+                vm.models.value = listOf(RouterModel("fixture/text:free", "[FIXTURE] RP", 16000, false, true, "0", "0"),
+                    RouterModel("fixture/vision:free", "[FIXTURE] vision", 16000, true, true, "0", "0"))
             }
             compose.waitUntil(30000) { vm.imageConnected.value && !vm.busy.value }
-            compose.runOnIdle { vm.saveAiSettings(originalConfig.copy(rpModel = "fixture/text:free", consent = true), "fixture-non-secret-openrouter-key") }
+            compose.runOnIdle { vm.saveAiSettings(originalConfig.copy(rpModel = "fixture/text:free", visionModel = "fixture/vision:free", consent = true), "fixture-non-secret-openrouter-key") }
             compose.waitUntil(30000) { vm.hasKey.value && !vm.busy.value }
             dismissFeedback()
             compose.onNodeWithText("Play").performClick()
@@ -111,7 +123,8 @@ class AutomaticArtworkUiTest {
             compose.onNodeWithText("Scene artwork").assertIsDisplayed()
             compose.onNodeWithText("Close").assertIsDisplayed()
             Espresso.closeSoftKeyboard()
-            compose.onNode(isToggleable()).performScrollTo().performClick()
+            compose.onAllNodes(isToggleable()).onFirst().performScrollTo().performClick()
+            compose.onAllNodes(isToggleable()).onLast().performScrollTo().performClick()
             compose.onNodeWithText("Save artwork settings").performScrollTo().performClick()
             compose.waitUntil(30000) { imageCalls.get() == 1 && vm.imageBusy.value }
             dismissFeedback()
@@ -126,16 +139,21 @@ class AutomaticArtworkUiTest {
             compose.waitUntil(30000) { vm.artwork.value.image != null && !vm.imageBusy.value }
             Espresso.closeSoftKeyboard(); dismissFeedback()
             compose.onNodeWithContentDescription("Current scene illustration").assertIsDisplayed()
+            compose.onNodeWithText(vm.artwork.value.job!!.plan().caption()).assertIsDisplayed()
             capture("21-automatic-artwork-fixture")
             compose.onNodeWithText("Artwork", useUnmergedTree = true).performClick()
             compose.onNodeWithText("View prompt").performClick()
             compose.onNodeWithText("Artwork prompt").assertIsDisplayed()
-            compose.onNodeWithText("Keep in Gallery").performScrollTo().performClick()
             compose.waitUntil(15000) { vm.snapshot.value.assets.size == before.assets.size + 1 && !vm.busy.value }
+            compose.onNodeWithText("Saved to Gallery automatically").performScrollTo().assertIsDisplayed()
             val kept = runBlocking { app.repository.snapshot() }
             assertEquals(before.entry(before.scene!!.characterId)!!.primaryAssetId, kept.entry(before.scene!!.characterId)!!.primaryAssetId)
             assertEquals("exploratory", kept.assets.single { it.id !in before.assets.map(AssetRecord::id) }.referenceKind)
+            assertEquals(vm.artwork.value.job!!.plan().caption(), kept.assets.single { it.id == vm.artwork.value.job!!.id }.label)
             assertEquals(1, imageCalls.get())
+            compose.waitUntil(30000) { vm.snapshot.value.descriptions.any { it.assetId == vm.artwork.value.job!!.id && it.text == observedImage } }
+            assertEquals(1, visionCalls.get())
+            assertTrue(vm.contextPreview().messages.any { it.content.contains(observedImage) })
             compose.waitUntil(15000) { compose.onAllNodesWithText("Regenerate image").fetchSemanticsNodes().isNotEmpty() }
             compose.onNodeWithText("Regenerate image").performScrollTo().performClick()
             compose.waitUntil(30000) { vm.artwork.value.status.contains("HTTP 502") && !vm.artwork.value.running }
@@ -149,7 +167,11 @@ class AutomaticArtworkUiTest {
             compose.onNodeWithText("Illustrated view").performClick()
             compose.waitUntil(10000) { vm.artwork.value.illustrated }
             compose.onNodeWithText("Close").performClick()
-            assertEquals(before.messages.size + 2, vm.snapshot.value.messages.size)
+            compose.onNode(hasSetTextAction()).performClick().performTextReplacement("I examine the clasp.")
+            compose.onNodeWithContentDescription("Send roleplay message").performSemanticsAction(SemanticsActions.OnClick) { it() }
+            compose.waitUntil(30000) { vm.snapshot.value.messages.size == before.messages.size + 4 && vm.generating.value == null }
+            assertEquals(2, rpCalls.get()); assertEquals(1, visionCalls.get())
+            assertEquals(before.messages.size + 4, vm.snapshot.value.messages.size)
             assertEquals(before.entries, vm.snapshot.value.entries)
             val archive = ByteArrayOutputStream().also { runBlocking { app.repository.export(it) } }.toByteArray()
             ZipInputStream(ByteArrayInputStream(archive)).use { zip ->

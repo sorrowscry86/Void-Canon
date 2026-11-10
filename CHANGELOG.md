@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.4.5 — Persist artwork settings and populate captioned Gallery
+
+- Save scene permission/brief and world style independently of connection/reference readiness; show save errors inside the sheet.
+- Automatically retain completed scene illustrations in Gallery and show visible-context captions in Gallery and Play.
+- Add separate opt-in OpenRouter image understanding: populate Gallery descriptions and use matching image observations in the next RP context, with source hashes, Free only, durable request tracking and no automatic retries.
+- Recover interrupted local Gallery publication idempotently; retain original owners, protect restored libraries and preserve images/captions across cache eviction and backup.
+- Retain Room 4, backup format 4, the original package/signature, and existing private connections.
+
+See [release notes](downloads/RELEASE-0.4.5.md) and [verification](docs/release-045-evidence/README.md).
+
 ## 0.4.4 — Automatic scene artwork
 
 - Optional meaningful-change illustrations in Play, with independent RP/image work,

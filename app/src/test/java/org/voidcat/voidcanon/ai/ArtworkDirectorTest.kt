@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collect
 import kotlinx.serialization.json.*
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.*
@@ -79,8 +80,10 @@ class ArtworkDirectorTest {
         scope = CoroutineScope(SupervisorJob() + Dispatchers.Default.limitedParallelism(1))
         lane = ImageLane()
         director = ArtworkDirector(db, IllustrationStore(db, app.filesDir, app.cacheDir), repo.artworkPreferences,
-            { ImageConnection(server.url("/").toString(), "fixture-non-secret-device-code") }, { true }, { client }, repo.images, lane, scope, clock::get, canDispatch = { dispatchAllowed })
+            { ImageConnection(server.url("/").toString(), "fixture-non-secret-device-code") }, { true }, { client }, repo.images, lane, scope, clock::get, canDispatch = { dispatchAllowed }, retain = repo::retainIllustration)
         director.source(repo.snapshot())
+        scope.launch { repo.observe().collect { director.source(it.selected) } }
+        Unit
     }
     @After fun close() = runBlocking {
         gate?.countDown(); scope.cancel(); scope.coroutineContext[Job]!!.join()
@@ -105,7 +108,11 @@ class ArtworkDirectorTest {
         dispatchAllowed = true; director.refresh()
         val rendered = image()
         assertTrue(rendered.image!!.isFile)
-        assertEquals(before, repo.snapshot())
+        val after = repo.snapshot()
+        assertEquals(before, after.copy(assets = before.assets))
+        assertEquals(before.assets.size + 1, after.assets.size)
+        assertEquals(rendered.job!!.plan().caption(), after.assets.single { it.id == rendered.job.id }.label)
+        assertEquals("exploratory", after.assets.single { it.id == rendered.job.id }.referenceKind)
         assertEquals(1, posts.get())
         assertEquals(1, rendered.used)
         repeat(3) { director.source(repo.snapshot()); director.refresh() }

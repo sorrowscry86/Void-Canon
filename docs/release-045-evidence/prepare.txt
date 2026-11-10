@@ -1,0 +1,2 @@
+Authored emulator library baseline: {'worlds': 1, 'entries': 2, 'assets': 4, 'scenes': 1, 'messages': 5, 'visual_descriptions': 1, 'chapters': 1, 'generations': 1, 'continuity_events': 2}
+Published regular 0.4.4 installation retained; no uninstall or data clear.

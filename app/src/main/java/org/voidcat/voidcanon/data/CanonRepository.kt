@@ -185,6 +185,36 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
         require(record.fingerprint == SceneContext.fingerprint(snapshot())) { "The scene changed. Review the context and try again." }
         dao.putGenerations(listOf(record))
     }
+
+    suspend fun beginArtworkDescription(record: GenerationRecord): Boolean = mutate {
+        db.withTransaction {
+            val all = dao.snapshot()
+            if (all.generations.any { it.id == record.id } || !artworkPreferences.describeForRoleplay(record.sceneId)) return@withTransaction false
+            val asset = all.asset(record.sourceAssetId) ?: return@withTransaction false
+            val job = dao.illustrationJobs().firstOrNull { it.id == asset.id && it.sceneId == record.sceneId && it.status == "complete" } ?: return@withTransaction false
+            if (all.descriptions.any { it.assetId == asset.id } || snapshot().scene?.id != record.sceneId) return@withTransaction false
+            val context = Json.decodeFromString<ContextPreview>(record.contextJson)
+            require(record.purpose == "vision" && record.status == "pending" && context.settings["automaticArtwork"] == "1")
+            require(context.settings["sourceHash"] == asset.contentHash && all.entry(asset.entityId)?.worldId == job.worldId)
+            dao.putGenerations(listOf(record)); true
+        }
+    }
+
+    suspend fun finishArtworkDescription(id: String, result: RouterResult) = mutate {
+        db.withTransaction {
+            val record = dao.generations().firstOrNull { it.id == id && it.status == "pending" } ?: return@withTransaction
+            val asset = dao.assets().firstOrNull { it.id == record.sourceAssetId } ?: return@withTransaction
+            val job = dao.illustrationJobs().firstOrNull { it.id == asset.id && it.sceneId == record.sceneId && it.status == "complete" } ?: return@withTransaction
+            val context = Json.decodeFromString<ContextPreview>(record.contextJson)
+            require(record.purpose == "vision" && context.settings["automaticArtwork"] == "1")
+            require(context.settings["sourceHash"] == asset.contentHash && imageHash(File(images, asset.fileName)) == asset.contentHash)
+            require(dao.scenes().any { it.id == job.sceneId && it.worldId == job.worldId })
+            require(result.text.isNotBlank() && result.text.length <= 10000) { "The image description was empty or too long." }
+            if (dao.descriptions().none { it.assetId == asset.id })
+                saveDescriptionLocked(asset.id, result.text, false, AUTOMATIC_ARTWORK_DESCRIPTION + result.model)
+            dao.putGenerations(listOf(record.copy(status = "completed", actualModel = result.model, output = result.text, usageJson = result.usageJson)))
+        }
+    }
     suspend fun finishGeneration(id: String, result: RouterResult) = mutate {
         var rejection: String? = null
         db.withTransaction {
@@ -299,12 +329,31 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
 
     /** Save a reviewed output against its original owner. Activation and approval are separate. */
     suspend fun importGeneratedImage(draft: GeneratedImageDraft, input: InputStream) = mutate {
+        importGeneratedImageLocked(draft, input)
+    }
+
+    /** Idempotent publication from the durable outbox, including recovery after process interruption. */
+    suspend fun retainIllustration(job: IllustrationJob, file: File) = mutate {
+        val current = dao.illustrationJobs().firstOrNull { it.id == job.id && it.status == "complete" } ?: return@mutate
+        if (dao.assets().any { it.id == job.id }) return@mutate
+        val plan = current.plan()
+        require(current.sceneId == plan.snapshot.sceneId && current.worldId == plan.snapshot.worldId)
+        require(dao.scenes().any { it.id == current.sceneId && it.worldId == current.worldId }) { "The illustration's scene is unavailable." }
+        require(dao.entries().any { it.id == plan.snapshot.ownerId && it.worldId == current.worldId }) { "The illustration's owner is unavailable." }
+        val p = plan.snapshot
+        val draft = GeneratedImageDraft(current.id, p.ownerId, p.ownerName, plan.prompt, ImageSize.Portrait.wire,
+            p.referenceId, p.referenceHash, CloudflareImageClient.MODEL, file.name, current.createdAt,
+            plan.estimatedNeurons, current.sceneId, plan.sourceMessageId, plan.visualKey, plan.caption())
+        file.inputStream().use { importGeneratedImageLocked(draft, it) }
+    }
+
+    private suspend fun importGeneratedImageLocked(draft: GeneratedImageDraft, input: InputStream) {
         require(dao.entries().any { it.id == draft.entityId }) { "The original image owner is unavailable." }
-        if (dao.assets().any { it.id == draft.requestId }) return@mutate
+        if (dao.assets().any { it.id == draft.requestId }) return
         val (file, transparent) = ImageFiles.import(input, cache, images)
         try {
             dao.putAssets(listOf(AssetRecord(draft.requestId, draft.entityId, file.name, "reference",
-                "${draft.entityName} · Generated", draft.provenance(), transparent, imageHash(file), "exploratory")))
+                draft.displayCaption(), draft.provenance(), transparent, imageHash(file), "exploratory")))
         } catch (e: Exception) { file.delete(); throw e }
     }
 

@@ -1,0 +1,9 @@
+org.voidcat.voidcanon.ai.ArtworkDirectorTest: 4 tests, zero failures/errors
+org.voidcat.voidcanon.ai.ArtworkPlanningTest: 11 tests, zero failures/errors
+org.voidcat.voidcanon.ai.CloudflareImageClientTest: 5 tests, zero failures/errors
+org.voidcat.voidcanon.ai.OpenRouterClientTest: 7 tests, zero failures/errors
+org.voidcat.voidcanon.ai.RequestBudgetTest: 3 tests, zero failures/errors
+org.voidcat.voidcanon.data.ContinuityTest: 6 tests, zero failures/errors
+org.voidcat.voidcanon.data.IllustrationStoreTest: 12 tests, zero failures/errors
+org.voidcat.voidcanon.data.RepositoryTest: 39 tests, zero failures/errors
+Total: 87 tests, zero failures/errors

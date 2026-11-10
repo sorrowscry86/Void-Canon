@@ -2,25 +2,25 @@
 
 A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
 
-## Automatic scene artwork — 0.4.4
+## Automatic scene artwork — 0.4.5
 
-0.4.4 adds opt-in scene illustrations to Play: generate after meaningful
+0.4.5 adds opt-in scene illustrations to Play: generate after meaningful
 visual changes, continue RP while images render, inspect the assembled prompt, pause,
-switch to layered artwork, and explicitly keep favorites in Gallery. Defaults are
+switch to layered artwork, and automatically save captioned scene illustrations to Gallery. Defaults are
 512-square images and 30 automatic attempts per device per UTC day. Private notes and
 character knowledge are excluded from image prompts; original artwork and canon stay
 under author control. See the regular update below, the
 [current handback](IMPLEMENTATION-HANDBACK.md) and [verification](docs/automatic-artwork-evidence/README.md).
 
-## Install / upgrade — 0.4.4
+## Install / upgrade — 0.4.5
 
-Download the **[Void Canon 0.4.4 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.4/downloads/void-canon-0.4.4.apk)**. This regular app update adds automatic scene illustrations, grounded prompt building and image work independent of RP. It includes the existing manual artwork, Settings, visible exits and scene-continuity features.
+Download the **[Void Canon 0.4.5 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.5/downloads/void-canon-0.4.5.apk)**. This update fixes artwork settings that failed to save, automatically fills Gallery with captioned scene illustrations, and offers actual-image descriptions for the next roleplay turn. It includes the existing manual artwork, Settings, visible exits and scene-continuity features.
 
-Requires Android 8.0 or newer. Install over your existing **Void Canon** app; do not uninstall or clear app data. The package remains `org.voidcat.voidcanon`, version **0.4.4 / build 9**, and the signing certificate matches published regular 0.4.3 and earlier regular builds. Worlds, artwork, transcripts, chapters, drafts, continuity history, and device-local AI settings remain in that installation. A portable export provides an optional additional copy before upgrading.
+Requires Android 8.0 or newer. Install over your existing **Void Canon** app; do not uninstall or clear app data. The package remains `org.voidcat.voidcanon`, version **0.4.5 / build 10**, and the signing certificate matches published regular 0.4.4 and earlier regular builds. Worlds, artwork, transcripts, chapters, drafts, continuity history, and device-local AI settings remain in that installation. A portable export provides an optional additional copy before upgrading.
 
 Open **Settings** from the app header to confirm the installed version, configure AI/models or the artwork connection, and export/restore backups. Back remains visible in Play with the keyboard open; modal Close controls stay outside scrolling content. Closing a settings child returns to Settings.
 
-[Downloads](downloads/README.md) includes APK/source checksums, [release notes](downloads/RELEASE-0.4.4.md), and older builds. [Release evidence](docs/release-044-evidence/README.md) records the signed 0.4.3 → 0.4.4 upgrade and Android checks. The historical **Void Canon Test** app installs separately; its data is not automatically moved into the regular app. Portable restore replaces the receiving library and excludes provider credentials/settings.
+[Downloads](downloads/README.md) includes APK/source checksums, [release notes](downloads/RELEASE-0.4.5.md), and older builds. [Release evidence](docs/release-045-evidence/README.md) records the signed 0.4.4 → 0.4.5 upgrade and Android checks. The historical **Void Canon Test** app installs separately; its data is not automatically moved into the regular app. Portable restore replaces the receiving library and excludes provider credentials/settings.
 
 Build the regular APK with the original private signing key supplied locally:
 
@@ -59,7 +59,7 @@ In Free only mode, requests set zero maximum prices for prompt, completion, requ
 - **Describe / review image:** write observable details manually, or choose **Propose from image**. The latter explicitly confirms sending just that image to OpenRouter. Review/correct the draft, then **Approve** it.
 - Descriptions retain their immutable asset ID, source hash, approval state, and provenance. New image imports get new identities; old approvals never silently move to a replacement image.
 - **Exploratory** references are excluded from context. Alternate outfits affect the scene only when selected as its active cutout/appearance. Generating another proposal does not replace an existing approved description until you choose to review/save it.
-- RP sends approved descriptions, not source images. Image interpretation sends one explicitly selected image and an observation prompt. Artwork generation is available in the regular app as described below.
+- RP sends approved reference descriptions and any explicitly enabled matching scene-image observations, without image bytes. Image interpretation sends one explicitly selected image and an observation prompt. Artwork generation is available in the regular app as described below.
 
 ## Generate artwork with Cloudflare
 
@@ -78,13 +78,15 @@ The scoped service code is encrypted with Android Keystore and excluded from bac
 
 1. Import the existing private image connection through **Settings → Artwork connection**. Generation needs this connection; nothing is bundled in the public APK.
 2. Choose a scene, then open **Play → Artwork** or **Settings → Automatic scene artwork**. Automation starts disabled for existing scenes. Review the selected reference and approved descriptions; optionally enter a character visual brief and world style.
-3. Check **Allow automatic uploads…** and **Save artwork settings**. A first illustration and subsequent meaningful visible changes can generate while Play is foregrounded. RP continues while an image renders; ordinary dialogue does not require a new image.
+3. Check **Allow automatic uploads…** and **Save artwork settings**. Settings save even before the connection/reference is ready; missing setup pauses generation and is explained in the form. A first illustration and subsequent meaningful visible changes can generate while Play is foregrounded. RP continues while an image renders; ordinary dialogue does not require a new image.
 4. Use **Artwork → View prompt** to inspect the prompt, reference/source IDs, supported visible quotes, omissions and estimated usage. **Pause artwork**, **Layered view / Illustrated view**, and explicit **Regenerate image** remain available.
-5. Use **Keep in Gallery** for images you want to retain/export. Unkept illustrations use a bounded 50 MiB cache. Kept art starts as exploratory; it does not replace a portrait, approve a description, change lore or become the next automatic identity reference.
+5. Completed scene images automatically save to **Gallery** with a caption also shown in Play. Gallery copies survive cache eviction and enter backups. They remain exploratory; portraits, approved visual descriptions and lore stay under your control.
 
 Defaults are 512×512, 30 automatic attempts per device per UTC day, and at least 30 seconds between automatic dispatches. Failed/interrupted attempts can count. The unchanged shared service allowance also applies. Latest pending work supersedes older pending work; submitted/interrupted requests are not automatically replayed. Private notes, character knowledge, lore and chapter memory are excluded from image prompts. Device upload permissions, artwork preferences, jobs and cache are excluded from portable backups; restoring resets artwork permission, retaining consumed device allowance. Room migrates 3→4 while portable backup format stays 4.
 
-See [the handback](IMPLEMENTATION-HANDBACK.md) for exact bounds and [release verification](docs/release-044-evidence/README.md) for the distinction between HTTPS fixtures and live artwork testing.
+To fill the image description used by roleplay, also enable **Automatically describe generated images for roleplay** in the Artwork sheet. This sends each generated image to your selected OpenRouter image-capable model, respecting Free only. Set up that model/key in **Settings → AI & models**. The description appears in Gallery and, when ready, enters the matching illustrated scene's next RP context as temporary observations. You can review/correct it; it does not become canon. There is one automatic vision attempt per image and no automatic retry. Setup/failure status appears in Artwork.
+
+See [the handback](IMPLEMENTATION-HANDBACK.md) for exact bounds and [release verification](docs/release-045-evidence/README.md) for the distinction between HTTPS fixtures and live artwork testing.
 
 ## Play, context, and chapters
 

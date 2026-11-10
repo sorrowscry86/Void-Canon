@@ -70,10 +70,11 @@ class ImageGenerationUiTest {
             compose.onNodeWithText("Generate image").performScrollTo().performClick()
             compose.waitUntil(30000) { vm.imagePreview.value != null }
             assertEquals(before.assets.size, runBlocking { app.repository.snapshot() }.assets.size)
-            compose.onNodeWithText("Save to Gallery").performScrollTo().performClick()
-            compose.waitUntil(10000) { vm.imagePreview.value == null && !vm.busy.value }
+            compose.onNodeWithText("Save to Gallery").performScrollTo().assertIsEnabled().performClick()
+            compose.waitUntil(30000) { vm.imagePreview.value == null && !vm.busy.value }
             val after = runBlocking { app.repository.snapshot() }
             assertEquals(before.assets.size + 1, after.assets.size)
+            assertEquals("${before.entry(before.scene!!.characterId)!!.name} · A new portrait for a test", after.assets.single { it.id !in before.assets.map { asset -> asset.id } }.label)
             assertEquals(before.entry(before.scene!!.characterId)!!.primaryAssetId, after.entry(before.scene!!.characterId)!!.primaryAssetId)
             assertEquals(before.messages, after.messages)
             assertEquals(1, server.requestCount)

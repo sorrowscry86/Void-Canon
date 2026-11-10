@@ -4,6 +4,7 @@ Start with the [project README](../README.md) for APK installation, upgrading, c
 
 | Document | Purpose |
 | --- | --- |
+| [Regular 0.4.5 release evidence](release-045-evidence/README.md) | Settings persistence and automatic captioned Gallery checks |
 | [Regular 0.4.4 release evidence](release-044-evidence/README.md) | Original signing identity, schema-3 upgrade, retained data and current Android fixture checks |
 | [Automatic artwork checks](automatic-artwork-evidence/README.md) | JVM, migration, Android HTTPS fixtures and limits |
 | [Current implementation handback](../IMPLEMENTATION-HANDBACK.md) | Current source behavior, storage, verification and regular-release boundary |

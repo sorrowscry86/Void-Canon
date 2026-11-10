@@ -56,6 +56,92 @@ class IllustrationStoreTest {
         return ByteArrayOutputStream().also { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it); bitmap.recycle() }.toByteArray()
     }
 
+    @Test fun completedArtworkPublishesOnceAfterRestartAndSurvivesCacheEvictionAndBackup() = runBlocking {
+        enable(); val before = repo.snapshot()
+        store.plan(before, repo.artworkPreferences)
+        val claimed = store.claim(store.jobs().single().id, "2026-11-10", 1700000000000L)!!
+        val complete = store.finish(claimed, GeneratedImage(png(), CloudflareImageClient.MODEL, claimed.id, 32))
+        db.close(); open()
+        repo.retainIllustration(complete, store.file(complete)!!)
+        repo.retainIllustration(complete, store.file(complete)!!)
+        val after = repo.snapshot()
+        val asset = after.assets.single { it.id == complete.id }
+        assertEquals(before.assets.size + 1, after.assets.size)
+        assertEquals(complete.plan().caption(), asset.label)
+        assertEquals("exploratory", asset.referenceKind)
+        assertEquals(before, after.copy(assets = before.assets))
+        store.prune(maxBytes = 0)
+        assertNull(store.file(store.jobs().single()))
+        assertEquals(asset.contentHash, imageHash(File(repo.images, asset.fileName)))
+        val backup = ByteArrayOutputStream().also { repo.export(it) }.toByteArray()
+        repo.restore(backup.inputStream())
+        val restored = repo.snapshot().assets.single { it.id == asset.id }
+        assertEquals(asset.label, restored.label)
+        assertEquals(asset.contentHash, imageHash(File(repo.images, restored.fileName)))
+    }
+
+    @Test fun restoreCannotResurrectAnOldCompletedIllustration() = runBlocking {
+        val before = repo.snapshot()
+        val backup = ByteArrayOutputStream().also { repo.export(it) }.toByteArray()
+        enable(); store.plan(before, repo.artworkPreferences)
+        val claimed = store.claim(store.jobs().single().id, "2026-11-10", 1700000000000L)!!
+        val complete = store.finish(claimed, GeneratedImage(png(), CloudflareImageClient.MODEL, claimed.id, 32))
+        val file = store.file(complete)!!
+        repo.restore(backup.inputStream())
+        repo.retainIllustration(complete, file)
+        assertEquals(before.assets.map { it.id }, repo.snapshot().assets.map { it.id })
+        assertEquals(before.messages, repo.snapshot().messages)
+    }
+
+    @Test fun generatedImageObservationsInformOnlyTheirExplicitCurrentSceneAndPreserveAuthorEdits() = runBlocking {
+        enable(); val before = repo.snapshot()
+        repo.artworkPreferences.configure(before.scene!!.id, before.world!!.id, true, "", "", true)
+        store.plan(before, repo.artworkPreferences)
+        val claimed = store.claim(store.jobs().single().id, "2026-11-10", 1700000000000L)!!
+        val complete = store.finish(claimed, GeneratedImage(png(), CloudflareImageClient.MODEL, claimed.id, 32))
+        repo.retainIllustration(complete, store.file(complete)!!)
+        val asset = repo.snapshot().asset(complete.id)!!
+        val context = ContextPreview(listOf(PromptMessage("user", "Describe one generated image")), listOf(asset.id), emptyList(), 4000,
+            mapOf("automaticArtwork" to "1", "sourceHash" to asset.contentHash))
+        val record = GenerationRecord("artwork-vision-${asset.id}", complete.sceneId, "vision", "fixture/vision", Json.encodeToString(context),
+            SceneContext.fingerprint(repo.snapshot()), sourceAssetId = asset.id)
+        assertTrue(repo.beginArtworkDescription(record)); assertFalse(repo.beginArtworkDescription(record))
+        val reply = RouterResult("The image shows a red scarf and wet wooden rails.", "fixture/vision", "{}")
+        repo.finishArtworkDescription(record.id, reply); repo.finishArtworkDescription(record.id, reply)
+        val s = repo.snapshot();val description = s.descriptions.single { it.assetId == asset.id }
+        assertFalse(description.approved)
+        assertEquals(asset.contentHash, description.sourceHash)
+        assertTrue(SceneContext.build(s, "Continue", illustrationId = asset.id).messages.any { it.content.contains(reply.text) })
+        assertFalse(SceneContext.build(s, "Continue").messages.any { it.content.contains(reply.text) })
+        val location = repo.createEntry("glass-harbor", "location", "Garden", "", "", "")
+        repo.useInScene("mira", location)
+        assertFalse(SceneContext.build(repo.snapshot(), "Continue", illustrationId = asset.id).messages.any { it.content.contains(reply.text) })
+        assertEquals(before.messages, s.messages)
+        assertEquals(before.entries, s.entries)
+    }
+
+    @Test fun pendingImageDescriptionCannotOverwriteAuthorReviewOrRepublishAfterRestore() = runBlocking {
+        enable(); val before = repo.snapshot()
+        repo.artworkPreferences.configure(before.scene!!.id, before.world!!.id, true, "", "", true)
+        val original = ByteArrayOutputStream().also { repo.export(it) }.toByteArray()
+        store.plan(before, repo.artworkPreferences)
+        val claimed = store.claim(store.jobs().single().id, "2026-11-10", 1700000000000L)!!
+        val complete = store.finish(claimed, GeneratedImage(png(), CloudflareImageClient.MODEL, claimed.id, 32))
+        repo.retainIllustration(complete, store.file(complete)!!)
+        val asset = repo.snapshot().asset(complete.id)!!
+        val context = ContextPreview(emptyList(), listOf(asset.id), emptyList(), 4000, mapOf("automaticArtwork" to "1", "sourceHash" to asset.contentHash))
+        val record = GenerationRecord("artwork-vision-${asset.id}", complete.sceneId, "vision", "fixture/vision", Json.encodeToString(context),
+            SceneContext.fingerprint(repo.snapshot()), sourceAssetId = asset.id)
+        assertTrue(repo.beginArtworkDescription(record))
+        repo.saveDescription(asset.id, "The author's correction", true)
+        repo.finishArtworkDescription(record.id, RouterResult("An AI proposal", "fixture/vision", "{}"))
+        assertEquals("The author's correction", repo.snapshot().descriptions.single { it.assetId == asset.id }.text)
+        repo.restore(original.inputStream())
+        repo.finishArtworkDescription(record.id, RouterResult("A late response", "fixture/vision", "{}"))
+        assertEquals(before.descriptions, repo.snapshot().descriptions)
+        assertEquals(before.assets.map { it.id }, repo.snapshot().assets.map { it.id })
+    }
+
     @Test fun pendingCandidatesCoalesceAndStaleClaimsCannotDispatch() = runBlocking {
         enable(); val s = repo.snapshot()
         store.plan(s, repo.artworkPreferences)

@@ -496,7 +496,7 @@ private fun AssetCard(s: WorldSnapshot, asset: AssetRecord, entity: EntryRecord,
             }
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(asset.label, style = MaterialTheme.typography.titleMedium)
-                Text(when { description == null -> "No visual description"; description.sourceHash != asset.contentHash -> "Stale source · review needed"; description.approved -> "Approved visual description ✓"; else -> "Draft visual description" }, color = Violet, style = MaterialTheme.typography.bodySmall)
+                Text(when { description == null -> "No visual description"; description.sourceHash != asset.contentHash -> "Stale source · review needed"; description.approved -> "Approved visual description ✓"; description.provenance.startsWith(org.voidcat.voidcanon.ai.AUTOMATIC_ARTWORK_DESCRIPTION) -> "Automatic image description · available to this scene's RP when enabled"; else -> "Draft visual description" }, color = Violet, style = MaterialTheme.typography.bodySmall)
                 if (description != null) Text(description.text, maxLines = 3, color = Muted, style = MaterialTheme.typography.bodySmall)
                 OutlinedButton(onClick = { describe = true }, modifier = Modifier.fillMaxWidth()) { Text("Describe / review image") }
                 Text(asset.provenance, color = Muted, style = MaterialTheme.typography.bodySmall)
@@ -572,6 +572,11 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
             if (liveMode && generationError != null) Text(generationError.orEmpty(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.fillMaxWidth().background(Panel).padding(8.dp).heightIn(max = 84.dp).verticalScroll(rememberScrollState()))
             Spacer(Modifier.weight(1f))
+            if (illustration != null) artwork.job?.plan()?.let { completed ->
+                Surface(color = Panel.copy(alpha = .94f), shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+                    Text(completed.caption(), fontSize = 12.sp, color = Muted, maxLines = if (keyboardVisible) 1 else 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(10.dp))
+                }
+            }
             Surface(color = Panel.copy(alpha = .96f), shape = RoundedCornerShape(20.dp), border = BorderStroke(1.dp, Color(0xFF60566D)),
                 modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
