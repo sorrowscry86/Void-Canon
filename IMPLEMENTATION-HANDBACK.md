@@ -1,9 +1,12 @@
 # Void Canon — automatic scene artwork
 
-Source version **0.4.4 / code 9**, regular package `org.voidcat.voidcanon`. The user
-approved the automatic-artwork plan and requested implementation. The last
-published regular APK remains 0.4.3; **no 0.4.4 APK has been distributed**.
-The previous release is preserved in [its handback](docs/RELEASE-043-HANDBACK.md).
+Regular release **0.4.4 / code 9**, package `org.voidcat.voidcanon`, Android 8.0+.
+PR #5 implements automatic scene artwork and grounded prompt building. The
+original distribution workspace signs the regular update with the same identity
+as 0.4.3, validates the populated in-place upgrade, and publishes the APK/source
+archive, checksums and release documentation. See [0.4.4 release notes](downloads/RELEASE-0.4.4.md)
+and [signed-artifact evidence](docs/release-044-evidence/README.md).
+The prior release is preserved in [its handback](docs/RELEASE-043-HANDBACK.md).
 
 ## Implemented behavior
 
@@ -80,8 +83,38 @@ Klein identity consistency or phone-to-deployed-Worker delivery. No live inferen
 is used for automated verification; physical-phone/visual-quality assessment remains
 separate. The build environment still lacks access to the live workers.dev host.
 
-Regular release packaging must run with the original signing identity in the
-original distribution workspace, as for 0.4.3. Do not publish this workspace's
-fixture-signed APK as a regular update. Keep existing live downloads unchanged
-until the signed 0.4.3 → 0.4.4 upgrade is verified. No new separate Test launcher
-is requested or published.
+## Build, signing and distribution
+
+Use a full JDK 17 or 21, Android platform/build tools 35 and the pinned Gradle
+8.11.1 wrapper. Select the original private key locally:
+
+```sh
+./gradlew -PvoidCanonDebugKeystore=<private-original-key-path> assembleDebug testDebugUnitTest lintDebug assembleDebugAndroidTest --continue
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+The distribution workspace retains the original key outside Git. The outgoing
+regular APK certificate must match the published 0.4.3 certificate SHA-256:
+`d2c8a958809475255d9fa24ead371f3225f19e3a5189db3b416217817de5f56a`.
+Its app name remains **Void Canon**, package `org.voidcat.voidcanon`, version
+**0.4.4 / build 9**. Install over the existing regular app to retain data.
+A workspace's default debug key is not interchangeable with this identity.
+No private signing key, provider credential, development image connection,
+emulator database or user-created content belongs in public artifacts.
+
+[Release evidence](docs/release-044-evidence/README.md) separates the original
+source-workspace checks from the distribution rebuild, migration and Android
+fixture rerun. The release source ZIP records its source revision and excludes
+distribution binaries/archives and device data. Earlier published APKs remain
+available; no new separate Test launcher is published.
+
+## Limitations and next increment
+
+Physical-phone verification of the regular update, existing image connection,
+keyboard behavior and one live illustrated RP session remains separate from
+emulator/TLS fixtures. A live assessment must judge identity, outfit/hand fidelity
+and useful visual-change frequency; fixtures do not establish those qualities.
+The unchanged Worker needs no new deployment for this release. No Cloudflare
+billing settings or service budgets were changed. Campaign/ensemble depth,
+background image generation, synchronization and automatic canon promotion
+remain outside this increment; see [the roadmap](docs/PRODUCT-ROADMAP.md).

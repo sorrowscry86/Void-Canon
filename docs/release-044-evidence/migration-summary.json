@@ -1,0 +1,20 @@
+{
+  "beforeSchema": 3,
+  "afterSchema": 4,
+  "integrity": "ok",
+  "retainedRows": {
+    "worlds": 1,
+    "entries": 2,
+    "assets": 2,
+    "scenes": 1,
+    "messages": 3,
+    "visual_descriptions": 1,
+    "chapters": 1,
+    "generations": 0,
+    "continuity_events": 1
+  },
+  "allNineDomainTablesExactlyEqual": true,
+  "privateImageHashesEqual": true,
+  "modelPreferenceBytesEqual": true,
+  "postNavigationDomainTablesAndModelPreferencesEqual": true
+}

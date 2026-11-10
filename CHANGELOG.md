@@ -1,13 +1,15 @@
 # Changelog
 
-## 0.4.4 — Automatic scene artwork (source)
+## 0.4.4 — Automatic scene artwork
 
 - Optional meaningful-change illustrations in Play, with independent RP/image work,
   selected-reference prompt building, quoted visual cues and prompt inspection.
 - Durable/coalescing jobs, foreground dispatch, daily allowance, no automatic replay,
   a bounded cache, layered-view toggle and explicit exploratory Gallery retention.
 - Room 3→4 migration preserves story records. Backup format remains 4; operational
-  image state and upload permissions stay device-local. Regular APK packaging pending.
+  image state and upload permissions stay device-local.
+- Align image HTTP read/overall timeouts and keep the artwork dialog open while editing with the keyboard.
+- Publish a regular update signed with the original identity; see [release notes](downloads/RELEASE-0.4.4.md) and [distribution checks](docs/release-044-evidence/README.md).
 
 ## 0.4.3 — Artwork and regular-app navigation
 

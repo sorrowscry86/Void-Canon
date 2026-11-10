@@ -1,6 +1,18 @@
 # Void Canon downloads
 
-## 0.4.3 — current regular Void Canon update
+## 0.4.4 — current regular Void Canon update
+
+**[Download Void Canon 0.4.4 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.4/downloads/void-canon-0.4.4.apk)** · [APK SHA-256](void-canon-0.4.4.apk.sha256) · [Release notes](RELEASE-0.4.4.md)
+
+[Source ZIP](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.4/downloads/void-canon-0.4.4-source.zip) · [Source SHA-256](void-canon-0.4.4-source.zip.sha256)
+
+Regular **Void Canon**, package `org.voidcat.voidcanon`, version **0.4.4 / build 9**, Android 8.0+. Install over the existing regular app without uninstalling or clearing data. The original signing certificate matches 0.4.3.
+
+Adds opt-in automatic scene illustrations, grounded prompt building, independent RP/image work, prompt inspection, pause/view controls and explicit Gallery retention. Import your private connection through **Settings → Artwork connection**, then configure the current scene through **Play → Artwork**. Automation starts disabled; defaults are 512×512, 30 automatic attempts/device/UTC day and at least 30 seconds between automatic dispatches, within the existing shared service budget.
+
+Room migrates 3→4, preserving narrative records and private images. Portable backup format remains 4; artwork jobs/cache/permissions stay device-local. See [signed-upgrade and Android evidence](../docs/release-044-evidence/README.md). Physical-phone/live artwork assessment is separate from local HTTPS fixture checks.
+
+## Earlier 0.4.3 — regular Void Canon update
 
 **[Download Void Canon 0.4.3 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.3/downloads/void-canon-0.4.3.apk)** · [APK SHA-256](void-canon-0.4.3.apk.sha256) · [Release notes](RELEASE-0.4.3.md)
 

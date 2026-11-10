@@ -1,5 +1,7 @@
 # Automatic artwork verification
 
+Historical source-workspace checks are preserved below. The subsequent [regular 0.4.4 distribution checks](../release-044-evidence/README.md) record the original signing identity, signed 0.4.3 upgrade and current Android rerun.
+
 Source **0.4.4 / code 9**, SDK/build tools 35, JDK 21 and Gradle 8.11.1.
 Device checks use an API 29 AOSP software emulator with disposable authored
 fixtures. They do not establish physical-phone performance or live Klein quality.
@@ -63,5 +65,6 @@ from this environment, whose policy blocks its workers.dev hostname.
 [Certificate verification](fixture-signing.txt) distinguishes the emulator signer
 from the published regular 0.4.3 signer. The fixture APK retains the regular package
 name for emulator upgrade checks, but its certificate cannot update the user's
-regular installation. No 0.4.4 APK or separate Test launcher is published here.
-The original distribution workspace must sign and verify the regular update.
+regular installation. These source-workspace fixture artifacts were not published. The regular 0.4.4
+release uses the original distribution identity, as recorded separately above;
+no new Test launcher is published.
