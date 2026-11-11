@@ -138,7 +138,7 @@ object Continuity {
     }
 
     fun instruction() = """
-        Reply with ONLY a JSON object, no markdown fences, using this protocol:
+        Prefer a JSON object, no markdown fences, using this protocol. If you cannot supply the protocol, return only your story prose; story text is usable without state changes:
         {"protocol":1,"baseRevision":0,"narrative":"Your story response","elapsedSeconds":0,"timeEvidence":"","actors":[],"objects":[]}
         Copy baseRevision from CURRENT STATE. Each actors change is {"state":{"actorId":"existing id","locationId":"existing location id","present":true,"position":"","activity":"","condition":"","appearance":"","knownFacts":""},"evidence":"exact quote"}.
         Each objects change is {"state":{"id":"stable-id","name":"name","locationId":"existing location id","holderId":"actor id or empty","hand":"left/right/both/or empty","position":""},"evidence":"exact quote"}.

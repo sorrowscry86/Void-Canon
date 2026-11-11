@@ -442,22 +442,22 @@ class CanonViewModel(application: Application) : AndroidViewModel(application) {
                     else -> context = SceneContext.build(s, input, minOf(24000, ((model.contextLength - 4500).coerceAtLeast(1000) * 2)), artworkPreferences.enabled(s.scene!!.id), currentIllustrationId(s))
                 }
                 val maxTokens = if (purpose == "summary" || purpose == "roleplay") generationOutputTokens(model, context.messages, purpose) else 1000
-                val jsonObjectResponse = direct && purpose == "roleplay"
                 val recordedContext = context.copy(settings = context.settings + mapOf("provider" to provider, "requestedModel" to model.id,
-                    "responseFormat" to if (jsonObjectResponse) "json_object" else "text",
+                    "responseFormat" to "text", "storyResponsePolicy" to "prose-with-optional-validated-state",
                     "temperature" to if (direct) "provider default" else "0.7", "maxOutputTokens" to maxTokens.toString(), "freeOnly" to config.freeOnly.toString(), "automaticRetries" to "0", "fallbacks" to "disabled"))
                 val record = GenerationRecord(UUID.randomUUID().toString(), s.scene!!.id, purpose, model.id,
                     Json.encodeToString(recordedContext), SceneContext.fingerprint(s), input.takeIf { purpose == "roleplay" }.orEmpty(), assetId,
                     sourceMessages, createdAt = System.currentTimeMillis())
                 repo.beginGeneration(record); requestId = record.id
                 val client = if (direct) (getApplication<Application>() as VoidCanonApplication).deepSeekClient else router
-                val result = client.complete(key, model.id, context.messages, config.freeOnly, imageUrl, maxTokens, jsonObjectResponse)
-                repo.finishGeneration(record.id, result)
+                val result = client.complete(key, model.id, context.messages, config.freeOnly, imageUrl, maxTokens)
+                val warning = repo.finishGeneration(record.id, result)
                 if (purpose == "roleplay") {
                     _snapshot.value = repo.snapshot()
                     if (draft.value.trim() == input) draft.value = _snapshot.value.scene?.draft.orEmpty()
                 }
-                notice.value = when (purpose) { "vision" -> "Visual description proposed. Review it before approval."; "summary" -> "Chapter summary proposed in Chapters. Review and approve it."; else -> "Scene response saved. New story events remain provisional." }
+                // Narrative-only warnings persist in Play/Context; do not cover input with a snackbar.
+                notice.value = if (warning != null) null else when (purpose) { "vision" -> "Visual description proposed. Review it before approval."; "summary" -> "Chapter summary proposed in Chapters. Review and approve it."; else -> "Scene response saved. New story events remain provisional." }
             } catch (e: CancellationException) {
                 requestId?.let { withContext(NonCancellable) { repo.failGeneration(it, true, "Cancelled. No completed turn was appended.") } }
                 generationError.value = "Cancelled. Your draft and history are preserved. OpenRouter may still account for work already performed."

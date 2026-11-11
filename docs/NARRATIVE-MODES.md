@@ -41,3 +41,7 @@ Portable backup format 5 includes settings under scenes[].narrative. Versions 1â
 Since 0.6.0, the [first AURPG toolkit](AURPG-BACKUP-SPEECH.md) adds native dice, explicit momentum and manual clocks. The author selected this roadmap increment. The original 0.5.0 boundary is historical; campaign identity, cross-scene continuity, offscreen scheduling, branches and ensemble autonomy remain deferred.
 
 Verification and device limits are recorded in [release evidence](release-050-evidence/README.md).
+
+## Response compatibility (0.6.2)
+
+Across all modes and both providers, continuity JSON is preferred but usable prose/common story wrappers can save independently of state. Invalid metadata leaves tracked state unchanged with a persistent notice; subsequent context acknowledges the gap. See [contract](MODEL-RESPONSE-COMPATIBILITY.md).

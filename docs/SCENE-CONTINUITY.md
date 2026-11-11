@@ -1,5 +1,7 @@
 # Scene continuity — first increment
 
+**Current compatibility update (0.6.2):** [Story response handling](MODEL-RESPONSE-COMPATIBILITY.md) supersedes the original all-or-nothing publication rule below. Usable prose can be saved without state updates; state changes retain the full validation contract. This document records the first increment.
+
 The user authorized state tracking before adding MLRPE-inspired play presets or AURPG mechanics. This increment adds a scene-local continuity ledger to the existing 0.4.0 app. It does not create campaigns, simulate offscreen actors, introduce dice rules, or change world canon.
 
 ## Contract

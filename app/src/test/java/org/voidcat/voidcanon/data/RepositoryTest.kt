@@ -306,7 +306,7 @@ class RepositoryTest {
         repo.saveDraft("I wait.")
         val before = repo.snapshot()
         val request = trackedRequest()
-        assertTrue(runCatching { repo.finishGeneration(request.id, RouterResult("Plain prose without state", "actual/free", "{\"total_tokens\":5}")) }.isFailure)
+        assertTrue(runCatching { repo.finishGeneration(request.id, RouterResult("{\"actors\":[]}", "actual/free", "{\"total_tokens\":5}")) }.isFailure)
         val after = repo.snapshot()
         assertEquals(before.messages, after.messages)
         assertEquals(before.scenes, after.scenes)
@@ -314,6 +314,44 @@ class RepositoryTest {
         assertEquals("failed", after.generations.single().status)
         assertEquals("actual/free", after.generations.single().actualModel)
         assertTrue(after.generations.single().usageJson.contains("5"))
+    }
+
+    @Test fun plainStoryCommitsOnceWithoutStateAndSurvivesRestartAndBackup() = runBlocking {
+        repo.saveDraft("I wait.")
+        val before = repo.snapshot(); val request = trackedRequest()
+        val response = RouterResult("Mira waits beside the railing.", "actual/text", "{}")
+        assertEquals(StoryResponse.WARNING, repo.finishGeneration(request.id, response))
+        repo.finishGeneration(request.id, response)
+        val after = repo.snapshot()
+        assertEquals(before.messages.size + 2, after.messages.size)
+        assertEquals(response.text, after.messages.last().text); assertEquals("", after.scene!!.draft)
+        assertEquals(before.scene!!.continuityJson, after.scene!!.continuityJson)
+        assertEquals(before.continuityEvents, after.continuityEvents)
+        assertEquals(StoryResponse.WARNING, after.generations.single().error)
+        assertEquals("completed", after.generations.single().status)
+        assertTrue(SceneContext.build(after, "Go on").messages.first().content.contains(StoryResponse.CONTEXT_NOTE))
+        db.close(); openDatabase(); repo.initialize()
+        assertEquals(after.messages, repo.snapshot().messages)
+        val backup = ByteArrayOutputStream().also { repo.export(it) }.toByteArray()
+        repo.restore(ByteArrayInputStream(backup))
+        assertEquals(after.generations, repo.snapshot().generations)
+        assertEquals(after.messages, repo.snapshot().messages)
+    }
+
+    @Test fun badStateMetadataKeepsStoryButCannotAlterMechanicsOrNativeFacts() = runBlocking {
+        val scene = repo.snapshot().scene!!
+        repo.saveNarrativeSettings(scene.id, NarrativeSettings(mode = "aurpg")); repo.setMomentum(scene.id, 3)
+        repo.saveDraft("I wait.")
+        val before = repo.snapshot(); val request = trackedRequest()
+        val raw = """{"protocol":1,"baseRevision":999,"narrative":"Mira waits.","actors":[{"state":{"actorId":"mira","locationId":"invented"},"evidence":"made up"}],"momentum":10}"""
+        repo.finishGeneration(request.id, RouterResult(raw, "actual/text", "{}"))
+        val after = repo.snapshot()
+        assertEquals("Mira waits.", after.messages.last().text)
+        assertEquals(before.scene!!.aurpgJson, after.scene!!.aurpgJson)
+        assertEquals(before.scene!!.continuityJson, after.scene!!.continuityJson)
+        assertEquals(before.entries, after.entries); assertEquals(before.continuityEvents, after.continuityEvents)
+        assertEquals(raw, after.generations.single().output)
+        assertEquals(StoryResponse.WARNING, after.generations.single().error)
     }
 
     @Test fun manualCorrectionInvalidatesPendingResponsesAndDoesNotChangeTranscript() = runBlocking {

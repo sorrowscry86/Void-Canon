@@ -1,0 +1,6 @@
+Performing Streamed Install
+Success
+Baseline records: {'worlds': 12, 'entries': 24, 'assets': 13, 'scenes': 12, 'messages': 45, 'visual_descriptions': 4, 'chapters': 3, 'generations': 25, 'continuity_events': 13}
+Performing Streamed Install
+Success
+PASS: signed install -r, all original domain records, private image hashes and preferences retained. No uninstall/data clear.

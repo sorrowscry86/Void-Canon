@@ -2,7 +2,7 @@
 
 A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
 
-## AURPG, DeepSeek backup and Read Aloud — 0.6.1
+## AURPG, DeepSeek backup and Read Aloud — 0.6.2
 
 Play → sliders icon → **AURPG** adds local dice checks, explicit momentum spending and author-controlled progress clocks. The RP model receives recorded outcomes; it cannot change the counters. Classic/Freeform narrative modes and the compact Play toolbar remain available, with full-height input reserved before dialogue.
 
@@ -12,15 +12,15 @@ The **speaker icon** reads the latest visible scene message using Android text-t
 
 [Feature and storage contract](docs/AURPG-BACKUP-SPEECH.md) · [Current handback](IMPLEMENTATION-HANDBACK.md).
 
-## Install / upgrade — 0.6.1
+## Install / upgrade — 0.6.2
 
-Download the **[Void Canon 0.6.1 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.1/downloads/void-canon-0.6.1.apk)**. It enables JSON response mode for direct DeepSeek roleplay to address rejected story/state replies. AURPG, Read Aloud, Freeform/Classic RP, artwork and chapter memory remain available.
+Download the **[Void Canon 0.6.2 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.2/downloads/void-canon-0.6.2.apk)**. It accepts usable story prose and common JSON story wrappers from both OpenRouter and DeepSeek, even when optional state formatting fails. Unvalidated tracked state stays unchanged, with a saved notice. AURPG, Read Aloud, Freeform/Classic RP, artwork and chapter memory remain available.
 
-Requires Android 8.0 or newer. Install over your existing **Void Canon** app; do not uninstall or clear app data. The package remains `org.voidcat.voidcanon`, version **0.6.1 / build 14**, and the signing certificate matches published regular 0.5.0 and earlier regular builds. Worlds, artwork, transcripts, chapters, drafts, continuity history, and device-local AI settings remain in that installation. A portable export provides an optional additional copy before upgrading.
+Requires Android 8.0 or newer. Install over your existing **Void Canon** app; do not uninstall or clear app data. The package remains `org.voidcat.voidcanon`, version **0.6.2 / build 15**, and the signing certificate matches published regular 0.5.0 and earlier regular builds. Worlds, artwork, transcripts, chapters, drafts, continuity history, and device-local AI settings remain in that installation. A portable export provides an optional additional copy before upgrading.
 
 Open **Settings** from the app header to confirm the installed version, configure AI/models or the artwork connection, and export/restore backups. Back remains visible in Play with the keyboard open; modal Close controls stay outside scrolling content. Closing a settings child returns to Settings.
 
-[Downloads](downloads/README.md) includes APK/source checksums, [release notes](downloads/RELEASE-0.6.1.md), and older builds. [Release evidence](docs/release-061-evidence/README.md) records the signed upgrade and feature checks and Android checks. The historical **Void Canon Test** app installs separately; its data is not automatically moved into the regular app. Portable restore replaces the receiving library and excludes provider credentials/settings.
+[Downloads](downloads/README.md) includes APK/source checksums, [release notes](downloads/RELEASE-0.6.2.md), and older builds. [Release evidence](docs/release-062-evidence/README.md) records the signed upgrade and feature checks and Android checks. The historical **Void Canon Test** app installs separately; its data is not automatically moved into the regular app. Portable restore replaces the receiving library and excludes provider credentials/settings.
 
 Build the regular APK with the original private signing key supplied locally:
 
@@ -100,7 +100,7 @@ See [the handback](IMPLEMENTATION-HANDBACK.md) for exact bounds and [release ver
 
 ## Scene continuity
 
-Live RP keeps compact, scene-local records of participants, positions, activities, relevant conditions, held objects, and explicit elapsed time. The model receives at most 4,000 characters of current state; older revisions stay local. Story and validated changes save together. Invalid model responses preserve your draft, transcript, and state, with details in Context.
+Live RP keeps compact, scene-local records of participants, positions, activities, relevant conditions, held objects, and explicit elapsed time. The model receives at most 4,000 characters of current state; older revisions stay local. Usable stories save even when optional state metadata is missing or invalid; in that case tracked state stays unchanged and Play/Context retain a notice. Fully validated state changes still save with the story. Output without usable story preserves your draft, transcript and state. See [response compatibility](docs/MODEL-RESPONSE-COMPATIBILITY.md).
 
 Open **Play → Scene → Review scene continuity** to correct details, add existing participants or objects, or use the state before the last update. State is model-visible, provisional scene data; private author notes remain separate. Existing scenes start with unknown details rather than an invented reconstruction of their history. Chapter summaries never update state. Scripted Demo does not extract state.
 

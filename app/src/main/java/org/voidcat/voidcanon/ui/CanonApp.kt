@@ -47,6 +47,7 @@ import org.voidcat.voidcanon.data.AssetRecord
 import org.voidcat.voidcanon.data.EntryRecord
 import org.voidcat.voidcanon.data.WorldSnapshot
 import org.voidcat.voidcanon.data.NarrativePlay
+import org.voidcat.voidcanon.data.StoryResponse
 import java.text.DateFormat
 import java.util.Date
 
@@ -545,6 +546,8 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = LocalFocusManager.current
     val lastMessage = s.messages.lastOrNull()
+    val storyWarning = s.generations.firstOrNull { it.id == lastMessage?.generationId && it.status == "completed" }
+        ?.error?.takeIf { it == StoryResponse.WARNING }
     val dialogueScroll = rememberScrollState()
     LaunchedEffect(lastMessage?.id) { dialogueScroll.scrollTo(0) }
 
@@ -611,7 +614,7 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
                 }
             }
             if (!keyboardVisible) {
-                Text(if (liveMode) "Provisional story · approve chapters for memory." else "Scripted demo · input advances the saved exchange.", fontSize = 10.sp, color = Muted, modifier = Modifier.padding(top = 8.dp, start = 6.dp))
+                Text(if (liveMode) storyWarning ?: "Provisional story · approve chapters for memory." else "Scripted demo · input advances the saved exchange.", fontSize = 10.sp, color = Muted, modifier = Modifier.padding(top = 8.dp, start = 6.dp))
             }
         }
     }

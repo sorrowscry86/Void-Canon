@@ -1,0 +1,18 @@
+{
+  "from": "0.6.1",
+  "to": "0.6.2",
+  "schema": 6,
+  "counts": {
+    "worlds": 12,
+    "entries": 24,
+    "assets": 13,
+    "scenes": 12,
+    "messages": 45,
+    "visual_descriptions": 4,
+    "chapters": 3,
+    "generations": 25,
+    "continuity_events": 13
+  },
+  "allDomainRecordsImagesAndPreferencesUnchanged": true,
+  "apkSha256": "650e2ca170af9fe8cb858c6017b0762f60cf4c74ce29e51c4ebb0738aeaa05da"
+}

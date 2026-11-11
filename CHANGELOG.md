@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.2 — usable story without mandatory state formatting
+
+- Accept plain narrative and common JSON story wrappers from both OpenRouter and DeepSeek across Classic, Freeform and AURPG.
+- Save usable story/action once even when state metadata is invalid; retain prior tracked state, native mechanics and a persistent nonfatal notice.
+- Keep strict validation for actual state updates and stale-scene rejection; reject output without usable story and never publish model reasoning.
+- Remove forced direct-provider JSON mode, prefer best-effort JSON/prose in prompts, and add no repair/retry/provider call.
+- Preserve original package/signing identity and Room/backup 6.
+
+See [compatibility contract](docs/MODEL-RESPONSE-COMPATIBILITY.md) and [verification](docs/release-062-evidence/README.md).
+
 ## 0.6.1 — DeepSeek story/state response format
 
 - Explicitly request JSON-object responses for direct DeepSeek roleplay in all three modes and audit the selected response format.

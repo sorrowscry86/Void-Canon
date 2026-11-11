@@ -1,0 +1,14 @@
+suite	tests	failures	errors	skipped
+org.voidcat.voidcanon.ai.ArtworkDirectorTest	4	0	0	0
+org.voidcat.voidcanon.ai.ArtworkPlanningTest	11	0	0	0
+org.voidcat.voidcanon.ai.CloudflareImageClientTest	5	0	0	0
+org.voidcat.voidcanon.ai.DeepSeekClientTest	5	0	0	0
+org.voidcat.voidcanon.ai.NarrativePlayTest	5	0	0	0
+org.voidcat.voidcanon.ai.OpenRouterClientTest	7	0	0	0
+org.voidcat.voidcanon.ai.RequestBudgetTest	3	0	0	0
+org.voidcat.voidcanon.data.AurpgTest	5	0	0	0
+org.voidcat.voidcanon.data.ContinuityTest	6	0	0	0
+org.voidcat.voidcanon.data.IllustrationStoreTest	12	0	0	0
+org.voidcat.voidcanon.data.RepositoryTest	49	0	0	0
+org.voidcat.voidcanon.data.StoryResponseTest	6	0	0	0
+org.voidcat.voidcanon.ui.SpeechChunksTest	3	0	0	0

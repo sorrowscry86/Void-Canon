@@ -1,6 +1,14 @@
 # Void Canon downloads
 
-## 0.6.1 — current regular Void Canon update
+## 0.6.2 — current regular Void Canon update
+
+**[Download Void Canon 0.6.2 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.2/downloads/void-canon-0.6.2.apk)** · [APK SHA-256](void-canon-0.6.2.apk.sha256) · [Release notes](RELEASE-0.6.2.md)
+
+[Source ZIP](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.2/downloads/void-canon-0.6.2-source.zip) · [Source SHA-256](void-canon-0.6.2-source.zip.sha256)
+
+Regular **0.6.2 / build 15**, original signing identity. Install over your current regular app to retain data and private connections. Both OpenRouter and DeepSeek can save plain story prose or common wrappers without requiring valid state metadata. Tracked state stays unchanged with a saved notice when metadata is invalid/missing. No extra API call or automatic retry. Room/backup remain 6. [Verification](../docs/release-062-evidence/README.md).
+
+## Earlier 0.6.1 — regular Void Canon update
 
 **[Download Void Canon 0.6.1 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.1/downloads/void-canon-0.6.1.apk)** · [APK SHA-256](void-canon-0.6.1.apk.sha256) · [Release notes](RELEASE-0.6.1.md)
 

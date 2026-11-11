@@ -52,12 +52,12 @@ object NarrativePlay {
             presets.first { it.id == settings.preset }.description + "\n" +
             pacings.first { it.id == settings.pacing }.description + "\n" +
             lengths.first { it.id == settings.length }.description +
-            " These are narrative-length targets, not permission to truncate the required response protocol. " +
+            " These are narrative-length targets; finish the story rather than truncating it to fit optional state metadata. " +
             "Respond to the user's actual contribution and end at a meaningful opening for their response. " +
             "Portray only the focus character and optional nearby environmental narration; no independent offscreen simulation. " +
             "Never invent the user's choices, speech, feelings or thoughts, force a major outcome, or invent dice, stats or rules results. " +
             "Respect supplied knowledge and continuity; discoveries remain provisional. " +
-            "Return the required continuity JSON, with all story prose in its narrative field."
+            "Prefer continuity JSON with story prose in its narrative field; plain story prose is usable if you cannot provide state metadata."
     }
 
     fun audit(settings: NarrativeSettings) = mapOf(

@@ -248,6 +248,7 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
     }
     suspend fun finishGeneration(id: String, result: RouterResult) = mutate {
         var rejection: String? = null
+        var warning: String? = null
         db.withTransaction {
             val all = dao.snapshot()
             val record = all.generations.first { it.id == id }
@@ -264,15 +265,16 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
                 "roleplay" -> {
                     val tracked = runCatching { Json.decodeFromString<ContextPreview>(record.contextJson).settings["continuityProtocol"] == "1" }.getOrDefault(false)
                     val resolved = try {
-                        if (tracked) Continuity.resolve(result.text, record.userText, s) else result.text to null
+                        if (tracked) StoryResponse.resolve(result.text, record.userText, s) else ResolvedStory(result.text, null)
                     } catch (e: Exception) {
                         rejection = e.message ?: "Invalid scene state response."
                         dao.putGenerations(listOf(record.copy(status = "failed", actualModel = result.model, output = result.text,
                             usageJson = result.usageJson, error = rejection!!)))
                         return@withTransaction
                     }
-                    val narrative = resolved.first
-                    resolved.second?.let { after ->
+                    warning = resolved.warning
+                    val narrative = resolved.narrative
+                    resolved.state?.let { after ->
                         dao.putContinuityEvents(listOf(ContinuityEvent("state-$id", record.sceneId, "reply-$id",
                             Continuity.json.encodeToString(Continuity.current(s)), Continuity.json.encodeToString(after), System.currentTimeMillis())))
                     }
@@ -281,7 +283,7 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
                         MessageRecord("user-$id", record.sceneId, "user", record.userText, sequence, id, "live"),
                         MessageRecord("reply-$id", record.sceneId, "character", narrative, sequence + 1, id, "live")))
                     dao.putScenes(s.scenes.map { it.copy(draft = if (it.draft.trim() == record.userText.trim()) "" else it.draft, savedAt = System.currentTimeMillis(),
-                        continuityJson = resolved.second?.let { state -> Continuity.json.encodeToString(state) } ?: it.continuityJson) })
+                        continuityJson = resolved.state?.let { state -> Continuity.json.encodeToString(state) } ?: it.continuityJson) })
                 }
                 "vision" -> {
                     val assetId = requireNotNull(record.sourceAssetId)
@@ -297,14 +299,15 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
                 val after = dao.snapshot().scoped(sourceScene.worldId, sourceScene.id)
                 val prior = dao.illustrationFrame(record.sceneId)?.let { IllustrationStore.decode(it.planJson) }
                 val narrative = after.messages.last().text
-                val visual = VisualBeat.parse(result.text, record.userText, narrative)
+                val visual = if (warning == null) VisualBeat.parse(result.text, record.userText, narrative) else null
                 val plan = runCatching { ArtworkPlanning.build(after, artworkPreferences.brief(record.sceneId),
                     artworkPreferences.style(sourceScene.worldId), prior, visual) }.getOrNull()
                 if (plan != null) IllustrationStore.record(dao, plan, true)
             }
-            dao.putGenerations(listOf(record.copy(status = "completed", actualModel = result.model, output = result.text, usageJson = result.usageJson)))
+            dao.putGenerations(listOf(record.copy(status = "completed", actualModel = result.model, output = result.text, usageJson = result.usageJson, error = warning.orEmpty())))
         }
         require(rejection == null) { rejection!! }
+        warning
     }
     suspend fun failGeneration(id: String, cancelled: Boolean, error: String) = mutate {
         dao.putGenerations(dao.generations().filter { it.id == id && it.status == "pending" }.map { it.copy(status = if (cancelled) "cancelled" else "failed", error = error.take(1000)) })

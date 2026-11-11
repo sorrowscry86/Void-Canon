@@ -69,3 +69,7 @@ See [the mode contract](NARRATIVE-MODES.md). NarrativeSettings is portable scene
 ## AURPG, direct text backup and speech (0.6.0)
 
 [Feature/storage contract](AURPG-BACKUP-SPEECH.md) defines native immutable dice checks, author counters, bounded mechanical context and backup-6 validation. The direct DeepSeek flavor of the text adapter uses a separate encrypted key namespace, explicit paid consent and manual provider selection. Image understanding remains on OpenRouter. Android TTS uses installed non-network voices; voice state is ephemeral, never part of the portable graph.
+
+## Provider-independent story compatibility (0.6.2)
+
+`StoryResponse` separates usable narrative from optional strictly validated continuity updates. Plain prose and common wrappers can complete a turn while keeping tracked state unchanged and storing a nonfatal warning in the completed generation. Play restores that warning and subsequent context acknowledges the untracked turn. Direct DeepSeek no longer forces JSON mode. Fingerprints, state validation, native mechanics, output limits and transport failures remain enforced; no repair call or automatic retry is added. See [contract](MODEL-RESPONSE-COMPATIBILITY.md).

@@ -1,0 +1,19 @@
+
+org.voidcat.voidcanon.StoryCompatibilityUiTest:
+Error in bothProvidersKeepUsableStoryWhenOptionalStateIsMissingOrInvalid(org.voidcat.voidcanon.StoryCompatibilityUiTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 60000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:504)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:339)
+	at org.voidcat.voidcanon.StoryCompatibilityUiTest.bothProvidersKeepUsableStoryWhenOptionalStateIsMissingOrInvalid(StoryCompatibilityUiTest.kt:110)
+
+
+Time: 171.912
+There was 1 failure:
+1) bothProvidersKeepUsableStoryWhenOptionalStateIsMissingOrInvalid(org.voidcat.voidcanon.StoryCompatibilityUiTest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 60000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:504)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:339)
+	at org.voidcat.voidcanon.StoryCompatibilityUiTest.bothProvidersKeepUsableStoryWhenOptionalStateIsMissingOrInvalid(StoryCompatibilityUiTest.kt:110)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1

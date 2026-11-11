@@ -24,7 +24,7 @@ Open AI settings → DeepSeek direct backup. Enter the separate API key on the p
 
 Enable the separate story-sharing/API-charge permission and Use DeepSeek for future text requests, then Save. This explicitly selects DeepSeek for RP and summaries. It never silently retries a failed OpenRouter call or resends a turn. Send explicitly after switching. Turn it off to return to the original OpenRouter configuration. OpenRouter's Free only applies to OpenRouter; it is not a zero-cost guarantee for this separately authorized API account.
 
-From 0.6.1, roleplay explicitly requests `response_format: {"type":"json_object"}`; summaries remain plain text. JSON mode does not replace full continuity validation or trigger automatic retries.
+From 0.6.2, roleplay accepts prose or common story wrappers without forced JSON mode, across both providers. Valid state updates still require full validation; unusable metadata leaves tracked state unchanged while retaining the story. Summaries remain plain text. See [response compatibility](MODEL-RESPONSE-COMPATIBILITY.md).
 
 The adapter uses DeepSeek's OpenAI-compatible `/v1/chat/completions` and authenticated `/v1/models`. It omits OpenRouter routing/pricing fields and headers and leaves temperature at the direct provider's default. The app bounds story context to 24,000 characters and output to at most 4096 tokens (subject to provider limits); these are application budgets, not an advertised model maximum. Errors are sanitized; there is no automatic retry, redirect or alternate model/provider attempt. Usage and provider/model identity are retained in the request audit.
 
