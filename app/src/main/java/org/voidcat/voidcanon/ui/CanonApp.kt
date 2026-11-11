@@ -46,6 +46,7 @@ import org.voidcat.voidcanon.CanonViewModel
 import org.voidcat.voidcanon.data.AssetRecord
 import org.voidcat.voidcanon.data.EntryRecord
 import org.voidcat.voidcanon.data.WorldSnapshot
+import org.voidcat.voidcanon.data.NarrativePlay
 import java.text.DateFormat
 import java.util.Date
 
@@ -535,7 +536,8 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
     val backdropId = if (visibleLocation.id == location.id) scene.backgroundAssetId else visibleLocation.primaryAssetId
     val showCutout = illustration == null && (classicView || visualPlan?.snapshot?.let { it.ownerId == character.id && it.appearance.isBlank() } == true)
     val isDemo = scene.id == "harbor-scene"
-    var liveMode by rememberSaveable { mutableStateOf(!isDemo || vm.hasKey.value) }
+    var liveMode by rememberSaveable(scene.id) { mutableStateOf(scene.narrative.mode == "freeform" || !isDemo || vm.hasKey.value) }
+    var playSettingsOpen by remember(scene.id) { mutableStateOf(false) }
     var historyOpen by remember { mutableStateOf(false) }
     var artworkSettingsOpen by remember(scene.id) { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
@@ -548,7 +550,7 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
         LocalImage(vm, backdropId, "Scene at ${visibleLocation.name}", Modifier.fillMaxSize())
         if (illustration != null) AsyncImage(illustration, "Current scene illustration", Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
         val spriteHeight = (maxHeight - if (keyboardVisible) 196.dp else 230.dp).coerceAtLeast(64.dp)
-        val dialogueMaxHeight = (maxHeight * .34f).coerceAtLeast(72.dp)
+        val dialogueMaxHeight = (maxHeight * if (keyboardVisible) .46f else .54f).coerceAtLeast(72.dp)
         if (showCutout) LocalImage(vm, scene.cutoutAssetId, "${character.name}, layered over the setting",
             Modifier.align(Alignment.TopCenter).padding(top = if (keyboardVisible) 44.dp else 100.dp).fillMaxWidth().height(spriteHeight), ContentScale.Fit)
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Ink.copy(alpha = .55f), Color.Transparent, Ink.copy(alpha = .65f)))))
@@ -556,33 +558,38 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
             Row(Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(visibleLocation.name, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 13.sp)
-                    Text(if (liveMode) "OpenRouter · ${if (hasKey) "live RP" else "setup needed"}" else "Scripted demo · offline", fontSize = 10.sp, color = Violet)
+                    Text(if (liveMode) "${NarrativePlay.label(scene.narrative)} · ${if (hasKey) "OpenRouter" else "AI setup needed"}" else "Scripted demo · offline", fontSize = 10.sp, color = Violet, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 IconButton(onClick = { focus.clearFocus(); historyOpen = true }) { Icon(CanonIcons.History, "Scene history") }
                 IconButton(onClick = vm::save, enabled = !busy) { Icon(CanonIcons.Save, "Save scene") }
             }
-            if (!keyboardVisible) FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                if (isDemo) FilterChip(!liveMode, { if (generating == null) liveMode = false }, label = { Text("Demo") })
-                FilterChip(liveMode, { if (generating == null) liveMode = true }, label = { Text("Live RP") })
-                TextButton(onClick = context) { Text("Context") }
-                TextButton(onClick = details) { Text("Scene") }
-                TextButton(onClick = ai) { Text("AI") }
-                ArtworkControls(vm) { focus.clearFocus(); keyboard?.hide(); artworkSettingsOpen = true }
+            if (!keyboardVisible) Row(Modifier.fillMaxWidth().height(48.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+                PlayTool("Play mode", CanonIcons.Tune, active = liveMode && scene.narrative.mode == "freeform") { playSettingsOpen = true }
+                PlayTool("Scene context", CanonIcons.Book, action = context)
+                PlayTool("Scene details", CanonIcons.Person, action = details)
+                PlayTool("AI settings", CanonIcons.Ai, action = ai)
+                PlayTool("Artwork", CanonIcons.Images, active = artwork.running) {
+                    focus.clearFocus(); keyboard?.hide(); artworkSettingsOpen = true
+                }
             }
             if (liveMode && generationError != null) Text(generationError.orEmpty(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.fillMaxWidth().background(Panel).padding(8.dp).heightIn(max = 84.dp).verticalScroll(rememberScrollState()))
-            Spacer(Modifier.weight(1f))
-            if (illustration != null) artwork.job?.plan()?.let { completed ->
-                Surface(color = Panel.copy(alpha = .94f), shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
-                    Text(completed.caption(), fontSize = 12.sp, color = Muted, maxLines = if (keyboardVisible) 1 else 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(10.dp))
-                }
-            }
-            Surface(color = Panel.copy(alpha = .96f), shape = RoundedCornerShape(20.dp), border = BorderStroke(1.dp, Color(0xFF60566D)),
-                modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(if (lastMessage?.speaker == "user") "You" else character.name, color = Violet, fontFamily = FontFamily.Serif, fontSize = 21.sp)
-                    Text(lastMessage?.text ?: "Your scene is waiting.", fontFamily = FontFamily.Serif, fontSize = 18.sp, lineHeight = 25.sp,
-                        modifier = Modifier.heightIn(max = dialogueMaxHeight).verticalScroll(dialogueScroll))
+            // Measure input and controls first. Only the reading/artwork region may shrink.
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.BottomCenter) {
+                Column(Modifier.fillMaxWidth()) {
+                    if (illustration != null) artwork.job?.plan()?.let { completed ->
+                        Surface(color = Panel.copy(alpha = .94f), shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
+                            Text(completed.caption(), fontSize = 12.sp, color = Muted, maxLines = if (keyboardVisible) 1 else 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(10.dp))
+                        }
+                    }
+                    Surface(color = Panel.copy(alpha = .96f), shape = RoundedCornerShape(20.dp), border = BorderStroke(1.dp, Color(0xFF60566D)),
+                        modifier = Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(if (lastMessage?.speaker == "user") "You" else character.name, color = Violet, fontFamily = FontFamily.Serif, fontSize = 21.sp)
+                            Text(lastMessage?.text ?: "Your scene is waiting.", fontFamily = FontFamily.Serif, fontSize = 18.sp, lineHeight = 25.sp,
+                                modifier = Modifier.heightIn(max = dialogueMaxHeight).verticalScroll(dialogueScroll))
+                        }
+                    }
                 }
             }
             Spacer(Modifier.height(10.dp))
@@ -601,10 +608,11 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
                 }
             }
             if (!keyboardVisible) {
-                Text(if (liveMode) "Replies are provisional. Review chapters before using them as memory." else "Demo replies follow a fixed script. Your words and history are saved.", fontSize = 10.sp, color = Muted, modifier = Modifier.padding(top = 8.dp, start = 6.dp))
+                Text(if (liveMode) "Provisional story · approve chapters for memory." else "Scripted demo · input advances the saved exchange.", fontSize = 10.sp, color = Muted, modifier = Modifier.padding(top = 8.dp, start = 6.dp))
             }
         }
     }
+    if (playSettingsOpen) PlaySettingsSheet(scene, vm, liveMode, { liveMode = it }) { playSettingsOpen = false }
     if (artworkSettingsOpen) ArtworkSettingsSheet(vm) { artworkSettingsOpen = false }
     if (historyOpen) ModalBottomSheet(onDismissRequest = { historyOpen = false }, containerColor = Panel) {
         Column(Modifier.fillMaxWidth().fillMaxHeight(.85f)) {

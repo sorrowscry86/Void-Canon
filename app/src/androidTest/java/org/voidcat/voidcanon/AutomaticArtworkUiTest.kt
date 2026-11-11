@@ -77,6 +77,9 @@ class AutomaticArtworkUiTest {
                         }.toString())
                     }
                     val turn = rpCalls.incrementAndGet()
+                    assertTrue(payload.getValue("messages").toString().contains("MLRPE-inspired narrative preferences"))
+                    assertTrue(payload.getValue("messages").toString().contains("60–120 words"))
+                    assertTrue(payload.getValue("messages").toString().contains("focus character's dialogue"))
                     if (turn > 1) assertTrue(payload.getValue("messages").toString().contains(observedImage))
                     if (turn == 1) assertTrue(payload.getValue("messages").toString().contains("Optional artwork observation"))
                     val state = runBlocking { Continuity.current(app.repository.snapshot()) }
@@ -116,8 +119,13 @@ class AutomaticArtworkUiTest {
             compose.waitUntil(30000) { vm.hasKey.value && !vm.busy.value }
             dismissFeedback()
             compose.onNodeWithText("Play").performClick()
-            compose.onNodeWithText("Live RP", useUnmergedTree = true).performClick()
-            compose.onNodeWithText("Artwork", useUnmergedTree = true).performClick()
+            compose.onNodeWithContentDescription("Play mode").performClick()
+            compose.onNodeWithText("Freeform Story").performScrollTo().performClick()
+            compose.onNodeWithText("Character focus").performScrollTo().performClick()
+            compose.onNodeWithText("Brisk").performScrollTo().performClick()
+            compose.onNodeWithText("Short").performScrollTo().performClick()
+            compose.onNodeWithText("Save play settings").performScrollTo().performClick()
+            compose.onNodeWithContentDescription("Artwork").performClick()
             compose.onNodeWithText("Character visual brief (optional)").performScrollTo().performClick().performTextInput("[FIXTURE] Teal travel coat.")
             compose.waitForIdle(); Thread.sleep(750)
             compose.onNodeWithText("Scene artwork").assertIsDisplayed()
@@ -141,7 +149,7 @@ class AutomaticArtworkUiTest {
             compose.onNodeWithContentDescription("Current scene illustration").assertIsDisplayed()
             compose.onNodeWithText(vm.artwork.value.job!!.plan().caption()).assertIsDisplayed()
             capture("21-automatic-artwork-fixture")
-            compose.onNodeWithText("Artwork", useUnmergedTree = true).performClick()
+            compose.onNodeWithContentDescription("Artwork").performClick()
             compose.onNodeWithText("View prompt").performClick()
             compose.onNodeWithText("Artwork prompt").assertIsDisplayed()
             compose.waitUntil(15000) { vm.snapshot.value.assets.size == before.assets.size + 1 && !vm.busy.value }

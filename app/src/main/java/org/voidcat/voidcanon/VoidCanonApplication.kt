@@ -10,6 +10,7 @@ import org.voidcat.voidcanon.data.CanonDatabase
 import org.voidcat.voidcanon.data.CanonRepository
 import org.voidcat.voidcanon.data.MIGRATION_1_2
 import org.voidcat.voidcanon.data.MIGRATION_3_4
+import org.voidcat.voidcanon.data.MIGRATION_4_5
 import org.voidcat.voidcanon.data.MIGRATION_2_3
 import org.voidcat.voidcanon.ai.OpenRouterSettings
 import org.voidcat.voidcanon.ai.OpenRouterClient
@@ -21,7 +22,7 @@ class VoidCanonApplication : Application() {
     suspend fun recoverArtwork(store: IllustrationStore) = artworkRecoveryLock.withLock {
         if (!artworkRecovered) { store.recover(); artworkRecovered = true }
     }
-    val database by lazy { Room.databaseBuilder(this, CanonDatabase::class.java, "void-canon.db").addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build() }
+    val database by lazy { Room.databaseBuilder(this, CanonDatabase::class.java, "void-canon.db").addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build() }
     val aiSettings by lazy { OpenRouterSettings(this) }
     var aiClient = OpenRouterClient()
     val imageSettings by lazy { org.voidcat.voidcanon.ai.ImageGenerationSettings(this) }

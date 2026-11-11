@@ -2,6 +2,7 @@ package org.voidcat.voidcanon.data
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Embedded
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
@@ -59,6 +60,7 @@ data class SceneRecord(
     @ColumnInfo(defaultValue = "''") val provisionalState: String = "",
     @ColumnInfo(defaultValue = "''") val authorNotes: String = "",
     @ColumnInfo(defaultValue = "''") val continuityJson: String = "",
+    @Embedded(prefix = "narrative_") val narrative: NarrativeSettings = NarrativeSettings(),
 )
 
 @Serializable
@@ -120,7 +122,7 @@ data class GenerationRecord(
 /** Portable world-library data contract. Local filenames carry no device-specific paths. */
 @Serializable
 data class WorldSnapshot(
-    val formatVersion: Int = 4,
+    val formatVersion: Int = 5,
     val exportedAt: String = "",
     val worlds: List<WorldRecord> = emptyList(),
     val entries: List<EntryRecord> = emptyList(),

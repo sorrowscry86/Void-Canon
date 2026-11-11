@@ -46,7 +46,7 @@ class RepositoryTest {
     }
 
     private fun openDatabase() {
-        db = Room.databaseBuilder(context, CanonDatabase::class.java, dbName).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).allowMainThreadQueries().build()
+        db = Room.databaseBuilder(context, CanonDatabase::class.java, dbName).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).allowMainThreadQueries().build()
         repo = CanonRepository(context, db)
     }
 
@@ -56,6 +56,97 @@ class RepositoryTest {
         val s = repo.snapshot()
         return GenerationRecord(UUID.randomUUID().toString(), s.scene!!.id, "roleplay", "fixture/free",
             Json.encodeToString(SceneContext.build(s, input)), SceneContext.fingerprint(s), input).also { repo.beginGeneration(it) }
+    }
+
+    @Test fun narrativePreferencesAreSceneScopedAndSurviveReopenAndBackup() = runBlocking {
+        val original = repo.snapshot()
+        val id = original.scene!!.id
+        val settings = NarrativeSettings("freeform", "exploration", "measured", "rich")
+        repo.saveDraft("My retained unsent action")
+        repo.saveNarrativeSettings(id, settings)
+        val secondLocation = repo.createEntry(original.world!!.id, "location", "Other quay", "", "", "")
+        val second = repo.useInScene(original.scene!!.characterId, secondLocation)
+        assertEquals(NarrativeSettings(), repo.snapshot().scene!!.narrative)
+        repo.selectScene(id)
+        db.close(); openDatabase(); repo.initialize()
+        assertEquals(settings, repo.snapshot().scene!!.narrative)
+        assertEquals("My retained unsent action", repo.snapshot().scene!!.draft)
+        assertEquals(original.messages, repo.snapshot().messages)
+        assertEquals(original.entries, repo.snapshot().entries.filter { it.id != secondLocation })
+        val zip = ByteArrayOutputStream().also { repo.export(it) }.toByteArray()
+        repo.saveNarrativeSettings(id, NarrativeSettings())
+        repo.restore(zip.inputStream())
+        assertEquals(settings, repo.workspaceSnapshot().scenes.single { it.id == id }.narrative)
+        assertEquals(NarrativeSettings(), repo.workspaceSnapshot().scenes.single { it.id == second }.narrative)
+        assertEquals(original.messages, repo.workspaceSnapshot().messages)
+    }
+
+    @Test fun narrativeChangesInvalidatePendingRepliesWithoutRewritingSource() = runBlocking {
+        repo.saveDraft("I wait.")
+        val before = repo.snapshot()
+        val request = trackedRequest()
+        repo.saveNarrativeSettings(before.scene!!.id, NarrativeSettings("freeform", "character"))
+        assertTrue(runCatching { repo.finishGeneration(request.id, RouterResult(Continuity.json.encodeToString(ContinuityReply(1, 0, "Stale reply")), "fixture/free", "{}")) }.isFailure)
+        assertEquals(before.messages, repo.snapshot().messages)
+        assertEquals(before.scene!!.draft, repo.snapshot().scene!!.draft)
+        assertTrue(repo.snapshot().continuityEvents.isEmpty())
+        assertEquals("failed", repo.snapshot().generations.single().status)
+    }
+
+    @Test fun narrativeArchiveValidationPreservesExistingWorkAndAcceptsVersionFourDefaults() = runBlocking {
+        val before = repo.workspaceSnapshot()
+        val scene = before.scene!!
+        for (invalid in listOf(NarrativeSettings(mode = "aurpg"), NarrativeSettings(preset = "unknown"),
+            NarrativeSettings(pacing = "jump"), NarrativeSettings(length = "unbounded"))) {
+            assertTrue(runCatching { repo.saveNarrativeSettings(scene.id, invalid) }.isFailure)
+            assertRestoreRejected(rawArchive(before.copy(scenes = listOf(scene.copy(narrative = invalid)))))
+            assertEquals(before, repo.workspaceSnapshot())
+        }
+        assertRestoreRejected(rawArchive(before.copy(formatVersion = 4, scenes = listOf(scene.copy(narrative = NarrativeSettings("freeform"))))))
+        assertEquals(before, repo.workspaceSnapshot())
+        repo.restore(rawArchive(before.copy(formatVersion = 4)).inputStream())
+        val restored = repo.workspaceSnapshot()
+        // Restore intentionally stages images under fresh private filenames.
+        assertEquals(before.copy(assets = before.assets.map { it.copy(fileName = restored.asset(it.id)!!.fileName) }), restored)
+        restored.assets.forEach { assertEquals(it.contentHash, imageHash(File(repo.images, it.fileName))) }
+    }
+
+    @Test fun actualVersionFourDatabasePreservesEveryDomainFieldAndAddsClassicDefaults() = runBlocking {
+        repo.editEntry("mira", "My Mira", "Edited description", "Edited lore", "Private notes")
+        repo.saveDraft("Retained before upgrade")
+        val before = repo.workspaceSnapshot()
+        db.close(); context.deleteDatabase(dbName)
+        val relative = "schemas/org.voidcat.voidcanon.data.CanonDatabase/4.json"
+        val schema = Json.parseToJsonElement(listOf(File(relative), File("app/$relative")).first { it.exists() }.readText()).jsonObject.getValue("database").jsonObject
+        val encoded = Continuity.json.encodeToJsonElement(before).jsonObject
+        val keys = mapOf("visual_descriptions" to "descriptions", "continuity_events" to "continuityEvents")
+        SQLiteDatabase.openOrCreateDatabase(context.getDatabasePath(dbName), null).use { old ->
+            schema.getValue("entities").jsonArray.forEach { entity ->
+                val table = entity.jsonObject
+                val name = table.getValue("tableName").jsonPrimitive.content
+                old.execSQL(table.getValue("createSql").jsonPrimitive.content.replace("${'$'}{TABLE_NAME}", name))
+                val columns = table.getValue("fields").jsonArray.map { it.jsonObject.getValue("columnName").jsonPrimitive.content }
+                encoded[keys[name] ?: name]?.jsonArray.orEmpty().forEach { row ->
+                    val values = android.content.ContentValues()
+                    row.jsonObject.filterKeys { it in columns }.forEach { (key, value) ->
+                        val primitive = value.jsonPrimitive
+                        when {
+                            value == JsonNull -> values.putNull(key)
+                            primitive.booleanOrNull != null -> values.put(key, if (primitive.boolean) 1 else 0)
+                            primitive.longOrNull != null && !primitive.isString -> values.put(key, primitive.long)
+                            else -> values.put(key, primitive.content)
+                        }
+                    }
+                    old.insertOrThrow(name, null, values)
+                }
+            }
+            schema.getValue("setupQueries").jsonArray.forEach { old.execSQL(it.jsonPrimitive.content) }
+            old.version = 4
+        }
+        openDatabase(); repo.initialize()
+        assertEquals(before, repo.workspaceSnapshot())
+        assertEquals(5, db.openHelper.writableDatabase.version)
+        assertEquals(NarrativeSettings(), repo.snapshot().scene!!.narrative)
     }
 
     @Test fun publishingExploratoryArtworkDoesNotInvalidateAnInFlightRoleplayTurn() = runBlocking {
@@ -183,7 +274,7 @@ class RepositoryTest {
                 old.execSQL(table.getValue("createSql").jsonPrimitive.content.replace("${'$'}{TABLE_NAME}", name))
                 encoded[tableKeys[name]]?.jsonArray.orEmpty().forEach { row ->
                     val values = android.content.ContentValues()
-                    row.jsonObject.filterKeys { it != "continuityJson" }.forEach { (key, value) ->
+                    row.jsonObject.filterKeys { key -> key in table.getValue("fields").jsonArray.map { it.jsonObject.getValue("columnName").jsonPrimitive.content } }.forEach { (key, value) ->
                         val primitive = value.jsonPrimitive
                         when {
                             value == JsonNull -> values.putNull(key)
@@ -467,7 +558,7 @@ class RepositoryTest {
         val legacy = before.copy(formatVersion = 1, assets = before.assets.map { it.copy(contentHash = "") })
         repo.restore(ByteArrayInputStream(rawArchive(legacy)))
         val after = repo.snapshot()
-        assertEquals(4, after.formatVersion)
+        assertEquals(5, after.formatVersion)
         assertEquals(before.entries, after.entries)
         assertEquals(before.messages, after.messages)
         assertTrue(after.assets.all { it.contentHash.length == 64 && File(repo.images, it.fileName).exists() })
@@ -616,7 +707,7 @@ class RepositoryTest {
         assertEquals(before.messages, after.messages)
         assertEquals(before.chapters, after.chapters)
         assertEquals(before.generations, after.generations)
-        assertEquals(4, after.formatVersion)
+        assertEquals(5, after.formatVersion)
         after.assets.forEach { assertArrayEquals(bytes[it.id], File(repo.images, it.fileName).readBytes()) }
         BackupArchive.validateGraph(after)
     }
@@ -643,7 +734,7 @@ class RepositoryTest {
         repo.restore(ByteArrayInputStream(rawArchive(before.copy(formatVersion = 2))))
         assertEquals(before.worlds, repo.workspaceSnapshot().worlds)
         assertEquals(before.scenes, repo.workspaceSnapshot().scenes)
-        assertEquals(4, repo.workspaceSnapshot().formatVersion)
+        assertEquals(5, repo.workspaceSnapshot().formatVersion)
     }
 
     private suspend fun assertRestoreRejected(bytes: ByteArray) {

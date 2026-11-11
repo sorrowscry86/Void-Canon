@@ -15,15 +15,6 @@ import coil.compose.AsyncImage
 import org.voidcat.voidcanon.CanonViewModel
 
 @Composable
-fun ArtworkControls(vm: CanonViewModel, open: () -> Unit) {
-    val state by vm.artwork.collectAsStateWithLifecycle()
-    TextButton(onClick = open) {
-        Text("Artwork")
-        if (state.running) { Spacer(Modifier.width(6.dp)); CircularProgressIndicator(Modifier.size(12.dp), strokeWidth = 2.dp) }
-    }
-}
-
-@Composable
 fun ArtworkSettingsSheet(vm: CanonViewModel, close: () -> Unit) {
     val s by vm.snapshot.collectAsStateWithLifecycle()
     val state by vm.artwork.collectAsStateWithLifecycle()

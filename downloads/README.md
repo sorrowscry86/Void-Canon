@@ -1,6 +1,18 @@
 # Void Canon downloads
 
-## 0.4.5 — current regular Void Canon update
+## 0.5.0 — current regular Void Canon update
+
+**[Download Void Canon 0.5.0 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.5.0/downloads/void-canon-0.5.0.apk)** · [APK SHA-256](void-canon-0.5.0.apk.sha256) · [Release notes](RELEASE-0.5.0.md)
+
+[Source ZIP](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.5.0/downloads/void-canon-0.5.0-source.zip) · [Source SHA-256](void-canon-0.5.0-source.zip.sha256)
+
+Regular **Void Canon 0.5.0 / build 11**, Android 8.0+. Install over your existing regular app to retain data and private connections. Original signing identity retained.
+
+Adds the first MLRPE-inspired Freeform Story controls, per-scene narrative preferences, a compact accessible Play icon row and a larger response panel. Classic remains the default; AURPG mechanics remain planned. Room and backup are now 5; backups 1–4 remain readable. Earlier app versions cannot import new version-5 backups.
+
+See [mode contract](../docs/NARRATIVE-MODES.md) and [verification](../docs/release-050-evidence/README.md). No private connection, service token or signing material is bundled.
+
+## Earlier 0.4.5 — regular Void Canon update
 
 **[Download Void Canon 0.4.5 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.4.5/downloads/void-canon-0.4.5.apk)** · [APK SHA-256](void-canon-0.4.5.apk.sha256) · [Release notes](RELEASE-0.4.5.md)
 

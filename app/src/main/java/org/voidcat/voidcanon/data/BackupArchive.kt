@@ -36,7 +36,7 @@ object BackupArchive {
 
     fun write(snapshot: WorldSnapshot, images: File, output: OutputStream) {
         validateGraph(snapshot)
-        val manifest = json.encodeToString(snapshot.copy(formatVersion = 4, exportedAt = Instant.now().toString())).toByteArray()
+        val manifest = json.encodeToString(snapshot.copy(formatVersion = 5, exportedAt = Instant.now().toString())).toByteArray()
         require(manifest.size <= 16 * 1024 * 1024) { "World is too large for a portable backup." }
         var total = manifest.size.toLong()
         snapshot.assets.forEach {
@@ -97,7 +97,7 @@ object BackupArchive {
                 val transparent = ImageFiles.validate(File(directory, asset.fileName))
                 require(transparent == asset.transparent) { "Backup image transparency does not match its metadata." }
             }
-            val normalized = snapshot.copy(formatVersion = 4,
+            val normalized = snapshot.copy(formatVersion = 5,
                 assets = snapshot.assets.map { asset ->
                     val hash = imageHash(File(directory, asset.fileName))
                     require(asset.contentHash.isBlank() || asset.contentHash == hash) { "Backup image does not match its source hash." }
@@ -109,7 +109,8 @@ object BackupArchive {
     }
 
     fun validateGraph(s: WorldSnapshot) {
-        require(s.formatVersion in 1..4) { "Unsupported backup version. This app supports versions 1, 2, 3, and 4." }
+        require(s.formatVersion in 1..5) { "Unsupported backup version. This app supports versions 1 through 5." }
+        if (s.formatVersion < 5) require(s.scenes.all { it.narrative == NarrativeSettings() }) { "Legacy backups cannot contain narrative play settings." }
         if (s.formatVersion < 4) require(s.continuityEvents.isEmpty() && s.scenes.all { it.continuityJson.isBlank() }) { "Legacy backups cannot contain tracked state." }
         require(s.worlds.isNotEmpty()) { "A backup must contain at least one world." }
         if (s.formatVersion < 3) require(s.worlds.size == 1 && s.scenes.size == 1) { "Legacy backups must contain one world and one scene." }
@@ -142,6 +143,7 @@ object BackupArchive {
             require(world.coverAssetId == null || assets[world.coverAssetId]?.let { asset -> entries[asset.entityId]?.let { it.kind == "location" && it.worldId == world.id } } == true) { "Broken cover image reference." }
         }
         s.scenes.forEach { scene ->
+            NarrativePlay.validate(scene.narrative)
             require(scene.worldId in worlds && entries[scene.characterId]?.let { it.kind == "character" && it.worldId == scene.worldId } == true && entries[scene.locationId]?.let { it.kind == "location" && it.worldId == scene.worldId } == true) { "Broken scene entry reference." }
             require(scene.backgroundAssetId == null || assets[scene.backgroundAssetId]?.entityId == scene.locationId) { "Broken scene background." }
             require(scene.cutoutAssetId == null || assets[scene.cutoutAssetId]?.let { it.entityId == scene.characterId && it.transparent } == true) { "Scene cutout must be a transparent character image." }

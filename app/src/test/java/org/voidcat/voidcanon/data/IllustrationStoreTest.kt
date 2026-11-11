@@ -34,7 +34,7 @@ class IllustrationStoreTest {
         open(); repo.initialize(); repo.artworkPreferences.resetPermissions()
     }
     private fun open() {
-        db = Room.databaseBuilder(app, CanonDatabase::class.java, name).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
+        db = Room.databaseBuilder(app, CanonDatabase::class.java, name).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
         repo = CanonRepository(app, db)
         store = IllustrationStore(db, app.filesDir, app.cacheDir)
     }
@@ -262,7 +262,7 @@ class IllustrationStoreTest {
                 old.execSQL(entity.getValue("createSql").jsonPrimitive.content.replace("${'$'}{TABLE_NAME}", table))
                 encoded[keys.getValue(table)]!!.jsonArray.forEach { row ->
                     val values = android.content.ContentValues()
-                    row.jsonObject.forEach { (key, value) ->
+                    row.jsonObject.filterKeys { key -> key in entity.getValue("fields").jsonArray.map { it.jsonObject.getValue("columnName").jsonPrimitive.content } }.forEach { (key, value) ->
                         val p = value.jsonPrimitive
                         when {
                             value == JsonNull -> values.putNull(key)
@@ -280,6 +280,6 @@ class IllustrationStoreTest {
         open(); repo.initialize()
         assertEquals(before, repo.workspaceSnapshot())
         assertTrue(store.jobs().isEmpty())
-        assertEquals(4, db.openHelper.writableDatabase.version)
+        assertEquals(5, db.openHelper.writableDatabase.version)
     }
 }

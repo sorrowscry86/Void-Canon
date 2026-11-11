@@ -1,0 +1,1 @@
+PASS: original library, image hashes and model-preference bytes retained after navigation/keyboard checks.

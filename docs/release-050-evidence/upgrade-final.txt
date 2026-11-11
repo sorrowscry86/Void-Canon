@@ -1,0 +1,6 @@
+Performing Streamed Install
+Success
+Restored disposable regular 0.4.5 fixture; schema 4 and all original rows confirmed.
+Performing Streamed Install
+Success
+PASS: final outgoing APK upgrades regular 0.4.5 -> 0.5.0, schema 4 -> 5; original domain values/IDs, images, drafts/history and model preferences retained. Classic defaults verified.

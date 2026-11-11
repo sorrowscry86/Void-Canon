@@ -23,7 +23,7 @@ class ContinuityUiTest {
         IdlingPolicies.setIdlingResourceTimeout(120, TimeUnit.SECONDS)
         compose.waitUntil(120000) { compose.onAllNodesWithText("The Glass Harbor").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithText("Play", useUnmergedTree = true).performClick()
-        compose.onNodeWithText("Scene", useUnmergedTree = true).performClick()
+        compose.onNodeWithContentDescription("Scene details").performClick()
         compose.onNodeWithText("Review scene continuity").performClick()
         compose.onNodeWithText("Time at start of tracking (optional)").performTextInput("Harbor dusk")
         compose.onNodeWithText("Position").performScrollTo().performTextInput("beside the railing")

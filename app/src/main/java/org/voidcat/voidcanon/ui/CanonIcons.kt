@@ -32,6 +32,8 @@ object CanonIcons {
     val ImageAdd = icon("Import image", "M20 14V21H3V4H13M3 17L8 12L13 17M17 6H23M20 3V9M8 8H8.01")
     val History = icon("History", "M3 10A9 9 0 1 1 5 18M3 4V10H9M12 7V12L16 14")
     val Save = icon("Save", "M4 3H17L21 7V21H3V3ZM7 3V9H17V3M7 21V14H17V21")
+    val Tune = icon("Play mode", "M4 6H10M14 6H20M4 12H14M18 12H20M4 18H6M10 18H20M10 3V9M14 9V15M6 15V21")
+    val Ai = icon("AI settings", "M12 2V5M9 2H15M5 7H19V20H5ZM2 10H5M19 10H22M8 11H8.01M16 11H16.01M9 16H15")
     val Send = icon("Send", "M3 3L22 12L3 21L7 12ZM7 12H22", true)
     val Alert = icon("Notice", "M21 12A9 9 0 1 1 3 12A9 9 0 1 1 21 12M12 7V13M12 17H12.01")
 }

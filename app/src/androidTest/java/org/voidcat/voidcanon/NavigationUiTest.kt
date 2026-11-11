@@ -27,11 +27,11 @@ class NavigationUiTest {
         val vm = ViewModelProvider(compose.activity)[CanonViewModel::class.java]
         val before = runBlocking { app.repository.snapshot() }
         val configuration = app.aiSettings.configuration()
-        compose.onNodeWithText("0.4.5 · build 10").assertIsDisplayed()
+        compose.onNodeWithText("0.5.0 · build 11").assertIsDisplayed()
         for (destination in listOf("World", "Gallery", "Play", "Chapters")) {
             compose.onNode(hasText(destination) and hasClickAction()).performClick()
             compose.onNodeWithText("Settings").assertIsDisplayed().performClick()
-            compose.onNodeWithText("Version 0.4.5 · build 10").assertIsDisplayed()
+            compose.onNodeWithText("Version 0.5.0 · build 11").assertIsDisplayed()
             compose.onNodeWithText("Regular Void Canon app").assertIsDisplayed()
             compose.onNodeWithText("Close").assertIsDisplayed().performClick()
         }
@@ -49,12 +49,12 @@ class NavigationUiTest {
         compose.onNodeWithText("Close").assertIsDisplayed().performClick()
         compose.onNodeWithText("Close").performClick()
         compose.onNodeWithText("Play").performClick()
-        compose.onNodeWithText("Context", useUnmergedTree = true).performClick()
+        compose.onNodeWithContentDescription("Scene context").performClick()
         compose.onNodeWithText("Scene context").assertIsDisplayed()
         compose.onNodeWithText("Close").assertIsDisplayed().performClick()
         compose.onNodeWithContentDescription("Scene history").performClick()
         compose.onNodeWithText("Close").assertIsDisplayed().performClick()
-        compose.onNodeWithText("Scene", useUnmergedTree = true).performClick()
+        compose.onNodeWithContentDescription("Scene details").performClick()
         compose.onNodeWithText("Review scene continuity").performClick()
         compose.onNodeWithText("Save state correction").performScrollTo()
         compose.onNodeWithText("Close").assertIsDisplayed().performClick()

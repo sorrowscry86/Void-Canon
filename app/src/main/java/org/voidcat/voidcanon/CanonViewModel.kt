@@ -355,6 +355,14 @@ class CanonViewModel(application: Application) : AndroidViewModel(application) {
         repo.updateScene(direction, role, knowledge, provisional, notes); notice.value = "Scene details saved. Author-only notes are excluded from model context."
     }
 
+    suspend fun saveNarrativeSettings(sceneId: String, settings: org.voidcat.voidcanon.data.NarrativeSettings): String? = try {
+        require(generating.value == null && !busy.value) { "Wait for generation or cancel it before changing play settings." }
+        repo.saveNarrativeSettings(sceneId, settings)
+        notice.value = "Play settings saved for this scene."
+        null
+    } catch (e: kotlinx.coroutines.CancellationException) { throw e }
+      catch (e: Exception) { e.message ?: "Could not save play settings. Try again." }
+
     private fun generate(purpose: String, assetId: String?) {
         if (generating.value != null || busy.value) return
         val input = draft.value.trim()

@@ -1,0 +1,2 @@
+Authored emulator library baseline: {'worlds': 3, 'entries': 6, 'assets': 9, 'scenes': 3, 'messages': 10, 'visual_descriptions': 2, 'chapters': 1, 'generations': 4, 'continuity_events': 4}
+Final 0.5.0 navigation baseline includes the authored Freeform fixture; no uninstall or data clear.

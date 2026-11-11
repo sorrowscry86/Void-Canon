@@ -1,0 +1,9 @@
+Performing Streamed Install
+Success
+Starting FreeformPlayUiTest
+PASS FreeformPlayUiTest Time: 176.857
+Starting NavigationUiTest
+PASS NavigationUiTest Time: 182.428
+PASS original-domain comparison after final navigation
+Starting AutomaticArtworkUiTest
+PASS AutomaticArtworkUiTest Time: 191.13

@@ -118,7 +118,7 @@ class StageOneUiTest {
         compose.onNodeWithText("APPROVED MEMORY", useUnmergedTree = true).assertExists()
         capture("08-approved-chapter")
         compose.onNodeWithText("Play", useUnmergedTree = true).performClick()
-        compose.onNodeWithText("Context", useUnmergedTree = true).performClick()
+        compose.onNodeWithContentDescription("Scene context").performClick()
         compose.onNodeWithText("Scene context").assertExists()
         capture("09-context")
         Espresso.pressBack()
@@ -130,7 +130,7 @@ class StageOneUiTest {
                 RouterModel("fixture/vision:free", "[TEST] Free vision", 8192, true, true, "0", "0"),
                 RouterModel("fixture/paid", "[TEST] Paid model", 8192, true, false, "0.01", "0.02"))
         }
-        compose.onNodeWithText("AI", useUnmergedTree = true).performClick()
+        compose.onNodeWithContentDescription("AI settings").performClick()
         compose.onNodeWithText("Free only").assertExists()
         compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.ScrollToIndex)).performScrollToNode(hasText("[TEST] Free text"))
         compose.onNodeWithText("[TEST] Paid model").assertDoesNotExist()

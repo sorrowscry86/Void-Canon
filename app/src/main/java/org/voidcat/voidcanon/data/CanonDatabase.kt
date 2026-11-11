@@ -67,7 +67,7 @@ abstract class CanonDao {
 
 @Database(
     entities = [WorldRecord::class, EntryRecord::class, AssetRecord::class, SceneRecord::class, MessageRecord::class, VisualDescription::class, ChapterRecord::class, GenerationRecord::class, ContinuityEvent::class, IllustrationJob::class, IllustrationFrame::class, IllustrationAllowance::class],
-    version = 4, exportSchema = true,
+    version = 5, exportSchema = true,
 )
 abstract class CanonDatabase : RoomDatabase() {
     abstract fun canonDao(): CanonDao
@@ -101,5 +101,12 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         db.execSQL("CREATE TABLE IF NOT EXISTS illustration_jobs (id TEXT NOT NULL PRIMARY KEY, sceneId TEXT NOT NULL, worldId TEXT NOT NULL, visualKey TEXT NOT NULL, planJson TEXT NOT NULL, automatic INTEGER NOT NULL, status TEXT NOT NULL, createdAt INTEGER NOT NULL, lastUsedAt INTEGER NOT NULL, dispatchedAt INTEGER NOT NULL, day TEXT NOT NULL, fileName TEXT NOT NULL, error TEXT NOT NULL)")
         db.execSQL("CREATE TABLE IF NOT EXISTS illustration_allowance (day TEXT NOT NULL PRIMARY KEY, attempts INTEGER NOT NULL, lastDispatchAt INTEGER NOT NULL)")
         db.execSQL("CREATE TABLE IF NOT EXISTS illustration_frames (sceneId TEXT NOT NULL PRIMARY KEY, planJson TEXT NOT NULL)")
+    }
+}
+
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        for ((column, value) in listOf("mode" to "classic", "preset" to "collaborative", "pacing" to "balanced", "length" to "standard"))
+            db.execSQL("ALTER TABLE scenes ADD COLUMN narrative_$column TEXT NOT NULL DEFAULT '$value'")
     }
 }

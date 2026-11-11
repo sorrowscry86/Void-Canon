@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0 — Freeform Story and compact Play
+
+- Add scene-specific Classic RP / Freeform Story (MLRPE-inspired), three narrative presets, pacing and response length.
+- Apply preferences to bounded/audited RP context while retaining player control, continuity and Free only.
+- Replace wrapping Play text controls with a single accessible icon row; move source selection into Play mode and enlarge the scrollable response panel.
+- Persist/export settings with stable scene IDs, Room migration 4→5 and portable backup 5; import older backups with Classic defaults and reject invalid options before replacement.
+- Keep AURPG mechanics and ensemble orchestration planned.
+
+See [mode contract](docs/NARRATIVE-MODES.md) and [verification](docs/release-050-evidence/README.md).
+
 ## 0.4.5 — Persist artwork settings and populate captioned Gallery
 
 - Save scene permission/brief and world style independently of connection/reference readiness; show save errors inside the sheet.

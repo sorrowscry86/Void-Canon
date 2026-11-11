@@ -4,6 +4,8 @@ Start with the [project README](../README.md) for APK installation, upgrading, c
 
 | Document | Purpose |
 | --- | --- |
+| [Narrative modes](NARRATIVE-MODES.md) | First MLRPE-inspired increment, compact toolbar, persistence and AURPG boundary |
+| [Regular 0.5.0 evidence](release-050-evidence/README.md) | Migration, freeform request/preferences and Android reading layout |
 | [Regular 0.4.5 release evidence](release-045-evidence/README.md) | Settings persistence and automatic captioned Gallery checks |
 | [Regular 0.4.4 release evidence](release-044-evidence/README.md) | Original signing identity, schema-3 upgrade, retained data and current Android fixture checks |
 | [Automatic artwork checks](automatic-artwork-evidence/README.md) | JVM, migration, Android HTTPS fixtures and limits |

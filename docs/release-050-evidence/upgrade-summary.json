@@ -1,0 +1,28 @@
+{
+  "fromVersion": "0.4.5",
+  "toVersion": "0.5.0",
+  "fromSchema": 4,
+  "toSchema": 5,
+  "originalRecordCounts": {
+    "worlds": 2,
+    "entries": 4,
+    "assets": 7,
+    "scenes": 2,
+    "messages": 9,
+    "visual_descriptions": 2,
+    "chapters": 1,
+    "generations": 4,
+    "continuity_events": 4
+  },
+  "priorDomainValuesPreserved": true,
+  "originalImageHashesPreserved": true,
+  "modelPreferencesBytesPreserved": true,
+  "newSceneDefaults": {
+    "mode": "classic",
+    "preset": "collaborative",
+    "pacing": "balanced",
+    "length": "standard"
+  },
+  "note": "Final APK directly upgrades the restored original authored regular 0.4.5 disposable fixture; readiness polling confirms migration. No uninstall or pm clear. Original records, image hashes and model preferences retained.",
+  "apkSha256": "a50100216213e2c0909b439dd98d74fc00bb00602bb55a231cf9df582b918132"
+}

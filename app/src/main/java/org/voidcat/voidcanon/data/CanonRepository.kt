@@ -133,6 +133,12 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
         dao.putEntries(listOf(entry.copy(name = name.trim(), description = description, lore = lore, authorNotes = authorNotes ?: entry.authorNotes)))
     }
 
+    suspend fun saveNarrativeSettings(sceneId: String, settings: NarrativeSettings) = mutate {
+        NarrativePlay.validate(settings)
+        val scene = dao.scenes().firstOrNull { it.id == sceneId } ?: error("This scene no longer exists. Reopen Play.")
+        dao.putScenes(listOf(scene.copy(narrative = settings)))
+    }
+
     suspend fun updateScene(direction: String, userRole: String, knowledge: String, provisional: String, authorNotes: String) = mutate {
         require(listOf(direction, userRole, knowledge, provisional, authorNotes).all { it.length <= 5000 }) { "Scene fields can contain at most 5,000 characters." }
         dao.putScenes(snapshot().scenes.map { it.copy(authorDirection = direction, userRole = userRole.ifBlank { "Traveler" }, characterKnowledge = knowledge, provisionalState = provisional, authorNotes = authorNotes) })

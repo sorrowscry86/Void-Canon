@@ -1,0 +1,43 @@
+
+org.voidcat.voidcanon.FreeformPlayUiTest:
+Error in scenePreferencesPersistAndCompactToolbarLeavesRoomForDialogue(org.voidcat.voidcanon.FreeformPlayUiTest):
+java.lang.AssertionError: Failed to assert the following: (Selected = 'true')
+Semantics of the node:
+Node #688 at (l=260.0, t=529.0, r=512.0, b=593.0)px
+Focused = 'false'
+Role = 'Checkbox'
+Selected = 'false'
+Text = '[Freeform Story]'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 7 siblings
+Selector used: (Text + InputText + EditableText contains 'Freeform Story' (ignoreCase: false))
+
+	at androidx.compose.ui.test.AssertionsKt.assert(Assertions.kt:260)
+	at androidx.compose.ui.test.AssertionsKt.assert$default(Assertions.kt:250)
+	at androidx.compose.ui.test.AssertionsKt.assertIsSelected(Assertions.kt:84)
+	at org.voidcat.voidcanon.FreeformPlayUiTest.scenePreferencesPersistAndCompactToolbarLeavesRoomForDialogue(FreeformPlayUiTest.kt:69)
+
+
+Time: 105.028
+There was 1 failure:
+1) scenePreferencesPersistAndCompactToolbarLeavesRoomForDialogue(org.voidcat.voidcanon.FreeformPlayUiTest)
+java.lang.AssertionError: Failed to assert the following: (Selected = 'true')
+Semantics of the node:
+Node #688 at (l=260.0, t=529.0, r=512.0, b=593.0)px
+Focused = 'false'
+Role = 'Checkbox'
+Selected = 'false'
+Text = '[Freeform Story]'
+Actions = [ClearTextSubstitution, GetTextLayoutResult, OnClick, RequestFocus, SetTextSubstitution, ShowTextSubstitution]
+MergeDescendants = 'true'
+Has 7 siblings
+Selector used: (Text + InputText + EditableText contains 'Freeform Story' (ignoreCase: false))
+
+	at androidx.compose.ui.test.AssertionsKt.assert(Assertions.kt:260)
+	at androidx.compose.ui.test.AssertionsKt.assert$default(Assertions.kt:250)
+	at androidx.compose.ui.test.AssertionsKt.assertIsSelected(Assertions.kt:84)
+	at org.voidcat.voidcanon.FreeformPlayUiTest.scenePreferencesPersistAndCompactToolbarLeavesRoomForDialogue(FreeformPlayUiTest.kt:69)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1

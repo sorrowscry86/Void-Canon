@@ -170,6 +170,7 @@ fun ContextSheet(s: WorldSnapshot, vm: CanonViewModel, dismiss: () -> Unit) {
                 val preview = runCatching { vm.contextPreview() }
                 preview.getOrNull()?.let { context ->
                     item { Text("Next request preview · ${context.budgetCharacters} character budget", color = Violet) }
+                    item { Text("Play settings: " + context.settings.filterKeys { it != "continuityProtocol" }.entries.joinToString { "${it.key}=${it.value}" }, color = Muted, style = MaterialTheme.typography.bodySmall) }
                     if (context.omissions.isNotEmpty()) item { Text("Omissions / missing references\n" + context.omissions.joinToString("\n"), color = MaterialTheme.colorScheme.error) }
                     items(context.messages) { message -> Text("${message.role.uppercase()}\n${message.content}") }
                     item { Text("Source IDs: ${context.sourceIds.joinToString()}", style = MaterialTheme.typography.bodySmall, color = Muted) }
