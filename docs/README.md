@@ -5,6 +5,7 @@ Start with the [project README](../README.md) for APK installation, upgrading, c
 | Document | Purpose |
 | --- | --- |
 | [AURPG, backup and speech](AURPG-BACKUP-SPEECH.md) | Native rules-lite toolkit, direct DeepSeek and Android Read Aloud |
+| [0.6.1 evidence](release-061-evidence/README.md) | Direct DeepSeek JSON requests, plain summaries and preserved state |
 | [0.6.0 evidence](release-060-evidence/README.md) | Completed build, provider/storage and Android checks |
 | [Narrative modes](NARRATIVE-MODES.md) | First MLRPE-inspired increment, compact toolbar, persistence and AURPG boundary |
 | [Regular 0.5.0 evidence](release-050-evidence/README.md) | Migration, freeform request/preferences and Android reading layout |

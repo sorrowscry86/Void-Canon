@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.1 — DeepSeek story/state response format
+
+- Explicitly request JSON-object responses for direct DeepSeek roleplay in all three modes and audit the selected response format.
+- Keep summaries as plain text, OpenRouter requests unchanged, and full story/state validation with no automatic repair/retry.
+- Preserve package/signing identity, Room/backup 6 and existing data.
+
+See [release notes](downloads/RELEASE-0.6.1.md) and [verification](docs/release-061-evidence/README.md).
+
 ## 0.6.0 — AURPG toolkit, direct DeepSeek backup and Read Aloud
 
 - Add local dice checks, explicit momentum spending and manual progress clocks, with immutable scene-owned roll records and grounded RP context.

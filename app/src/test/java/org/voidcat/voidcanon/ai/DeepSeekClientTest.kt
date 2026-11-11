@@ -30,7 +30,28 @@ class DeepSeekClientTest {
             assertEquals("Bearer fixture-deepseek-key", request.getHeader("Authorization"))
             val body = Json.parseToJsonElement(request.body.readUtf8()).jsonObject
             assertFalse(body.containsKey("provider")); assertFalse(body.containsKey("temperature"))
+            assertFalse(body.containsKey("response_format"))
             assertEquals("A complete response", result.text)
+            assertEquals(1, server.requestCount)
+        }
+    }
+
+    @Test fun structuredStoryExplicitlyRequestsJsonWithoutAddingASecondCall() = runBlocking {
+        MockWebServer().use { server ->
+            val reply = """{"protocol":1,"baseRevision":7,"narrative":"Mira waits."}"""
+            server.enqueue(MockResponse().setBody(buildJsonObject {
+                putJsonArray("choices") { addJsonObject {
+                    put("finish_reason", "stop"); putJsonObject("message") { put("content", reply) }
+                } }
+            }.toString()))
+            server.start()
+            val client = OpenRouterClient(baseUrl = server.url("/v1/").toString(), providerName = "DeepSeek", routerRouting = false)
+            val result = client.complete("fixture-key", "fixture/text", listOf(PromptMessage("system", "Reply with JSON.")),
+                false, jsonObjectResponse = true)
+            val body = Json.parseToJsonElement(server.takeRequest().body.readUtf8()).jsonObject
+            assertEquals("json_object", body.getValue("response_format").jsonObject.getValue("type").jsonPrimitive.content)
+            assertFalse(body.containsKey("provider")); assertFalse(body.containsKey("temperature"))
+            assertEquals(reply, result.text)
             assertEquals(1, server.requestCount)
         }
     }

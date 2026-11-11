@@ -1,6 +1,14 @@
 # Void Canon downloads
 
-## 0.6.0 — current regular Void Canon update
+## 0.6.1 — current regular Void Canon update
+
+**[Download Void Canon 0.6.1 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.1/downloads/void-canon-0.6.1.apk)** · [APK SHA-256](void-canon-0.6.1.apk.sha256) · [Release notes](RELEASE-0.6.1.md)
+
+[Source ZIP](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.1/downloads/void-canon-0.6.1-source.zip) · [Source SHA-256](void-canon-0.6.1-source.zip.sha256)
+
+Regular **0.6.1 / build 14**, original signing identity. Install over your current regular app to retain data and private connections. Enables JSON response mode for direct DeepSeek story/state replies; summaries stay plain text and invalid state remains rejected. Room/backup remain 6. [Verification](../docs/release-061-evidence/README.md).
+
+## Earlier 0.6.0 — regular Void Canon update
 
 **[Download Void Canon 0.6.0 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.0/downloads/void-canon-0.6.0.apk)** · [APK SHA-256](void-canon-0.6.0.apk.sha256) · [Release notes](RELEASE-0.6.0.md)
 

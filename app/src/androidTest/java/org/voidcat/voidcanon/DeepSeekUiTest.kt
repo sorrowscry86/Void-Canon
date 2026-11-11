@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.test.espresso.IdlingPolicies
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.*
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.*
 import okhttp3.tls.HandshakeCertificates
@@ -100,6 +101,7 @@ class DeepSeekUiTest {
             assertEquals("Bearer $secret", request.getHeader("Authorization"))
             assertEquals("/v1/chat/completions", request.path)
             val body = request.body.readUtf8()
+            assertEquals("json_object", Json.parseToJsonElement(body).jsonObject.getValue("response_format").jsonObject.getValue("type").jsonPrimitive.content)
             assertTrue(body.contains(rules.checks.single().id)); assertFalse(body.contains(secret))
             assertTrue(body.contains("mechanics revision is NOT the continuity baseRevision"))
             assertTrue(body.contains("AURPG mechanics")); assertTrue(body.contains("Gate 1/6"))
@@ -109,6 +111,34 @@ class DeepSeekUiTest {
             assertEquals(2, server.requestCount)
             assertTrue(vm.snapshot.value.generations.single().contextJson.contains("DeepSeek"))
             assertEquals("[TLS FIXTURE] The traveler watches the quay.", vm.snapshot.value.messages.last().text)
+            // Exercise the reported Freeform path as well as AURPG, using the real VM route.
+            assertNull(runBlocking { vm.saveNarrativeSettings(scene, NarrativeSettings(mode = "freeform")) })
+            compose.waitUntil(30000) { vm.snapshot.value.scene?.narrative?.mode == "freeform" }
+            val freeformReply = Continuity.json.encodeToString(ContinuityReply(1, 1, "[TLS FIXTURE] The traveler answers quietly."))
+            server.enqueue(MockResponse().setBody("""{"model":"fixture/text","choices":[{"finish_reason":"stop","message":{"content":${JsonString(freeformReply)}}}]}"""))
+            compose.runOnIdle { vm.updateDraft("I ask about the harbor.") }
+            compose.waitUntil(30000) { !vm.busy.value && vm.draft.value == "I ask about the harbor." }
+            compose.onNodeWithContentDescription("Send roleplay message").assertIsEnabled().performSemanticsAction(SemanticsActions.OnClick) { it() }
+            compose.waitUntil(60000) { vm.generating.value == null && (vm.snapshot.value.messages.size == 4 || vm.generationError.value != null) }
+            assertNull(vm.generationError.value)
+            val freeformRequest = Json.parseToJsonElement(server.takeRequest(5, TimeUnit.SECONDS)!!.body.readUtf8()).jsonObject
+            assertEquals("json_object", freeformRequest.getValue("response_format").jsonObject.getValue("type").jsonPrimitive.content)
+            assertEquals(2L, Continuity.current(vm.snapshot.value).revision)
+            assertEquals(rules, Aurpg.decode(vm.snapshot.value.scene!!.aurpgJson))
+            assertEquals("[TLS FIXTURE] The traveler answers quietly.", vm.snapshot.value.messages.last().text)
+            assertTrue(vm.snapshot.value.generations.last().contextJson.contains("json_object"))
+            phase("freeform-json-reply-completed")
+            server.enqueue(MockResponse().setBody("""{"model":"fixture/text","choices":[{"finish_reason":"stop","message":{"content":"A plain chapter summary."}}]}"""))
+            val messagesBeforeSummary = vm.snapshot.value.messages
+            compose.runOnIdle { vm.proposeChapter() }
+            compose.waitUntil(60000) { vm.generating.value == null && (vm.snapshot.value.chapters.isNotEmpty() || vm.summaryError.value != null) }
+            assertNull(vm.summaryError.value)
+            val summaryRequest = Json.parseToJsonElement(server.takeRequest(5, TimeUnit.SECONDS)!!.body.readUtf8()).jsonObject
+            assertFalse(summaryRequest.containsKey("response_format"))
+            assertEquals("A plain chapter summary.", vm.snapshot.value.chapters.single().summary)
+            assertEquals(messagesBeforeSummary, vm.snapshot.value.messages)
+            assertEquals(4, server.requestCount) // Catalog, two RP requests, one summary; no automatic retry.
+            phase("plain-summary-completed")
             assertNull(runBlocking { vm.saveDeepSeek("fixture/text", "", false, false) })
             assertFalse(app.deepSeek.active()); assertFalse(vm.deepSeekActive.value)
             assertArrayEquals(routerPrefs, File(app.applicationInfo.dataDir, "shared_prefs/openrouter-private.xml").readBytes())

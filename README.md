@@ -2,7 +2,7 @@
 
 A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
 
-## AURPG, DeepSeek backup and Read Aloud — 0.6.0
+## AURPG, DeepSeek backup and Read Aloud — 0.6.1
 
 Play → sliders icon → **AURPG** adds local dice checks, explicit momentum spending and author-controlled progress clocks. The RP model receives recorded outcomes; it cannot change the counters. Classic/Freeform narrative modes and the compact Play toolbar remain available, with full-height input reserved before dialogue.
 
@@ -12,15 +12,15 @@ The **speaker icon** reads the latest visible scene message using Android text-t
 
 [Feature and storage contract](docs/AURPG-BACKUP-SPEECH.md) · [Current handback](IMPLEMENTATION-HANDBACK.md).
 
-## Install / upgrade — 0.6.0
+## Install / upgrade — 0.6.1
 
-Download the **[Void Canon 0.6.0 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.0/downloads/void-canon-0.6.0.apk)**. It adds the first AURPG toolkit, direct DeepSeek backup and native Read Aloud, retaining existing worlds, Freeform/Classic RP, artwork, descriptions and chapter memory.
+Download the **[Void Canon 0.6.1 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.1/downloads/void-canon-0.6.1.apk)**. It enables JSON response mode for direct DeepSeek roleplay to address rejected story/state replies. AURPG, Read Aloud, Freeform/Classic RP, artwork and chapter memory remain available.
 
-Requires Android 8.0 or newer. Install over your existing **Void Canon** app; do not uninstall or clear app data. The package remains `org.voidcat.voidcanon`, version **0.6.0 / build 13**, and the signing certificate matches published regular 0.5.0 and earlier regular builds. Worlds, artwork, transcripts, chapters, drafts, continuity history, and device-local AI settings remain in that installation. A portable export provides an optional additional copy before upgrading.
+Requires Android 8.0 or newer. Install over your existing **Void Canon** app; do not uninstall or clear app data. The package remains `org.voidcat.voidcanon`, version **0.6.1 / build 14**, and the signing certificate matches published regular 0.5.0 and earlier regular builds. Worlds, artwork, transcripts, chapters, drafts, continuity history, and device-local AI settings remain in that installation. A portable export provides an optional additional copy before upgrading.
 
 Open **Settings** from the app header to confirm the installed version, configure AI/models or the artwork connection, and export/restore backups. Back remains visible in Play with the keyboard open; modal Close controls stay outside scrolling content. Closing a settings child returns to Settings.
 
-[Downloads](downloads/README.md) includes APK/source checksums, [release notes](downloads/RELEASE-0.6.0.md), and older builds. [Release evidence](docs/release-060-evidence/README.md) records the signed upgrade and feature checks and Android checks. The historical **Void Canon Test** app installs separately; its data is not automatically moved into the regular app. Portable restore replaces the receiving library and excludes provider credentials/settings.
+[Downloads](downloads/README.md) includes APK/source checksums, [release notes](downloads/RELEASE-0.6.1.md), and older builds. [Release evidence](docs/release-061-evidence/README.md) records the signed upgrade and feature checks and Android checks. The historical **Void Canon Test** app installs separately; its data is not automatically moved into the regular app. Portable restore replaces the receiving library and excludes provider credentials/settings.
 
 Build the regular APK with the original private signing key supplied locally:
 

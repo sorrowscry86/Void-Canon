@@ -47,13 +47,15 @@ class OpenRouterClient(
     }
 
     suspend fun complete(key: String, model: String, messages: List<PromptMessage>, freeOnly: Boolean,
-                         imageDataUrl: String? = null, maxTokens: Int = 1000): RouterResult {
+                         imageDataUrl: String? = null, maxTokens: Int = 1000,
+                         jsonObjectResponse: Boolean = false): RouterResult {
         require(routerRouting || !freeOnly) { "Direct DeepSeek requires explicit paid-request permission." }
         require(routerRouting || imageDataUrl == null) { "The DeepSeek backup supports text only." }
         require(key.isNotBlank() && !key.contains('\n') && !key.contains('\r')) { "Enter your $providerName key in AI settings." }
         require(model.isNotBlank()) { "Choose a model in AI settings." }
         val body = buildJsonObject {
             put("model", model); put("stream", false); put("max_tokens", maxTokens); if (routerRouting) put("temperature", 0.7)
+            if (jsonObjectResponse) putJsonObject("response_format") { put("type", "json_object") }
             if (routerRouting) putJsonObject("provider") {
                 put("allow_fallbacks", false)
                 if (freeOnly) putJsonObject("max_price") {
