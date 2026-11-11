@@ -50,7 +50,7 @@ class ArtworkDirectorTest {
 
     @Before fun setup() = runBlocking {
         app = ApplicationProvider.getApplicationContext()
-        db = Room.databaseBuilder(app, CanonDatabase::class.java, name).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
+        db = Room.databaseBuilder(app, CanonDatabase::class.java, name).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).build()
         repo = CanonRepository(app, db); repo.initialize(); repo.artworkPreferences.resetPermissions()
         val certificate = HeldCertificate.Builder().addSubjectAlternativeName("localhost").build()
         val serverTls = HandshakeCertificates.Builder().heldCertificate(certificate).build()

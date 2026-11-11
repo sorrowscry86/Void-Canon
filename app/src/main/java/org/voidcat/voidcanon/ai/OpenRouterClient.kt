@@ -29,19 +29,32 @@ class OpenRouterClient(
     private val baseUrl: String = "https://openrouter.ai/api/v1/",
     private val http: OkHttpClient = OkHttpClient.Builder().retryOnConnectionFailure(false)
         .followRedirects(false).followSslRedirects(false).callTimeout(90, TimeUnit.SECONDS).build(),
+    private val providerName: String = "OpenRouter",
+    private val routerRouting: Boolean = true,
 ) {
     suspend fun models(): List<RouterModel> {
         val body = request(Request.Builder().url(baseUrl + "models").get().build(), 8 * 1024 * 1024)
         return parseModels(body)
     }
 
+    suspend fun directModelIds(key: String): List<String> {
+        require(!routerRouting) { "Use the OpenRouter catalog for OpenRouter." }
+        require(key.isNotBlank() && !key.contains('\n') && !key.contains('\r')) { "Enter your DeepSeek API key first." }
+        val body = request(Request.Builder().url(baseUrl + "models").header("Authorization", "Bearer $key").get().build(), 256 * 1024)
+        val rows = Json.parseToJsonElement(body).jsonObject["data"]?.jsonArray ?: error("DeepSeek returned no model catalog.")
+        return rows.mapNotNull { it.jsonObject["id"]?.jsonPrimitive?.contentOrNull }
+            .filter { it.matches(Regex("[A-Za-z0-9/_.:-]{1,200}")) }.distinct().sorted()
+    }
+
     suspend fun complete(key: String, model: String, messages: List<PromptMessage>, freeOnly: Boolean,
                          imageDataUrl: String? = null, maxTokens: Int = 1000): RouterResult {
-        require(key.isNotBlank() && !key.contains('\n') && !key.contains('\r')) { "Enter your OpenRouter key in AI settings." }
+        require(routerRouting || !freeOnly) { "Direct DeepSeek requires explicit paid-request permission." }
+        require(routerRouting || imageDataUrl == null) { "The DeepSeek backup supports text only." }
+        require(key.isNotBlank() && !key.contains('\n') && !key.contains('\r')) { "Enter your $providerName key in AI settings." }
         require(model.isNotBlank()) { "Choose a model in AI settings." }
         val body = buildJsonObject {
-            put("model", model); put("stream", false); put("max_tokens", maxTokens); put("temperature", 0.7)
-            putJsonObject("provider") {
+            put("model", model); put("stream", false); put("max_tokens", maxTokens); if (routerRouting) put("temperature", 0.7)
+            if (routerRouting) putJsonObject("provider") {
                 put("allow_fallbacks", false)
                 if (freeOnly) putJsonObject("max_price") {
                     put("prompt", 0); put("completion", 0); put("request", 0); put("image", 0)
@@ -58,12 +71,13 @@ class OpenRouterClient(
             }
         }
         val response = request(Request.Builder().url(baseUrl + "chat/completions")
-            .header("Authorization", "Bearer $key").header("X-OpenRouter-Title", "Void Canon")
+            .header("Authorization", "Bearer $key")
+            .apply { if (routerRouting) header("X-OpenRouter-Title", "Void Canon") }
             .post(body.toString().toRequestBody("application/json".toMediaType())).build(), 4 * 1024 * 1024)
-        val root = try { Json.parseToJsonElement(response).jsonObject } catch (_: Exception) { error("OpenRouter returned an unreadable response.") }
+        val root = try { Json.parseToJsonElement(response).jsonObject } catch (_: Exception) { error("$providerName returned an unreadable response.") }
         root["error"]?.let {
             val code = (it as? JsonObject)?.get("code")?.jsonPrimitive?.intOrNull
-            error(providerError(code))
+            error(providerError(code).replace("OpenRouter", providerName))
         }
         val choice = root["choices"]?.jsonArray?.firstOrNull()?.jsonObject
         val text = choice?.get("message")?.jsonObject?.get("content")?.jsonPrimitive?.contentOrNull
@@ -79,18 +93,18 @@ class OpenRouterClient(
         continuation.invokeOnCancellation { call.cancel() }
         call.enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                if (continuation.isActive) continuation.resumeWithException(IOException("OpenRouter is unavailable. Check your connection; your local work is safe."))
+                if (continuation.isActive) continuation.resumeWithException(IOException("$providerName is unavailable. Check your connection; your local work is safe."))
             }
             override fun onResponse(call: Call, response: Response) {
                 try {
                     val text = response.use {
                         check(response.isSuccessful) {
-                            providerError(response.code)
+                            providerError(response.code).replace("OpenRouter", providerName)
                         }
-                        val body = requireNotNull(response.body) { "OpenRouter returned an empty response." }
-                        require(body.contentLength() <= limit) { "OpenRouter's response was too large." }
+                        val body = requireNotNull(response.body) { "$providerName returned an empty response." }
+                        require(body.contentLength() <= limit) { "$providerName's response was too large." }
                         val source = body.source()
-                        require(!source.request(limit.toLong() + 1)) { "OpenRouter's response was too large." }
+                        require(!source.request(limit.toLong() + 1)) { "$providerName's response was too large." }
                         source.readUtf8()
                     }
                     if (continuation.isActive) continuation.resume(text)

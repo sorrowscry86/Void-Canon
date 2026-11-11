@@ -18,8 +18,8 @@ data class AiConfiguration(val rpModel: String = "", val visionModel: String = "
 /** Credentials never enter Room, portable snapshots, logs, or the APK. */
 // Explicit synchronous commits report credential-write failures; callers run them on Dispatchers.IO.
 @SuppressLint("UseKtx", "ApplySharedPref")
-class OpenRouterSettings(context: Context) {
-    private val prefs = context.getSharedPreferences("openrouter-private", Context.MODE_PRIVATE)
+class OpenRouterSettings(context: Context, namespace: String = "openrouter-private", private val keyAlias: String = "void-canon-openrouter") {
+    private val prefs = context.getSharedPreferences(namespace, Context.MODE_PRIVATE)
     fun configuration() = AiConfiguration(prefs.getString("rpModel", "").orEmpty(), prefs.getString("visionModel", "").orEmpty(), prefs.getBoolean("freeOnly", true), prefs.getBoolean("consent", false))
     fun save(configuration: AiConfiguration, newKey: String) {
         val editor = prefs.edit().putString("rpModel", configuration.rpModel).putString("visionModel", configuration.visionModel)
@@ -49,9 +49,9 @@ class OpenRouterSettings(context: Context) {
     }
     private fun key(): SecretKey {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
-        (store.getKey("void-canon-openrouter", null) as? SecretKey)?.let { return it }
+        (store.getKey(keyAlias, null) as? SecretKey)?.let { return it }
         return KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore").apply {
-            init(KeyGenParameterSpec.Builder("void-canon-openrouter", KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+            init(KeyGenParameterSpec.Builder(keyAlias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM).setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE).build())
         }.generateKey()
     }

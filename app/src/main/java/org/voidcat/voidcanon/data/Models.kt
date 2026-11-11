@@ -61,6 +61,7 @@ data class SceneRecord(
     @ColumnInfo(defaultValue = "''") val authorNotes: String = "",
     @ColumnInfo(defaultValue = "''") val continuityJson: String = "",
     @Embedded(prefix = "narrative_") val narrative: NarrativeSettings = NarrativeSettings(),
+    @ColumnInfo(defaultValue = "''") val aurpgJson: String = "",
 )
 
 @Serializable
@@ -122,7 +123,7 @@ data class GenerationRecord(
 /** Portable world-library data contract. Local filenames carry no device-specific paths. */
 @Serializable
 data class WorldSnapshot(
-    val formatVersion: Int = 5,
+    val formatVersion: Int = 6,
     val exportedAt: String = "",
     val worlds: List<WorldRecord> = emptyList(),
     val entries: List<EntryRecord> = emptyList(),

@@ -1,0 +1,19 @@
+
+org.voidcat.voidcanon.DeepSeekUiTest:
+Error in isolatedEncryptedBackupMakesOneTextRequestWithoutAnOpenRouterKey(org.voidcat.voidcanon.DeepSeekUiTest):
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 60000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:504)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:339)
+	at org.voidcat.voidcanon.DeepSeekUiTest.isolatedEncryptedBackupMakesOneTextRequestWithoutAnOpenRouterKey(DeepSeekUiTest.kt:73)
+
+
+Time: 305.646
+There was 1 failure:
+1) isolatedEncryptedBackupMakesOneTextRequestWithoutAnOpenRouterKey(org.voidcat.voidcanon.DeepSeekUiTest)
+androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after 60000 ms
+	at androidx.compose.ui.test.AndroidComposeUiTestEnvironment$AndroidComposeUiTestImpl.waitUntil(ComposeUiTest.android.kt:504)
+	at androidx.compose.ui.test.junit4.AndroidComposeTestRule.waitUntil(AndroidComposeTestRule.android.kt:339)
+	at org.voidcat.voidcanon.DeepSeekUiTest.isolatedEncryptedBackupMakesOneTextRequestWithoutAnOpenRouterKey(DeepSeekUiTest.kt:73)
+
+FAILURES!!!
+Tests run: 1,  Failures: 1

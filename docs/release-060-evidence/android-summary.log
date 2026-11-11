@@ -1,0 +1,14 @@
+Performing Streamed Install
+Success
+START AurpgSpeechUiTest
+PASS AurpgSpeechUiTest Time: 165.551
+START DeepSeekUiTest
+PASS DeepSeekUiTest Time: 95.133
+START NavigationUiTest
+PASS NavigationUiTest Time: 167.567
+START FreeformPlayUiTest
+PASS FreeformPlayUiTest Time: 140.267
+START AutomaticArtworkUiTest
+PASS AutomaticArtworkUiTest Time: 190.062
+START ArtworkSettingsUiTest
+PASS ArtworkSettingsUiTest Time: 114.638

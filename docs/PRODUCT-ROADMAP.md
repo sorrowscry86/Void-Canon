@@ -9,7 +9,8 @@ The user accepts the prototype direction and chose **their own worlds and charac
 | Scene continuity foundation | Persistent participant/object state, compact context, validated turn updates, and author corrections | Released in the regular app since 0.4.1; see current handback for verification limits |
 | Automatic scene artwork | Opt-in illustrations after visible changes, grounded prompts, independent image queue and automatic captioned Gallery retention | Released since regular 0.4.4; automatic retention/descriptions in 0.4.5; physical-phone/live quality assessment remains separate |
 | MLRPE-inspired Freeform Story | Scene-specific narrative presets, pacing/length, inspectable prompt and compact Play toolbar | First increment implemented in 0.5.0; see [contract](NARRATIVE-MODES.md) and release evidence |
-| AURPG | Dice, momentum, clocks and validated rules resolution | Next increment; not implemented |
+| AURPG first toolkit | Native dice, explicit momentum, manual progress clocks and authoritative RP context | Implemented in 0.6.0; per-scene, no full campaign/character-sheet engine |
+| Text backup and speech | Direct DeepSeek with a separate key; Android Read Aloud | Implemented in 0.6.0; see feature contract/evidence |
 | 2. World Workshop | Capture fragments, search and connect broader lore types, organize tags/collections, review revisions and AI proposals | Planned; scope after Milestone 1 review |
 | 3. Portrayal review | Annotate mismatches, inspect relevant context, compare proposed lore changes, replay deliberately | Planned |
 | 4. Campaign depth | Named campaigns/sessions, explicit chapter boundaries, lore baselines, branches and character-specific knowledge; ensemble RP in a separate increment | Planned |

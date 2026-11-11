@@ -2,21 +2,25 @@
 
 A native Android worldbuilding and roleplay studio. Its illustrated world library lets you create your own worlds, characters, locations, and scene pairings, with **OpenRouter**, source-linked visual descriptions, inspectable scene context, and approved chapter memory. World editing, manual descriptions, artwork, transcripts, chapters, and backups remain usable offline.
 
-## Freeform Story and compact Play — 0.5.0
+## AURPG, DeepSeek backup and Read Aloud — 0.6.0
 
-Play now has one row of accessible icon controls and a larger scrollable response panel. Open the sliders icon → **Freeform Story** for MLRPE-inspired Collaborative, Character focus or World exploration presets, with pacing and response-length controls. Preferences save separately for each scene and appear in Context; Classic RP remains the default. AURPG is planned for the next increment. See the [mode contract](docs/NARRATIVE-MODES.md).
+Play → sliders icon → **AURPG** adds local dice checks, explicit momentum spending and author-controlled progress clocks. The RP model receives recorded outcomes; it cannot change the counters. Classic/Freeform narrative modes and the compact Play toolbar remain available, with full-height input reserved before dialogue.
 
-Automatic scene artwork, captioned Gallery retention and optional actual-image descriptions remain available through the Artwork icon. Existing artwork permissions and private connections are retained.
+**AI settings → DeepSeek direct backup** configures a separate encrypted API key and loads current model IDs. Switching text providers is explicit, with separate permission for DeepSeek charges/story sharing and no automatic fallback. Vision remains on OpenRouter; artwork uses the existing image connection.
 
-## Install / upgrade — 0.5.0
+The **speaker icon** reads the latest visible scene message using Android text-to-speech. Tap Stop to cancel. It requires an installed non-network voice for the device language and stops on backgrounding/leaving the controls. No cloud voice API or microphone recording is added.
 
-Download the **[Void Canon 0.5.0 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.5.0/downloads/void-canon-0.5.0.apk)**. It adds Freeform Story narrative controls, scene-specific preferences and a compact Play toolbar, retaining existing artwork, Settings, visible exits and scene-continuity features.
+[Feature and storage contract](docs/AURPG-BACKUP-SPEECH.md) · [Current handback](IMPLEMENTATION-HANDBACK.md).
 
-Requires Android 8.0 or newer. Install over your existing **Void Canon** app; do not uninstall or clear app data. The package remains `org.voidcat.voidcanon`, version **0.5.0 / build 11**, and the signing certificate matches published regular 0.4.5 and earlier regular builds. Worlds, artwork, transcripts, chapters, drafts, continuity history, and device-local AI settings remain in that installation. A portable export provides an optional additional copy before upgrading.
+## Install / upgrade — 0.6.0
+
+Download the **[Void Canon 0.6.0 update](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.0/downloads/void-canon-0.6.0.apk)**. It adds the first AURPG toolkit, direct DeepSeek backup and native Read Aloud, retaining existing worlds, Freeform/Classic RP, artwork, descriptions and chapter memory.
+
+Requires Android 8.0 or newer. Install over your existing **Void Canon** app; do not uninstall or clear app data. The package remains `org.voidcat.voidcanon`, version **0.6.0 / build 13**, and the signing certificate matches published regular 0.5.0 and earlier regular builds. Worlds, artwork, transcripts, chapters, drafts, continuity history, and device-local AI settings remain in that installation. A portable export provides an optional additional copy before upgrading.
 
 Open **Settings** from the app header to confirm the installed version, configure AI/models or the artwork connection, and export/restore backups. Back remains visible in Play with the keyboard open; modal Close controls stay outside scrolling content. Closing a settings child returns to Settings.
 
-[Downloads](downloads/README.md) includes APK/source checksums, [release notes](downloads/RELEASE-0.5.0.md), and older builds. [Release evidence](docs/release-050-evidence/README.md) records the signed 0.4.5 → 0.5.0 upgrade and Android checks. The historical **Void Canon Test** app installs separately; its data is not automatically moved into the regular app. Portable restore replaces the receiving library and excludes provider credentials/settings.
+[Downloads](downloads/README.md) includes APK/source checksums, [release notes](downloads/RELEASE-0.6.0.md), and older builds. [Release evidence](docs/release-060-evidence/README.md) records the signed upgrade and feature checks and Android checks. The historical **Void Canon Test** app installs separately; its data is not automatically moved into the regular app. Portable restore replaces the receiving library and excludes provider credentials/settings.
 
 Build the regular APK with the original private signing key supplied locally:
 
@@ -78,7 +82,7 @@ The scoped service code is encrypted with Android Keystore and excluded from bac
 4. Use **Artwork → View prompt** to inspect the prompt, reference/source IDs, supported visible quotes, omissions and estimated usage. **Pause artwork**, **Layered view / Illustrated view**, and explicit **Regenerate image** remain available.
 5. Completed scene images automatically save to **Gallery** with a caption also shown in Play. Gallery copies survive cache eviction and enter backups. They remain exploratory; portraits, approved visual descriptions and lore stay under your control.
 
-Defaults are 512×512, 30 automatic attempts per device per UTC day, and at least 30 seconds between automatic dispatches. Failed/interrupted attempts can count. The unchanged shared service allowance also applies. Latest pending work supersedes older pending work; submitted/interrupted requests are not automatically replayed. Private notes, character knowledge, lore and chapter memory are excluded from image prompts. Device upload permissions, artwork preferences, jobs and cache are excluded from portable backups; restoring resets artwork permission, retaining consumed device allowance. Current Room schema and portable backup format are 5; migrations retain prior data and older backups remain readable.
+Defaults are 512×512, 30 automatic attempts per device per UTC day, and at least 30 seconds between automatic dispatches. Failed/interrupted attempts can count. The unchanged shared service allowance also applies. Latest pending work supersedes older pending work; submitted/interrupted requests are not automatically replayed. Private notes, character knowledge, lore and chapter memory are excluded from image prompts. Device upload permissions, artwork preferences, jobs and cache are excluded from portable backups; restoring resets artwork permission, retaining consumed device allowance. Current Room schema and portable backup format are 6; migrations retain prior data and older backups remain readable.
 
 To fill the image description used by roleplay, also enable **Automatically describe generated images for roleplay** in the Artwork sheet. This sends each generated image to your selected OpenRouter image-capable model, respecting Free only. Set up that model/key in **Settings → AI & models**. The description appears in Gallery and, when ready, enters the matching illustrated scene's next RP context as temporary observations. You can review/correct it; it does not become canon. There is one automatic vision attempt per image and no automatic retry. Setup/failure status appears in Artwork.
 

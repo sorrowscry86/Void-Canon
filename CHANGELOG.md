@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.0 — AURPG toolkit, direct DeepSeek backup and Read Aloud
+
+- Add local dice checks, explicit momentum spending and manual progress clocks, with immutable scene-owned roll records and grounded RP context.
+- Add a separately encrypted direct DeepSeek text connection, live model-ID discovery and explicit charge/story permission; keep provider switching manual and image understanding on OpenRouter.
+- Add compact Read Aloud/Stop using Android TTS, non-network voice selection, long-text chunking and lifecycle/audio-focus cleanup.
+- Migrate Room 5→6 and export backup 6; validate mechanical arithmetic/IDs and retain imports of versions 1–5.
+- Retain existing Freeform/Classic modes, artwork, original signing identity and full-height text entry.
+
+See [contract](docs/AURPG-BACKUP-SPEECH.md) and [verification](docs/release-060-evidence/README.md).
+
 ## 0.5.0 — Freeform Story and compact Play
 
 - Add scene-specific Classic RP / Freeform Story (MLRPE-inspired), three narrative presets, pacing and response length.

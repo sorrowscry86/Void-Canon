@@ -1,6 +1,18 @@
 # Void Canon downloads
 
-## 0.5.0 — current regular Void Canon update
+## 0.6.0 — current regular Void Canon update
+
+**[Download Void Canon 0.6.0 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.0/downloads/void-canon-0.6.0.apk)** · [APK SHA-256](void-canon-0.6.0.apk.sha256) · [Release notes](RELEASE-0.6.0.md)
+
+[Source ZIP](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.6.0/downloads/void-canon-0.6.0-source.zip) · [Source SHA-256](void-canon-0.6.0-source.zip.sha256)
+
+Regular **Void Canon 0.6.0 / build 13**, Android 8.0+. Install over your current regular app to retain data and private connections. Original signing identity retained.
+
+Adds the first AURPG dice/momentum/clock toolkit, a direct DeepSeek text backup with its own encrypted key/permission, and Android Read Aloud. Room and backup are 6; backups 1–5 remain readable. Older app versions cannot import version-6 backups.
+
+See [contract](../docs/AURPG-BACKUP-SPEECH.md) and [verification](../docs/release-060-evidence/README.md). API keys, private image connections and signing material are excluded from public artifacts.
+
+## Earlier 0.5.0 — regular Void Canon update
 
 **[Download Void Canon 0.5.0 (APK)](https://raw.githubusercontent.com/sorrowscry86/Void-Canon/v0.5.0/downloads/void-canon-0.5.0.apk)** · [APK SHA-256](void-canon-0.5.0.apk.sha256) · [Release notes](RELEASE-0.5.0.md)
 

@@ -18,6 +18,7 @@ object NarrativePlay {
     val modes = listOf(
         NarrativeOption("classic", "Classic RP", "The existing character-and-narration style."),
         NarrativeOption("freeform", "Freeform Story", "MLRPE-inspired narrative preferences for this scene."),
+        NarrativeOption("aurpg", "AURPG", "Rules-lite dice, momentum and progress clocks with author control."),
     )
     val presets = listOf(
         NarrativeOption("collaborative", "Collaborative", "Balance character interaction and narration; leave openings for your next move."),
@@ -47,7 +48,7 @@ object NarrativePlay {
     fun instruction(settings: NarrativeSettings): String {
         validate(settings)
         if (settings.mode == "classic") return ""
-        return "\nFreeform Story (MLRPE-inspired narrative preferences):\n" +
+        return (if (settings.mode == "aurpg") Aurpg.INSTRUCTION else "") + "\nFreeform Story (MLRPE-inspired narrative preferences):\n" +
             presets.first { it.id == settings.preset }.description + "\n" +
             pacings.first { it.id == settings.pacing }.description + "\n" +
             lengths.first { it.id == settings.length }.description +

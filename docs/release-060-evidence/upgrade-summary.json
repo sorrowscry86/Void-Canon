@@ -1,0 +1,22 @@
+{
+  "fromVersion": "0.5.0",
+  "toVersion": "0.6.0",
+  "fromSchema": 5,
+  "toSchema": 6,
+  "originalRecordCounts": {
+    "worlds": 4,
+    "entries": 8,
+    "assets": 10,
+    "scenes": 4,
+    "messages": 14,
+    "visual_descriptions": 3,
+    "chapters": 1,
+    "generations": 7,
+    "continuity_events": 6
+  },
+  "originalFieldsAndIdsPreserved": true,
+  "imagesPreserved": true,
+  "providerPreferencesBytesPreserved": true,
+  "newMechanicsDefaultsEmpty": true,
+  "apkSha256": "7446d16a9eae514541d27a2c5092cf330fc62b941d345e32b0d6ffedb05115ed"
+}

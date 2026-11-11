@@ -139,6 +139,31 @@ class CanonRepository(private val context: Context, private val db: CanonDatabas
         dao.putScenes(listOf(scene.copy(narrative = settings)))
     }
 
+    private suspend fun editMechanics(sceneId: String, edit: (AurpgState) -> AurpgState) = mutate {
+        val scene = dao.scenes().firstOrNull { it.id == sceneId } ?: error("This scene no longer exists.")
+        require(scene.narrative.mode == "aurpg") { "Choose AURPG in Play mode first." }
+        val state = edit(Aurpg.decode(scene.aurpgJson))
+        dao.putScenes(listOf(scene.copy(aurpgJson = Aurpg.encode(state))))
+    }
+    suspend fun rollDice(sceneId: String, label: String, count: Int, sides: Int, modifier: Int, target: Int?, spend: Int) = editMechanics(sceneId) {
+        val random = java.security.SecureRandom()
+        Aurpg.roll(it, label, count, sides, modifier, target, spend, { bound -> random.nextInt(bound) + 1 })
+    }
+    suspend fun setMomentum(sceneId: String, value: Int) = editMechanics(sceneId) {
+        it.copy(momentum = value, revision = it.revision + 1)
+    }
+    suspend fun adjustMomentum(sceneId: String, delta: Int) = editMechanics(sceneId) {
+        require(delta in setOf(-1, 1))
+        it.copy(momentum = (it.momentum + delta).coerceIn(0, 10), revision = it.revision + 1)
+    }
+    suspend fun addClock(sceneId: String, name: String, segments: Int) = editMechanics(sceneId) {
+        it.copy(revision = it.revision + 1, clocks = it.clocks + ProgressClock(UUID.randomUUID().toString(), name.trim(), segments))
+    }
+    suspend fun tickClock(sceneId: String, id: String, delta: Int) = editMechanics(sceneId) { state ->
+        require(delta in setOf(-1, 1) && state.clocks.any { it.id == id }) { "Choose an existing clock." }
+        state.copy(revision = state.revision + 1, clocks = state.clocks.map { if (it.id == id) it.copy(filled = (it.filled + delta).coerceIn(0, it.segments)) else it })
+    }
+
     suspend fun updateScene(direction: String, userRole: String, knowledge: String, provisional: String, authorNotes: String) = mutate {
         require(listOf(direction, userRole, knowledge, provisional, authorNotes).all { it.length <= 5000 }) { "Scene fields can contain at most 5,000 characters." }
         dao.putScenes(snapshot().scenes.map { it.copy(authorDirection = direction, userRole = userRole.ifBlank { "Traveler" }, characterKnowledge = knowledge, provisionalState = provisional, authorNotes = authorNotes) })

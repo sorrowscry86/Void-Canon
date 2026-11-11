@@ -67,7 +67,7 @@ abstract class CanonDao {
 
 @Database(
     entities = [WorldRecord::class, EntryRecord::class, AssetRecord::class, SceneRecord::class, MessageRecord::class, VisualDescription::class, ChapterRecord::class, GenerationRecord::class, ContinuityEvent::class, IllustrationJob::class, IllustrationFrame::class, IllustrationAllowance::class],
-    version = 5, exportSchema = true,
+    version = 6, exportSchema = true,
 )
 abstract class CanonDatabase : RoomDatabase() {
     abstract fun canonDao(): CanonDao
@@ -108,5 +108,11 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
     override fun migrate(db: SupportSQLiteDatabase) {
         for ((column, value) in listOf("mode" to "classic", "preset" to "collaborative", "pacing" to "balanced", "length" to "standard"))
             db.execSQL("ALTER TABLE scenes ADD COLUMN narrative_$column TEXT NOT NULL DEFAULT '$value'")
+    }
+}
+
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE scenes ADD COLUMN aurpgJson TEXT NOT NULL DEFAULT ''")
     }
 }

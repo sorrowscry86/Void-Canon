@@ -1,5 +1,7 @@
 # Narrative modes â€” first MLRPE-inspired increment
 
+This document records the 0.5.0 Freeform increment. Current 0.6.0 storage (Room/backup 6), AURPG, direct DeepSeek and speech are specified in [the current feature contract](AURPG-BACKUP-SPEECH.md).
+
 The authorized increment adds Freeform Story narrative presets and a compact Play toolbar. It builds on one user-controlled role, one focus character and optional environmental narration. It does not implement a complete external MLRPE ruleset, ensemble orchestration or AURPG mechanics.
 
 ## Using the controls
@@ -36,6 +38,6 @@ Portable backup format 5 includes settings under scenes[].narrative. Versions 1â
 
 ## Next increment
 
-AURPG is displayed as planned only. Dice, momentum, clocks, campaign identity, cross-scene continuity, offscreen scheduling, branches and ensemble autonomy remain deferred. Agree the AURPG resolution contract before implementing its engine; narrative prompts alone do not constitute rules enforcement.
+Since 0.6.0, the [first AURPG toolkit](AURPG-BACKUP-SPEECH.md) adds native dice, explicit momentum and manual clocks. The author selected this roadmap increment. The original 0.5.0 boundary is historical; campaign identity, cross-scene continuity, offscreen scheduling, branches and ensemble autonomy remain deferred.
 
 Verification and device limits are recorded in [release evidence](release-050-evidence/README.md).

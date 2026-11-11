@@ -52,7 +52,7 @@ class FreeformPlayUiTest {
             compose.onNodeWithText("Character focus").performScrollTo().performClick()
             compose.onNodeWithText("Measured").performScrollTo().performClick()
             compose.onNodeWithText("Rich").performScrollTo().performClick()
-            compose.onNodeWithText("AURPG · planned").performScrollTo().assertIsDisplayed()
+            compose.onNodeWithText("Campaigns & ensemble · planned").performScrollTo().assertIsDisplayed()
             capture("02-freeform-settings")
             compose.onNodeWithText("Save play settings").performScrollTo().performClick()
             val expected = NarrativeSettings("freeform", "character", "measured", "rich")

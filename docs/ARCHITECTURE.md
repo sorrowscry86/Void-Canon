@@ -1,6 +1,6 @@
 # Void Canon architecture
 
-The 0.4.1 state extension is specified in [Scene continuity](SCENE-CONTINUITY.md): portable format 4, source-linked state revisions, a 4,000-character state projection within the existing context ceiling, and atomic structured RP completions. Current Room and portable backup versions are 5. Explicit migrations 1→2→3→4→5 and archive imports 1–4 are preserved. RP now allows up to 4,096 output tokens subject to model/context limits; image descriptions remain at 1,000.
+The 0.4.1 state extension is specified in [Scene continuity](SCENE-CONTINUITY.md): portable format 4, source-linked state revisions, a 4,000-character state projection within the existing context ceiling, and atomic structured RP completions. Current Room and portable backup versions are 6. Explicit migrations 1→2→3→4→5→6 and archive imports 1–5 are preserved. RP now allows up to 4,096 output tokens subject to model/context limits; image descriptions remain at 1,000.
 
 One Android application module: Compose/Material 3 views, `CanonViewModel`, a local Room repository, an OpenRouter adapter, and a separate Cloudflare image-service adapter/director. Core narrative storage remains independent of providers. The scoped Klein image Worker uses D1 only for its service allowance/request ledger; it stores no prompts or images. There is no account backend, tool execution, or cloud synchronization.
 
@@ -12,7 +12,7 @@ Creation/editing reuses existing Room tables. Scene pairing is limited to one ch
 
 ## Storage and migration
 
-Room schema version 5 retains source-linked `visual_descriptions`, `chapters`, and `generations`; author-only entry notes; scene direction/role/knowledge/private/provisional fields; image SHA-256/reference kind; and message origin/generation links. `MIGRATION_1_2` explicitly adds columns/tables and retains existing IDs and rows. Legacy image hashes are populated from private files at initialization. `MIGRATION_2_3` adds the scene continuity snapshot and before/after event table. `MIGRATION_3_4` adds operational `illustration_jobs`, `illustration_frames` and `illustration_allowance` tables without altering the nine existing narrative tables. MIGRATION_4_5 adds the four scene narrative-preference columns with Classic defaults. Schemas 1–5 are checked in. Operational image records are separate from `WorldSnapshot` and its narrative fingerprint.
+Room schema version 6 retains source-linked `visual_descriptions`, `chapters`, and `generations`; author-only entry notes; scene direction/role/knowledge/private/provisional fields; image SHA-256/reference kind; and message origin/generation links. `MIGRATION_1_2` explicitly adds columns/tables and retains existing IDs and rows. Legacy image hashes are populated from private files at initialization. `MIGRATION_2_3` adds the scene continuity snapshot and before/after event table. `MIGRATION_3_4` adds operational `illustration_jobs`, `illustration_frames` and `illustration_allowance` tables without altering the nine existing narrative tables. MIGRATION_4_5 adds the four scene narrative-preference columns with Classic defaults. MIGRATION_5_6 adds the blank-by-default scene AURPG JSON. Schemas 1–6 are checked in. Operational image records are separate from `WorldSnapshot` and its narrative fingerprint.
 
 Asset bytes are immutable through the UI. Importing a different image creates a new asset ID/file/hash. A description records its source hash, status, and provenance. Context excludes draft, stale, and exploratory references, and uses only the selected appearance/background rather than mixing every gallery image. Existing approved descriptions remain active when another AI proposal is generated; the new result is retained in the generation record for explicit review.
 
@@ -65,3 +65,7 @@ The description is unapproved, explicitly marked automatic, and is usable only u
 ## Narrative preferences (0.5.0)
 
 See [the mode contract](NARRATIVE-MODES.md). NarrativeSettings is portable scene-owned data. Preset instructions are reserved before history/lore, recorded in context settings and included in the scene fingerprint. Backup format 5 validates stable option IDs and accepts older versions with default settings. No rules engine or additional provider calls are introduced.
+
+## AURPG, direct text backup and speech (0.6.0)
+
+[Feature/storage contract](AURPG-BACKUP-SPEECH.md) defines native immutable dice checks, author counters, bounded mechanical context and backup-6 validation. The direct DeepSeek flavor of the text adapter uses a separate encrypted key namespace, explicit paid consent and manual provider selection. Image understanding remains on OpenRouter. Android TTS uses installed non-network voices; voice state is ephemeral, never part of the portable graph.

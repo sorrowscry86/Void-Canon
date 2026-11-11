@@ -1,0 +1,4 @@
+Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
+Signer #1 certificate SHA-256 digest: d2c8a958809475255d9fa24ead371f3225f19e3a5189db3b416217817de5f56a
+Signer #1 certificate SHA-1 digest: ef6bee5cf5156d574a4c5e893e5c6894c045528d
+Signer #1 certificate MD5 digest: f0fc528dd14848923d5640c159293f7d

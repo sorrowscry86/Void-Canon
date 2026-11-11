@@ -40,6 +40,8 @@ fun PlaySettingsSheet(scene: SceneRecord, vm: CanonViewModel, live: Boolean, set
     val busy by vm.busy.collectAsStateWithLifecycle()
     val editable = !saving && generating == null && !busy
     val scope = rememberCoroutineScope()
+    var toolsOpen by remember { mutableStateOf(false) }
+    if (toolsOpen) { AurpgSheet(vm, scene.id) { toolsOpen = false }; return }
     ModalBottomSheet(onDismissRequest = { if (!saving) close() }, containerColor = Panel,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.fillMaxHeight(.94f)) {
@@ -57,18 +59,25 @@ fun PlaySettingsSheet(scene: SceneRecord, vm: CanonViewModel, live: Boolean, set
                 }
                 NarrativeChoices("Narrative mode", NarrativePlay.modes, mode, editable) {
                     mode = it; error = null
-                    if (it == "freeform") sourceLive = true
+                    if (it != "classic") sourceLive = true
                 }
-                if (mode == "freeform") {
-                    Text("MLRPE-inspired · first increment", color = Violet)
+                if (mode != "classic") {
+                    Text(if (mode == "aurpg") "AURPG · first toolkit increment" else "MLRPE-inspired · first increment", color = Violet)
                     NarrativeChoices("Narrative preset", NarrativePlay.presets, preset, editable) { preset = it; error = null }
                     NarrativeChoices("Pacing", NarrativePlay.pacings, pacing, editable) { pacing = it; error = null }
                     NarrativeChoices("Response length", NarrativePlay.lengths, length, editable) { length = it; error = null }
-                    Text("You control your role. These are requests to the selected RP model; exact length and portrayal can vary. No dice or background character simulation.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                    Text(if (mode == "aurpg") "You control your role. Use the tools for recorded dice and counters; the model only portrays their consequences. Exact length and portrayal can vary." else "You control your role. These are requests to the selected RP model; exact length and portrayal can vary. No dice or background character simulation.", color = Muted, style = MaterialTheme.typography.bodySmall)
                 }
                 HorizontalDivider()
-                Text("AURPG · planned", color = Muted)
-                Text("Dice, momentum and clocks come in a later increment.", color = Muted, style = MaterialTheme.typography.bodySmall)
+                if (mode == "aurpg") OutlinedButton(onClick = {
+                    saving = true
+                    scope.launch {
+                        error = vm.saveNarrativeSettings(scene.id, NarrativeSettings(mode, preset, pacing, length))
+                        saving = false
+                        if (error == null) { setLive(true); toolsOpen = true }
+                    }
+                }, enabled = editable, modifier = Modifier.fillMaxWidth()) { Text("Save AURPG mode & open tools") }
+                Text("Campaigns & ensemble · planned", color = Muted)
                 if (generating != null) Text("Wait for generation or cancel it before saving a mode change.", color = Violet)
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 Button(onClick = {

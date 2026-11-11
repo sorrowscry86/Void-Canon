@@ -1,0 +1,6 @@
+Performing Streamed Install
+Success
+Authored regular 0.5.0 schema-5 baseline: {'worlds': 4, 'entries': 8, 'assets': 10, 'scenes': 4, 'messages': 14, 'visual_descriptions': 3, 'chapters': 1, 'generations': 7, 'continuity_events': 6}
+Performing Streamed Install
+Success
+PASS: exact outgoing 0.6.0 APK upgrades regular 0.5.0; all nine domain tables, images and both provider preference files retained; only empty aurpgJson added. No uninstall or pm clear.

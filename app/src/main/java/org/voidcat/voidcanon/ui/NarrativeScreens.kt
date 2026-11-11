@@ -28,6 +28,17 @@ import java.util.Date
 
 @Composable
 fun AiSettingsSheet(vm: CanonViewModel, dismiss: () -> Unit) {
+    var deepSeekOpen by remember { mutableStateOf(false) }
+    if (deepSeekOpen) {
+        key("deepseek-connection") { DeepSeekSheet(vm) { deepSeekOpen = false } }
+    } else {
+        key("openrouter-connection") { OpenRouterSettingsSheet(vm, dismiss) { deepSeekOpen = true } }
+    }
+}
+
+@Composable
+private fun OpenRouterSettingsSheet(vm: CanonViewModel, dismiss: () -> Unit, openDeepSeek: () -> Unit) {
+    val direct by vm.deepSeekActive.collectAsStateWithLifecycle()
     val stored by vm.configuration.collectAsStateWithLifecycle()
     var config by remember { mutableStateOf(stored) }
     var key by remember { mutableStateOf("") }
@@ -46,6 +57,8 @@ fun AiSettingsSheet(vm: CanonViewModel, dismiss: () -> Unit) {
             }
             LazyColumn(modifier = Modifier.weight(1f), contentPadding = PaddingValues(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 item {
+                    Text(if (direct) "Text provider: DeepSeek (direct)" else "Text provider: OpenRouter", color = Violet)
+                    OutlinedButton(onClick = openDeepSeek, modifier = Modifier.fillMaxWidth()) { Text("DeepSeek direct backup") }
                     Text("Choose your models", style = MaterialTheme.typography.titleLarge)
                     Text("Browse the current free options without entering a key. Refresh checks OpenRouter's live catalog; availability and rate limits can change.", color = Muted)
                 }
@@ -193,6 +206,8 @@ fun ContextSheet(s: WorldSnapshot, vm: CanonViewModel, dismiss: () -> Unit) {
 
 @Composable
 fun ChaptersScreen(s: WorldSnapshot, vm: CanonViewModel) {
+    val direct by vm.deepSeekActive.collectAsStateWithLifecycle()
+    val textProvider = if (direct) "DeepSeek" else "OpenRouter"
     var editing by remember { mutableStateOf<ChapterRecord?>(null) }
     var newChapter by remember { mutableStateOf(false) }
     val generating by vm.generating.collectAsStateWithLifecycle()
@@ -204,7 +219,7 @@ fun ChaptersScreen(s: WorldSnapshot, vm: CanonViewModel) {
             Text("Chapters", style = MaterialTheme.typography.headlineLarge)
             Text("Preserve the transcript. Approve the memory you carry forward.", color = Muted)
             OutlinedButton(onClick = { newChapter = true }, modifier = Modifier.fillMaxWidth()) { Text("Write chapter summary") }
-            OutlinedButton(onClick = vm::proposeChapter, enabled = generating == null, modifier = Modifier.fillMaxWidth()) { Text(if (error != null && generating == null) "Retry summary with OpenRouter" else "Propose summary with OpenRouter") }
+            OutlinedButton(onClick = vm::proposeChapter, enabled = generating == null, modifier = Modifier.fillMaxWidth()) { Text(if (error != null && generating == null) "Retry summary with $textProvider" else "Propose summary with $textProvider") }
             if (error != null && generating != "summary") {
                 Text("Summary wasn't saved. Your transcript is unchanged.", color = MaterialTheme.colorScheme.error)
                 Text(error, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)

@@ -1,0 +1,36 @@
+
+org.voidcat.voidcanon.DeepSeekUiTest:
+Process crashed while executing isolatedEncryptedBackupMakesOneTextRequestWithoutAnOpenRouterKey(org.voidcat.voidcanon.DeepSeekUiTest):
+java.lang.ArrayIndexOutOfBoundsException: length=5120; index=-591
+	at androidx.compose.runtime.SlotWriter.moveSlotGapTo(SlotTable.kt:4209)
+	at androidx.compose.runtime.SlotWriter.removeSlots(SlotTable.kt:2904)
+	at androidx.compose.runtime.SlotWriter.removeGroup(SlotTable.kt:2021)
+	at androidx.compose.runtime.ComposerKt.removeCurrentGroup(Composer.kt:4337)
+	at androidx.compose.runtime.CompositionImpl.dispose(Composition.kt:840)
+	at androidx.compose.ui.platform.WrappedComposition.dispose(Wrapper.android.kt:154)
+	at androidx.compose.ui.platform.WrappedComposition.onStateChanged(Wrapper.android.kt:165)
+	at androidx.lifecycle.LifecycleRegistry$ObserverWithState.dispatchEvent(LifecycleRegistry.jvm.kt:313)
+	at androidx.lifecycle.LifecycleRegistry.backwardPass(LifecycleRegistry.jvm.kt:266)
+	at androidx.lifecycle.LifecycleRegistry.sync(LifecycleRegistry.jvm.kt:284)
+	at androidx.lifecycle.LifecycleRegistry.moveToState(LifecycleRegistry.jvm.kt:135)
+	at androidx.lifecycle.LifecycleRegistry.handleLifecycleEvent(LifecycleRegistry.jvm.kt:119)
+	at androidx.lifecycle.ReportFragment$Companion.dispatch$lifecycle_runtime_release(ReportFragment.android.kt:181)
+	at androidx.lifecycle.ReportFragment$LifecycleCallbacks.onActivityPreDestroyed(ReportFragment.android.kt:137)
+	at android.app.Activity.dispatchActivityPreDestroyed(Activity.java:1384)
+	at android.app.Activity.performDestroy(Activity.java:8044)
+	at android.app.Instrumentation.callActivityOnDestroy(Instrumentation.java:1334)
+	at androidx.test.runner.MonitoringInstrumentation.callActivityOnDestroy(MonitoringInstrumentation.java:753)
+	at android.app.ActivityThread.performDestroyActivity(ActivityThread.java:4926)
+	at android.app.ActivityThread.handleDestroyActivity(ActivityThread.java:4970)
+	at android.app.servertransaction.DestroyActivityItem.execute(DestroyActivityItem.java:44)
+	at android.app.servertransaction.TransactionExecutor.executeLifecycleState(TransactionExecutor.java:176)
+	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:97)
+	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2016)
+	at android.os.Handler.dispatchMessage(Handler.java:107)
+	at android.os.Looper.loop(Looper.java:214)
+	at android.app.ActivityThread.main(ActivityThread.java:7356)
+	at java.lang.reflect.Method.invoke(Native Method)
+	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:492)
+	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:930)
+INSTRUMENTATION_RESULT: shortMsg=Process crashed.
+INSTRUMENTATION_CODE: 0

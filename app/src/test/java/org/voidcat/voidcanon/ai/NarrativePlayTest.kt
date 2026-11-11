@@ -49,7 +49,7 @@ class NarrativePlayTest {
     }
 
     @Test fun unsupportedRulesModesAndPreferencesAreRejected() {
-        listOf(NarrativeSettings(mode = "aurpg"), NarrativeSettings(preset = "autonomous"),
+        listOf(NarrativeSettings(mode = "unsupported-rules"), NarrativeSettings(preset = "autonomous"),
             NarrativeSettings(pacing = "skip"), NarrativeSettings(length = "unlimited")).forEach {
             assertTrue(runCatching { SceneContext.build(snapshot(it), "Hello") }.isFailure)
         }

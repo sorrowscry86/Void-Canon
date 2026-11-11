@@ -51,6 +51,32 @@ class CanonViewModel(application: Application) : AndroidViewModel(application) {
     val catalogTime = MutableStateFlow(settings.catalogTime())
     val loadingModels = MutableStateFlow(false)
     val hasKey = MutableStateFlow(settings.hasKey())
+    val deepSeek = (application as VoidCanonApplication).deepSeek
+    val deepSeekActive = MutableStateFlow(deepSeek.active())
+    suspend fun mechanicsAction(action: String, sceneId: String, label: String = "", count: Int = 1, sides: Int = 20,
+        modifier: Int = 0, target: Int? = null, spend: Int = 0, value: Int = 0, clockId: String = ""): String? = try {
+        require(generating.value == null && !busy.value) { "Wait for generation or cancel it before changing mechanics." }
+        when (action) {
+            "roll" -> repo.rollDice(sceneId, label, count, sides, modifier, target, spend)
+            "momentum" -> repo.setMomentum(sceneId, value)
+            "momentumDelta" -> repo.adjustMomentum(sceneId, value)
+            "addClock" -> repo.addClock(sceneId, label, value)
+            "tick" -> repo.tickClock(sceneId, clockId, value)
+            else -> error("Unknown mechanics action.")
+        }
+        null
+    } catch (e: CancellationException) { throw e } catch (e: Exception) { e.message ?: "Could not save mechanics." }
+    suspend fun deepSeekModelIds(key: String): List<String> {
+        val credential = withContext(Dispatchers.IO) { key.trim().ifBlank { deepSeek.settings.readKey() } }
+        return (getApplication<Application>() as VoidCanonApplication).deepSeekClient.directModelIds(credential)
+    }
+    suspend fun saveDeepSeek(model: String, key: String, consent: Boolean, active: Boolean): String? = try {
+        require(generating.value == null && !busy.value) { "Wait for generation or cancel it first." }
+        withContext(Dispatchers.IO) { deepSeek.save(model, key, consent, active) }
+        deepSeekActive.value = deepSeek.active()
+        notice.value = if (active) "DeepSeek text backup selected. Send explicitly to continue." else "OpenRouter selected for text."
+        null
+    } catch (e: CancellationException) { throw e } catch (e: Exception) { e.message ?: "Could not save DeepSeek settings." }
     val generating = MutableStateFlow<String?>(null)
     val generationError = MutableStateFlow<String?>(null)
     val summaryError = MutableStateFlow<String?>(null)
@@ -332,9 +358,10 @@ class CanonViewModel(application: Application) : AndroidViewModel(application) {
     fun clearKey() = enqueue { withContext(Dispatchers.IO) { settings.clearKey() }; hasKey.value = false; notice.value = "OpenRouter key removed from this device." }
 
     fun contextPreview(): ContextPreview {
-        val model = models.value.find { it.id == configuration.value.rpModel }
+        val model = if (deepSeekActive.value) deepSeek.model() else models.value.find { it.id == configuration.value.rpModel }
         val budget = if (model == null) 24000 else minOf(24000, (model.contextLength - 4500).coerceAtLeast(1000) * 2)
-        return SceneContext.build(snapshot.value, draft.value.ifBlank { "Continue the scene." }, budget, snapshot.value.scene?.id?.let(artworkPreferences::enabled) == true, currentIllustrationId(snapshot.value))
+        val preview = SceneContext.build(snapshot.value, draft.value.ifBlank { "Continue the scene." }, budget, snapshot.value.scene?.id?.let(artworkPreferences::enabled) == true, currentIllustrationId(snapshot.value))
+        return preview.copy(settings = preview.settings + mapOf("provider" to if (deepSeekActive.value) "DeepSeek" else "OpenRouter"))
     }
 
     fun saveDescription(assetId: String, text: String, approved: Boolean, provenance: String = "Author-written") = enqueue {
@@ -376,12 +403,15 @@ class CanonViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 ready.await()
                 require(repo.snapshot().scene != null) { "Choose a character and location to start a scene first. Manual worldbuilding and descriptions work without a scene." }
-                val config = configuration.value
-                require(config.consent) { "Open AI settings and allow sending selected story material to OpenRouter." }
-                val key = withContext(Dispatchers.IO) { settings.readKey() }
-                require(key.isNotBlank()) { "Enter your OpenRouter key in AI settings. Offline editing remains available." }
+                val direct = purpose != "vision" && deepSeekActive.value
+                val provider = if (direct) "DeepSeek" else "OpenRouter"
+                val selectedSettings = if (direct) deepSeek.settings else settings
+                val config = if (direct) selectedSettings.configuration() else configuration.value
+                require(config.consent) { "Open AI settings and allow sending selected story material to $provider." }
+                val key = withContext(Dispatchers.IO) { selectedSettings.readKey() }
+                require(key.isNotBlank()) { "Enter your $provider key in AI settings. Offline editing remains available." }
                 val modelId = if (purpose == "vision") config.visionModel else config.rpModel
-                val model = models.value.find { it.id == modelId }
+                val model = if (direct) deepSeek.model() else models.value.find { it.id == modelId }
                 require(model != null) { "Refresh the model catalog and choose a ${if (purpose == "vision") "vision" else "roleplay"} model." }
                 require(!config.freeOnly || model.free) { "This model is not listed as free. Choose a free model or explicitly disable Free only." }
                 require(purpose != "vision" || model.vision) { "Choose an image-capable model for visual descriptions." }
@@ -412,13 +442,14 @@ class CanonViewModel(application: Application) : AndroidViewModel(application) {
                     else -> context = SceneContext.build(s, input, minOf(24000, ((model.contextLength - 4500).coerceAtLeast(1000) * 2)), artworkPreferences.enabled(s.scene!!.id), currentIllustrationId(s))
                 }
                 val maxTokens = if (purpose == "summary" || purpose == "roleplay") generationOutputTokens(model, context.messages, purpose) else 1000
-                val recordedContext = context.copy(settings = context.settings + mapOf("provider" to "OpenRouter", "requestedModel" to model.id,
-                    "temperature" to "0.7", "maxOutputTokens" to maxTokens.toString(), "freeOnly" to config.freeOnly.toString(), "automaticRetries" to "0", "fallbacks" to "disabled"))
+                val recordedContext = context.copy(settings = context.settings + mapOf("provider" to provider, "requestedModel" to model.id,
+                    "temperature" to if (direct) "provider default" else "0.7", "maxOutputTokens" to maxTokens.toString(), "freeOnly" to config.freeOnly.toString(), "automaticRetries" to "0", "fallbacks" to "disabled"))
                 val record = GenerationRecord(UUID.randomUUID().toString(), s.scene!!.id, purpose, model.id,
                     Json.encodeToString(recordedContext), SceneContext.fingerprint(s), input.takeIf { purpose == "roleplay" }.orEmpty(), assetId,
                     sourceMessages, createdAt = System.currentTimeMillis())
                 repo.beginGeneration(record); requestId = record.id
-                val result = router.complete(key, model.id, context.messages, config.freeOnly, imageUrl, maxTokens)
+                val client = if (direct) (getApplication<Application>() as VoidCanonApplication).deepSeekClient else router
+                val result = client.complete(key, model.id, context.messages, config.freeOnly, imageUrl, maxTokens)
                 repo.finishGeneration(record.id, result)
                 if (purpose == "roleplay") {
                     _snapshot.value = repo.snapshot()

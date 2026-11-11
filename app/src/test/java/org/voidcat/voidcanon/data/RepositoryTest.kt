@@ -46,7 +46,7 @@ class RepositoryTest {
     }
 
     private fun openDatabase() {
-        db = Room.databaseBuilder(context, CanonDatabase::class.java, dbName).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).allowMainThreadQueries().build()
+        db = Room.databaseBuilder(context, CanonDatabase::class.java, dbName).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).allowMainThreadQueries().build()
         repo = CanonRepository(context, db)
     }
 
@@ -56,6 +56,65 @@ class RepositoryTest {
         val s = repo.snapshot()
         return GenerationRecord(UUID.randomUUID().toString(), s.scene!!.id, "roleplay", "fixture/free",
             Json.encodeToString(SceneContext.build(s, input)), SceneContext.fingerprint(s), input).also { repo.beginGeneration(it) }
+    }
+
+    @Test fun aurpgStateAndImmutableRollJournalSurviveSceneSwitchReopenRenameAndBackup() = runBlocking {
+        val before = repo.snapshot()
+        val scene = before.scene!!
+        repo.saveNarrativeSettings(scene.id, NarrativeSettings(mode = "aurpg"))
+        repo.setMomentum(scene.id, 3)
+        repo.addClock(scene.id, "Harbor watch", 6)
+        val clock = Aurpg.decode(repo.snapshot().scene!!.aurpgJson).clocks.single().id
+        repo.tickClock(scene.id, clock, 1)
+        repo.rollDice(scene.id, "Cross the quay", 2, 6, 1, 7, 2)
+        val state = Aurpg.decode(repo.snapshot().scene!!.aurpgJson)
+        assertEquals(1, state.momentum)
+        assertEquals(1, state.clocks.single().filled)
+        val roll = state.checks.single()
+        assertEquals(roll.dice.sum() + 3, roll.total)
+        assertEquals(roll.total >= 7, roll.passed)
+        assertEquals(before.messages, repo.snapshot().messages)
+        assertEquals(before.entries, repo.snapshot().entries)
+        val secondPlace = repo.createEntry(scene.worldId, "location", "Other quay", "", "", "")
+        repo.useInScene(scene.characterId, secondPlace)
+        assertEquals("", repo.snapshot().scene!!.aurpgJson)
+        repo.selectScene(scene.id)
+        db.close(); openDatabase(); repo.initialize()
+        assertEquals(state, Aurpg.decode(repo.snapshot().scene!!.aurpgJson))
+        repo.editEntry(scene.characterId, "Renamed traveler", "", "")
+        assertEquals(state, Aurpg.decode(repo.snapshot().scene!!.aurpgJson))
+        val archive = ByteArrayOutputStream().also { repo.export(it) }.toByteArray()
+        repo.setMomentum(scene.id, 10)
+        repo.restore(archive.inputStream())
+        assertEquals(state, Aurpg.decode(repo.workspaceSnapshot().scenes.single { it.id == scene.id }.aurpgJson))
+        assertEquals(before.messages, repo.workspaceSnapshot().messages)
+    }
+
+    @Test fun aurpgChangesInvalidatePendingNarrativeWithoutDiscardingItsDraft() = runBlocking {
+        val scene = repo.snapshot().scene!!
+        repo.saveNarrativeSettings(scene.id, NarrativeSettings(mode = "aurpg"))
+        repo.saveDraft("I cross the quay.")
+        val before = repo.snapshot(); val request = trackedRequest("I cross the quay.")
+        repo.rollDice(scene.id, "Cross", 1, 20, 0, 10, 0)
+        assertTrue(runCatching { repo.finishGeneration(request.id, RouterResult(Continuity.json.encodeToString(ContinuityReply(1, 0, "Stale portrayal")), "fixture/free", "{}")) }.isFailure)
+        assertEquals(before.messages, repo.snapshot().messages)
+        assertEquals(before.scene!!.draft, repo.snapshot().scene!!.draft)
+        assertTrue(repo.snapshot().continuityEvents.isEmpty())
+    }
+
+    @Test fun malformedAndLegacyMechanicsArchivesLeaveExistingDataUsable() = runBlocking {
+        val scene = repo.snapshot().scene!!
+        repo.saveNarrativeSettings(scene.id, NarrativeSettings(mode = "aurpg"))
+        repo.rollDice(scene.id, "Test", 1, 20, 0, null, 0)
+        val valid = repo.workspaceSnapshot()
+        val state = Aurpg.decode(valid.scene!!.aurpgJson)
+        val bad = state.copy(checks = state.checks.map { it.copy(total = 1001) })
+        val broken = valid.copy(scenes = valid.scenes.map { it.copy(aurpgJson = Aurpg.json.encodeToString(bad)) })
+        assertRestoreRejected(rawArchive(broken))
+        assertRestoreRejected(rawArchive(valid.copy(formatVersion = 5)))
+        assertEquals(valid, repo.workspaceSnapshot())
+        repo.saveNarrativeSettings(scene.id, NarrativeSettings())
+        assertTrue(runCatching { repo.rollDice(scene.id, "Inactive", 1, 20, 0, null, 0) }.isFailure)
     }
 
     @Test fun narrativePreferencesAreSceneScopedAndSurviveReopenAndBackup() = runBlocking {
@@ -96,7 +155,7 @@ class RepositoryTest {
     @Test fun narrativeArchiveValidationPreservesExistingWorkAndAcceptsVersionFourDefaults() = runBlocking {
         val before = repo.workspaceSnapshot()
         val scene = before.scene!!
-        for (invalid in listOf(NarrativeSettings(mode = "aurpg"), NarrativeSettings(preset = "unknown"),
+        for (invalid in listOf(NarrativeSettings(mode = "unsupported-rules"), NarrativeSettings(preset = "unknown"),
             NarrativeSettings(pacing = "jump"), NarrativeSettings(length = "unbounded"))) {
             assertTrue(runCatching { repo.saveNarrativeSettings(scene.id, invalid) }.isFailure)
             assertRestoreRejected(rawArchive(before.copy(scenes = listOf(scene.copy(narrative = invalid)))))
@@ -145,8 +204,53 @@ class RepositoryTest {
         }
         openDatabase(); repo.initialize()
         assertEquals(before, repo.workspaceSnapshot())
-        assertEquals(5, db.openHelper.writableDatabase.version)
+        assertEquals(6, db.openHelper.writableDatabase.version)
         assertEquals(NarrativeSettings(), repo.snapshot().scene!!.narrative)
+    }
+
+    @Test fun actualVersionFiveDatabasePreservesFreeformPreferencesWhenAddingMechanics() = runBlocking {
+        repo.editEntry("mira", "My Mira", "Edited description", "Edited lore", "Private notes")
+        repo.saveDraft("Retained before upgrade")
+        val preferences = NarrativeSettings("freeform", "character", "measured", "rich")
+        repo.saveNarrativeSettings(repo.snapshot().scene!!.id, preferences)
+        val before = repo.workspaceSnapshot()
+        db.close(); context.deleteDatabase(dbName)
+        val relative = "schemas/org.voidcat.voidcanon.data.CanonDatabase/5.json"
+        val schema = Json.parseToJsonElement(listOf(File(relative), File("app/$relative")).first { it.exists() }.readText()).jsonObject.getValue("database").jsonObject
+        val encoded = Continuity.json.encodeToJsonElement(before).jsonObject
+        val keys = mapOf("visual_descriptions" to "descriptions", "continuity_events" to "continuityEvents")
+        SQLiteDatabase.openOrCreateDatabase(context.getDatabasePath(dbName), null).use { old ->
+            schema.getValue("entities").jsonArray.forEach { entity ->
+                val table = entity.jsonObject
+                val name = table.getValue("tableName").jsonPrimitive.content
+                old.execSQL(table.getValue("createSql").jsonPrimitive.content.replace("${'$'}{TABLE_NAME}", name))
+                val columns = table.getValue("fields").jsonArray.map { it.jsonObject.getValue("columnName").jsonPrimitive.content }
+                encoded[keys[name] ?: name]?.jsonArray.orEmpty().forEach { row ->
+                    val values = android.content.ContentValues()
+                    table.getValue("fields").jsonArray.forEach { rawField ->
+                        val field = rawField.jsonObject
+                        val key = field.getValue("columnName").jsonPrimitive.content
+                        var value: JsonElement = row
+                        field.getValue("fieldPath").jsonPrimitive.content.split('.').forEach { path -> value = (value as? JsonObject)?.get(path) ?: JsonNull }
+                        val primitive = value.jsonPrimitive
+                        when {
+                            value == JsonNull -> values.putNull(key)
+                            primitive.booleanOrNull != null -> values.put(key, if (primitive.boolean) 1 else 0)
+                            primitive.longOrNull != null && !primitive.isString -> values.put(key, primitive.long)
+                            else -> values.put(key, primitive.content)
+                        }
+                    }
+                    old.insertOrThrow(name, null, values)
+                }
+            }
+            schema.getValue("setupQueries").jsonArray.forEach { old.execSQL(it.jsonPrimitive.content) }
+            old.version = 5
+        }
+        openDatabase(); repo.initialize()
+        assertEquals(before, repo.workspaceSnapshot())
+        assertEquals(6, db.openHelper.writableDatabase.version)
+        assertEquals(preferences, repo.snapshot().scene!!.narrative)
+        assertEquals("", repo.snapshot().scene!!.aurpgJson)
     }
 
     @Test fun publishingExploratoryArtworkDoesNotInvalidateAnInFlightRoleplayTurn() = runBlocking {
@@ -558,7 +662,7 @@ class RepositoryTest {
         val legacy = before.copy(formatVersion = 1, assets = before.assets.map { it.copy(contentHash = "") })
         repo.restore(ByteArrayInputStream(rawArchive(legacy)))
         val after = repo.snapshot()
-        assertEquals(5, after.formatVersion)
+        assertEquals(6, after.formatVersion)
         assertEquals(before.entries, after.entries)
         assertEquals(before.messages, after.messages)
         assertTrue(after.assets.all { it.contentHash.length == 64 && File(repo.images, it.fileName).exists() })
@@ -707,7 +811,7 @@ class RepositoryTest {
         assertEquals(before.messages, after.messages)
         assertEquals(before.chapters, after.chapters)
         assertEquals(before.generations, after.generations)
-        assertEquals(5, after.formatVersion)
+        assertEquals(6, after.formatVersion)
         after.assets.forEach { assertArrayEquals(bytes[it.id], File(repo.images, it.fileName).readBytes()) }
         BackupArchive.validateGraph(after)
     }
@@ -734,7 +838,7 @@ class RepositoryTest {
         repo.restore(ByteArrayInputStream(rawArchive(before.copy(formatVersion = 2))))
         assertEquals(before.worlds, repo.workspaceSnapshot().worlds)
         assertEquals(before.scenes, repo.workspaceSnapshot().scenes)
-        assertEquals(5, repo.workspaceSnapshot().formatVersion)
+        assertEquals(6, repo.workspaceSnapshot().formatVersion)
     }
 
     private suspend fun assertRestoreRejected(bytes: ByteArray) {

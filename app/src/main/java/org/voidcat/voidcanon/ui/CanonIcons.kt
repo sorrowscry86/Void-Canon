@@ -34,6 +34,8 @@ object CanonIcons {
     val Save = icon("Save", "M4 3H17L21 7V21H3V3ZM7 3V9H17V3M7 21V14H17V21")
     val Tune = icon("Play mode", "M4 6H10M14 6H20M4 12H14M18 12H20M4 18H6M10 18H20M10 3V9M14 9V15M6 15V21")
     val Ai = icon("AI settings", "M12 2V5M9 2H15M5 7H19V20H5ZM2 10H5M19 10H22M8 11H8.01M16 11H16.01M9 16H15")
+    val Speaker = icon("Read aloud", "M3 9H7L12 4V20L7 15H3ZM16 8C19 10 19 14 16 16M19 4C24 9 24 15 19 20")
+    val Stop = icon("Stop reading", "M5 5H19V19H5Z")
     val Send = icon("Send", "M3 3L22 12L3 21L7 12ZM7 12H22", true)
     val Alert = icon("Notice", "M21 12A9 9 0 1 1 3 12A9 9 0 1 1 21 12M12 7V13M12 17H12.01")
 }

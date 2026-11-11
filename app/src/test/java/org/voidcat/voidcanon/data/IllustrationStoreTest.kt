@@ -34,7 +34,7 @@ class IllustrationStoreTest {
         open(); repo.initialize(); repo.artworkPreferences.resetPermissions()
     }
     private fun open() {
-        db = Room.databaseBuilder(app, CanonDatabase::class.java, name).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
+        db = Room.databaseBuilder(app, CanonDatabase::class.java, name).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).build()
         repo = CanonRepository(app, db)
         store = IllustrationStore(db, app.filesDir, app.cacheDir)
     }
@@ -280,6 +280,6 @@ class IllustrationStoreTest {
         open(); repo.initialize()
         assertEquals(before, repo.workspaceSnapshot())
         assertTrue(store.jobs().isEmpty())
-        assertEquals(5, db.openHelper.writableDatabase.version)
+        assertEquals(6, db.openHelper.writableDatabase.version)
     }
 }

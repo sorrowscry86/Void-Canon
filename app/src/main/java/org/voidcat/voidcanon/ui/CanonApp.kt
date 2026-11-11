@@ -528,6 +528,7 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
     val generating by vm.generating.collectAsStateWithLifecycle()
     val generationError by vm.generationError.collectAsStateWithLifecycle()
     val hasKey by vm.hasKey.collectAsStateWithLifecycle()
+    val direct by vm.deepSeekActive.collectAsStateWithLifecycle()
     val artwork by vm.artwork.collectAsStateWithLifecycle()
     val visualPlan = artwork.plan?.takeIf { it.snapshot.sceneId == scene.id && it.snapshot.worldId == scene.worldId }
     val illustration = artwork.image?.takeIf { artwork.illustrated && visualPlan != null }
@@ -536,7 +537,8 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
     val backdropId = if (visibleLocation.id == location.id) scene.backgroundAssetId else visibleLocation.primaryAssetId
     val showCutout = illustration == null && (classicView || visualPlan?.snapshot?.let { it.ownerId == character.id && it.appearance.isBlank() } == true)
     val isDemo = scene.id == "harbor-scene"
-    var liveMode by rememberSaveable(scene.id) { mutableStateOf(scene.narrative.mode == "freeform" || !isDemo || vm.hasKey.value) }
+    var liveMode by rememberSaveable(scene.id) { mutableStateOf(scene.narrative.mode == "freeform" || !isDemo || vm.hasKey.value || vm.deepSeekActive.value) }
+    LaunchedEffect(direct) { if (direct) liveMode = true }
     var playSettingsOpen by remember(scene.id) { mutableStateOf(false) }
     var historyOpen by remember { mutableStateOf(false) }
     var artworkSettingsOpen by remember(scene.id) { mutableStateOf(false) }
@@ -558,7 +560,7 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
             Row(Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(visibleLocation.name, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 13.sp)
-                    Text(if (liveMode) "${NarrativePlay.label(scene.narrative)} · ${if (hasKey) "OpenRouter" else "AI setup needed"}" else "Scripted demo · offline", fontSize = 10.sp, color = Violet, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(if (liveMode) "${NarrativePlay.label(scene.narrative)} · ${if (direct) "DeepSeek" else if (hasKey) "OpenRouter" else "AI setup needed"}" else "Scripted demo · offline", fontSize = 10.sp, color = Violet, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 IconButton(onClick = { focus.clearFocus(); historyOpen = true }) { Icon(CanonIcons.History, "Scene history") }
                 IconButton(onClick = vm::save, enabled = !busy) { Icon(CanonIcons.Save, "Save scene") }
@@ -571,6 +573,7 @@ private fun PlayScreen(s: WorldSnapshot, vm: CanonViewModel, keyboardVisible: Bo
                 PlayTool("Artwork", CanonIcons.Images, active = artwork.running) {
                     focus.clearFocus(); keyboard?.hide(); artworkSettingsOpen = true
                 }
+                ReadAloudButton(scene.id, lastMessage?.id, lastMessage?.text.orEmpty()) { vm.notice.value = it }
             }
             if (liveMode && generationError != null) Text(generationError.orEmpty(), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.fillMaxWidth().background(Panel).padding(8.dp).heightIn(max = 84.dp).verticalScroll(rememberScrollState()))
